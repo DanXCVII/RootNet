@@ -31,7 +31,7 @@ def sinusoidal(t):
 
 
 class SoilWaterSimulation:
-    def __init__(self, mesh_path, rsml_path, output_path, soil_type, initial=-659.8 + 10, trans=6.4, wilting_point=None, age_dependent=False, sim_time=7.1):
+    def __init__(self, mesh_path, rsml_path, output_path, soil_type, initial=-659.8 + 10, trans=6.4, wilting_point=-15000, age_dependent=False, sim_time=7.1):
         """
         Simulates the water movement in the soil for a given root system and soil properties.
 
@@ -59,7 +59,6 @@ class SoilWaterSimulation:
         self.wilting_point = wilting_point
         self.sim_time = sim_time
         self.age_dependent = age_dependent
-        self.progress = 0 # Param for progress bar
         
         if wilting_point is None:
             if self.soil_type == "sand":
@@ -82,10 +81,13 @@ class SoilWaterSimulation:
 
         if soil_type == "sand":
             self.soil_type_params = sand
+            self.dt = 120
         elif soil_type == "loam":
             self.soil_type_params = loam
+            self.dt = 360
         elif soil_type == "clay":
             self.soil_type_params = clay
+            self.dt = 360
     
     def _init_soil_model(self):
         sp = vg.Parameters(self.soil_type_params)  # for debugging
@@ -110,17 +112,8 @@ class SoilWaterSimulation:
         progress = (iteration / total)
         arrow = '=' * int(round(progress * bar_length)-1) + '>'
         spaces = ' ' * (bar_length - len(arrow))
-
-        self.progress = (self.progress + 1) % 3
-        animated_progress = None
-        if(self.progress == 0):
-            animated_progress = ".  "
-        elif(self.progress == 1):
-            animated_progress = ".. "
-        elif(self.progress == 2):
-            animated_progress = "..."
         
-        sys.stdout.write(f"\rProgress: [{arrow + spaces}] {int(progress*100)}% {info} {animated_progress}")
+        sys.stdout.write(f"\rProgress: [{arrow + spaces}] {int(progress*100)}% {info}")
         sys.stdout.flush()  # This is important to ensure the progress is updated
 
     def run(self):
@@ -145,7 +138,7 @@ class SoilWaterSimulation:
         x_, y_, z_ = [], [], []
         sink1d = []
         sx = self.s.getSolutionHead()  # inital condition, solverbase.py
-        dt = 360. / (24 * 3600)
+        dt = self.dt / (24 * 3600) # seconds divided by rest (don't change rest) # 120 sand, 360 loam, clay # coupling zu groß wenns oszilliert # sand -100 , 15sec
         skip = 1
 
         N = round(self.sim_time / dt)
@@ -185,7 +178,9 @@ class SoilWaterSimulation:
                 # z_.append(sum_flux)  # cm3/day (root system uptake)
                 z_.append(float(self.r.collar_flux(rs_age + t, rx, sx)))  # cm3/day
 
-                self._print_progress_bar(i+1, N, info="simulating soil water interaciton")
+                collar_flux = round(self.r.collar_flux(rs_age + t, rx, sx)[0], 3)
+                prescribed = round(-self.trans * sinusoidal(t), 3)
+                self._print_progress_bar(i+1, N, info=f"collar flux: {collar_flux} | {prescribed} :prescribed")
 
                 # n = round(float(i) / float(N) * 100.)
                 # print("[" + ''.join(["*"]) * n + ''.join([" "]) * (100 - n) + "], soil [{:g}, {:g}] cm, root [{:g}, {:g}] cm, {:g} days {:g}\n"
@@ -206,6 +201,9 @@ class SoilWaterSimulation:
         
         filename = str(rsml_name)+"_soil_"+self.soil_type+"_initial"+str(self.initial)+"_sim-time"+str(self.sim_time)+".vtu"
         os.system("mv "+str(rsml_name)+"-00000.vtu "+self.output_path+"/"+filename)
+
+        print(f"{rsml_name}.pvd")
+        os.remove(f"{rsml_name}.pvd")
 
         return filename
 

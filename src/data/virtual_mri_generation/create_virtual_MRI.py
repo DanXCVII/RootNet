@@ -21,9 +21,12 @@ from noise import pnoise3
 import skimage
 from skimage.morphology import ball
 import math
+from scipy.ndimage import distance_transform_edt
 import nibabel as nib
 import random
 import os
+import cv2
+import h5py
 import time
 
 
@@ -168,6 +171,8 @@ class Virtual_MRI:
             visited.add(i)
         return True
     
+    # TODO: remove if not needed anymore - Code for reading a rsml file (currently not working)
+
     # def _get_root_data_from_rsml(self):
     #     rsml.read_rsml(self.rsml_path)
     #     polylines, props, functions = rsml.read_rsml(self.rsml_path)
@@ -209,7 +214,7 @@ class Virtual_MRI:
 
     #     return nodes, segments, radius, length
     
-    def _get_dimensions_container_array(self, X, Y, Z):
+    def _get_dimensions_container_array(self, nx, ny, nz, res_x, res_y, res_z, width):
         """
         creates the dimensions of the container array, which must consist of consecutive values for each pixel
         representing a gray intensity value for the MRI
@@ -217,21 +222,17 @@ class Virtual_MRI:
         Args:
         X, Y, Z: respective coordinate in the root container for which we want to have the gray value
         """
-        x_int = np.ceil(X[:-1]/self.resx)
-        y_int = np.ceil(Y[:-1]/self.resy)
-        z_int = np.round(Z[:-1]/self.resz)
-        
 
-        if not (self._isConsecutive(x_int)):
-            x_int = np.linspace(np.min(x_int), np.max(x_int), int(abs(np.min(x_int)))+int(np.max(x_int))+1)
-        if not (self._isConsecutive(y_int)):
-            y_int = np.linspace(np.min(y_int), np.max(y_int), abs(int(np.min(y_int)))+int(np.max(y_int))+1)
-        if not (self._isConsecutive(z_int)):
-            z_int = np.linspace(0, np.min(z_int), len(z_int)+1)
+        min_x = -int(nx/2)
+        min_y = -int(ny/2)
 
-        return x_int, y_int, z_int
+        my_x = arr = np.arange(min_x, min_x + nx)
+        my_y = arr = np.arange(min_y, min_y + ny)
+        my_z = arr = np.arange(0, -nz, -1)
 
-    def _get_root_segment_idx(self, segment, nodes, x_int, y_int, z_int):
+        return my_x, my_y, my_z
+
+    def _get_root_segment_idx(self, segment, nodes, x_int, y_int, z_int, res):
         """
         calculates the indexes in the mri grid, where the root segment is located
 
@@ -241,8 +242,8 @@ class Virtual_MRI:
         x_int, y_int, z_int: coordinates of the mri grid
         """
         n1, n2 = nodes[segment.x], nodes[segment.y]
-        (x1, y1, z1) = [np.around(n1.x/self.resx), np.around(n1.y/self.resy), np.around(n1.z/self.resz)]
-        (x2, y2, z2) = [np.around(n2.x/self.resx), np.around(n2.y/self.resy), np.around(n2.z/self.resz)]
+        (x1, y1, z1) = [np.around(n1.x/res['x']), np.around(n1.y/res['y']), np.around(n1.z/res['z'])]
+        (x2, y2, z2) = [np.around(n2.x/res['x']), np.around(n2.y/res['y']), np.around(n2.z/res['z'])]
         # contains all points on the segment
         ListOfPoints = np.array(bres3D.Bresenham3D(x1, y1, z1, x2, y2, z2))
 
@@ -258,6 +259,12 @@ class Virtual_MRI:
                 a = [int(xidx[0][0]),int(yidx[0][0]),int(zidx[0][0])]
                 allidx_.append(a)
 
+        if (len(allidx_) < 1):
+            print("no idx found")
+            print("ListOfPoints", ListOfPoints)
+            print("x1, y1, z1", x1, y1, z1)
+            print("x2, y2, z2", x2, y2, z2)
+        
         return np.array(allidx_)
     
     def ellipsoid(self, radius_x, radius_y, radius_z, dtype=np.int16):
@@ -271,6 +278,8 @@ class Virtual_MRI:
         Returns:
             - A 3D numpy array representing the ellipsoidal structuring element.
         """
+
+
         # Create a 3D grid of coordinates
         x, y, z = np.ogrid[-radius_x:radius_x+1, -radius_y:radius_y+1, -radius_z:radius_z+1]
         
@@ -278,8 +287,8 @@ class Virtual_MRI:
         ellipsoid = (x/radius_x)**2 + (y/radius_y)**2 + (z/radius_z)**2 <= 1
         
         return ellipsoid.astype(dtype)
-    
-    def _get_binary_delation_root_segment_idx(self, grid, radius):
+
+    def _get_binary_delation_root_segment_idx(self, grid, radius, res):
         """
         Expands the coordinates where the root segment is located by its radius and returns the indexes of the
         expanded coordinates
@@ -290,15 +299,27 @@ class Virtual_MRI:
         """
         # if radius < 0.1: # TODO: Check if required
         #     radius = 0.1
-        width = int(np.around(radius/self.resx))
-        height = int(np.around(radius/self.resz))
+        width = int(np.around(radius/res['x']))
+        height = int(np.around(radius/res['z']))
+        height = height if height > 0 else 1
+
+
         selem = self.ellipsoid(width, width, height)
         # Czero1 contains only 0 and 1 and binary dilation takes the struct and performs dilation on the 1s which
         # are on in Czero1. So in this case a ball is put around all ones and the zeros are set to one, when they
         # are in the ball. 
+        # TODO: decide
+        # kernel_size = 5
+        # kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2*height+1, 2*width+1))
+        # print("kernel_width", 2*width+1)
+        # print("kernel_height", 2*height+1)
+        # grid = self.dilate_3d_using_all_views(grid, width+1, width+1, height+1)
+
+        # grid = self.line_to_tube_2(grid, 5)
+
         grid = ndimage.binary_dilation(grid, structure = selem).astype(grid.dtype)
-        grid = np.reshape(grid, (self.nx*self.ny*self.nz))
-        idx = np.where(grid==1)
+        # grid = np.reshape(grid, (dims['x']*dims['y']*dims['z']))
+        idx = np.argwhere(grid==1)
 
         return idx
     
@@ -368,7 +389,7 @@ class Virtual_MRI:
         sys.stdout.write(f"\rProgress: [{arrow + spaces}] {int(progress*100)}% {info}")
         sys.stdout.flush()  # This is important to ensure the progress is updated
     
-    def _add_root_to_v_mri(self, mri_grid, xx, yy, zz, root_signal_intensity):
+    def _add_root_to_v_mri(self, mri_grid, xx, yy, zz, root_signal_intensity, res):
         """
         adds the root to the MRI grid by adding a white color, where the root is located and a light
         grey depending on how much of a root segment is present in a cell. 
@@ -376,6 +397,8 @@ class Virtual_MRI:
         Args:
         mri_grid: 3d (numpy) array of the root container with dimensions (nx, ny, nz)
         xx, yy, zz: respective coordinate in the root container
+        root_signal_intensity: intensity of the root signal
+        res: resolution of the MRI
         """
 
         nodes = self.segana.nodes
@@ -384,7 +407,7 @@ class Virtual_MRI:
 
         idxrad = np.argsort(radius)
 
-        cellvol = self.resx*self.resy*self.resz
+        cellvol = res['x']*res['y']*res['z']
 
         iteration = 1
         total_segs = len(segs)
@@ -392,34 +415,68 @@ class Virtual_MRI:
             # The list allidx will eventually contain the discretized 3D indices in the grid for all the points 
             # along the segment. This part of simulation/visualization is discretizing the root system into a 3D grid, 
             # and allidx_ is helping you keep track of which grid cells are occupied by the segment.
-            allidx = self._get_root_segment_idx(segs[idxrad[k]], nodes, xx, yy, zz)
+            allidx = self._get_root_segment_idx(segs[idxrad[k]], nodes, xx, yy, zz, res)
+
+            if len(allidx) < 1:
+                print("warning: root segment out of scope")
 
             self._print_progress_bar(iteration, len(segs), info="Adding root segment {} of {}".format(iteration, total_segs))
 
-            mri_grid_zero = np.zeros((self.nx, self.ny, self.nz))
+            mri_grid_zero = np.zeros(mri_grid.shape)
             # checks if the diameter is greater than the resolution
-            if (np.round(radius[idxrad[k]]*2/self.resx)>1):
-                if (len(allidx)):
+            if (np.round(radius[idxrad[k]]*2/res['x'])>1):
+                if len(allidx) > 0:
                     # set the element of the root to 1, indicating that it is present
                     mri_grid_zero[allidx[:,0], allidx[:,1], allidx[:,2]] = 1
-                mri_grid_segment = mri_grid_zero
-                # idx contains the indices of the binary dilation across the root segment
-                idx = self._get_binary_delation_root_segment_idx(mri_grid_segment, radius[idxrad[k]])
+                    mri_grid_zero
+                    # idx contains the indices of the binary dilation across the root segment
 
-                mri_grid[idx[0]] = root_signal_intensity
+                    # Extracting min and max along each dimension
+                    min_x, min_y, min_z = np.min(allidx, axis=0)
+                    max_x, max_y, max_z = np.max(allidx, axis=0)
+
+                    # Define the extension of the sub-volume which is by the radius lager
+                    n = int(radius[idxrad[k]]/res['x']+1)
+
+                    # Adjusting the min and max values, while ensuring they remain within the valid range of the array
+                    min_x = max(0, min_x - n)
+                    min_y = max(0, min_y - n)
+                    min_z = max(0, min_z - n)
+
+                    max_x = min(mri_grid_zero.shape[0]-1, max_x + n)
+                    max_y = min(mri_grid_zero.shape[1]-1, max_y + n)
+                    max_z = min(mri_grid_zero.shape[2]-1, max_z + n)
+
+                    # Slicing the 3D grid to extract the expanded sub-volume
+                    expanded_sub_volume = mri_grid_zero[min_x:max_x+1, min_y:max_y+1, min_z:max_z+1]
+                    
+                    idx = self._get_binary_delation_root_segment_idx(expanded_sub_volume, radius[idxrad[k]], res)
+                    for x,y,z in idx:
+                        expanded_sub_volume[x,y,z] = root_signal_intensity
+
+                    mri_grid_zero[min_x:max_x+1, min_y:max_y+1, min_z:max_z+1] = expanded_sub_volume
+
+                    idx = np.argwhere(mri_grid_zero==root_signal_intensity)
+
+                    for x,y,z in idx:
+                        mri_grid[x,y,z] = root_signal_intensity
+
             else:
-                estlen = self.resx # estimated segment length within voxel: very rough estimation
+                estlen = res['x'] # estimated segment length within voxel: very rough estimation
                 rootvol = radius[idxrad[k]]**2*math.pi*estlen
+
+                # set how the intensity of the root signal should be
                 frac = rootvol/cellvol
                 if frac > 1:
                     frac = 1
-                if (len(allidx)):
+                # sets
+                if len(allidx) > 0:
                     mri_grid_zero[allidx[:,0], allidx[:,1], allidx[:,2]] = 1
 
                 # set root voxels to the appropriate value
-                mri_grid_zero = np.reshape(mri_grid_zero, (self.nx*self.ny*self.nz))
-                idx = np.where(mri_grid_zero==1)
-                mri_grid[idx[0]] = int(np.floor(frac*self.max_signal_intensity))
+                idx = np.argwhere(mri_grid_zero==1)
+                for x,y,z in idx:
+                    mri_grid[x,y,z] = int(np.floor(frac*root_signal_intensity))
 
             iteration += 1
 
@@ -442,66 +499,70 @@ class Virtual_MRI:
             return 0
         else:
             return np.mean(non_zero)
+        
 
-    def create_virtual_root_mri(self, mri_output_path, add_noise=True):
+    def create_virtual_root_mri(self, mri_output_path, add_noise=True, label=False):
         """
         creates a virtual MRI for the given root system with simulating noise based on the water content of the soil.
 
         Args:
         mri_output_path: path to the folder, where the generated virtual MRI should be saved
+        add_noise: boolean, if True, noise, scaled by the water intensity is added to the MRI
+        label: boolean, if True, the MRI is saved as a numpy file with values 0 and 1, where 1 indicates the presence of a root
+                        if Flase, the MRI is saved as a raw file similar to a real MRI
         """
 
+        # xx etc. are lists of consecutive values, which represent the coordinates of the MRI when scaled with
+        # the resolution
+        xx, yy, zz = self._get_dimensions_container_array(self.nx, self.ny, self.nz, self.resx, self.resy, self.resz, self.width)
+
+        # create a 3d array with the dimensions of the MRI
+        mri_grid = np.zeros((self.nx, self.ny, self.nz))
+
+        # set dictionaries with the resolution and pass them to the function, which adds the root to the MRI
+        dict_res = {"x": self.resx, "y": self.resy, "z": self.resz}
+        self._add_root_to_v_mri(mri_grid, xx, yy, zz, self.max_signal_intensity, dict_res)
+
+        # create a grid of the actual coordinates, represented by each voxel of the MRI
         X = np.linspace(-1*self.width, -1*self.width+self.nx*self.resx, self.nx+1)
         Y = np.linspace(-1*self.width, -1*self.width+self.ny*self.resy, self.ny+1)
-        Z = np.linspace(0, 0-self.nz*self.resz, self.nz+1)
+        Z = np.linspace(0, -self.nz*self.resz, self.nz+1)
 
-        water_grid = self._get_grid_water_content(X, Y, Z)
-        avg_water_content = self._get_avg_numpy_array_non_zero(water_grid)
-        avg_water_percent = int(avg_water_content*100)
+        # calculate the water content of the grid
+        if not label:
+            water_grid = self._get_grid_water_content(X, Y, Z)
+            # scale the root signal intensity slightly by the water content (max intensity influence is a
+            # reduction by 30%)
+            min_scale_root = 0.7
+            max_scale_root = 1
+            scaled_array_root = water_grid * (max_scale_root - min_scale_root) + min_scale_root
+            mri_grid = mri_grid * scaled_array_root
 
-        # set the root signal strength depending on the water content of the soil but with some random noise
-        # maximum value is 30000 and min 5000
-        random_value = random.uniform(0, 0.2)
+        # add noise scaled by the water content in the soil to make it more realistic (more noise where more
+        # water is present)
+        if add_noise and not label:
+            # add noise to the MRI scaled by the water content
+            mri_grid = self._add_noise_to_grid(mri_grid, water_grid)        
 
-        # water_scale = (random.randint(avg_water_percent, avg_water_percent+20))/100
-        # root_signal_strength = water_scale * self.max_root_signal_intensity
-        # root_signal_strength = max(root_signal_strength, 5000)
-        # root_signal_strength = min(root_signal_strength, 30000)
-        # print("root_signal_strength", root_signal_strength)
-
-        xx, yy, zz = self._get_dimensions_container_array(X, Y, Z)
-        mri_grid = np.zeros((self.nx*self.ny*self.nz))
-
-        self._add_root_to_v_mri(mri_grid, xx, yy, zz, self.max_signal_intensity)
-
-        self.root_idx = np.where(mri_grid != 0, 1, 0)
-
-        root_idx_grid = np.reshape(self.root_idx, (self.nx, self.ny, self.nz))
-        mri_grid = np.reshape(mri_grid, (self.nx, self.ny, self.nz))
-        #np.multiply(mri_grid, water_grid+random_value, out=mri_grid)
-
-        # add noise scaled by the water content in the soil
-        if add_noise:
-            mri_final_grid = self._add_noise_to_grid(mri_grid, water_grid)
-        else:
-            mri_final_grid = mri_grid
-        
-        # mri_grid_noise = np.full((self.nx, self.ny, self.nz), 255)
-        
-        # save the mri grid as a raw file (same as the original MRIs)
-        mri_final_grid = np.swapaxes(mri_final_grid, 0, 2)
+        # do the necessary tranformations to the grid, such that it has the same format as an original MRI
+        mri_final_grid = np.swapaxes(mri_grid, 0, 2)
         mri_final_grid = mri_final_grid[::-1]
         root_system_name = self.rsml_path.split('/')[-1].split('.')[0]
         filename = mri_output_path+'/'+root_system_name+'_SNR_'+str(self.snr)+'_res_'+str(self.nx)+'x'+str(self.ny)+'x'+str(self.nz)
-        mri_final_grid.astype('int16').tofile(filename+".raw")
+
+        # for the labeling save it compressed as a h5 file
+        if label:
+            mri_final_grid[mri_final_grid > 1] = 1
+            with h5py.File(f'{filename}.h5', 'w') as f:
+                f.create_dataset('binary_data', data=mri_final_grid, compression="gzip", compression_opts=9)
+        else:
+            mri_final_grid.astype('int16').tofile(filename+".raw")
+            
         print(filename)
-
+        
         # create a file containing the root idx (label where the root is present in the original MRI)
-        root_idx_grid = np.swapaxes(root_idx_grid, 0, 2)
-        root_idx_grid = root_idx_grid[::-1]
-        root_idx_grid.astype('int16').tofile(f"{filename}_root_idx"+".raw")
-
-        return mri_final_grid, filename, root_idx_grid
+       
+        return mri_final_grid, filename
 
 # Example usage:
 # rssim = RSSim("Anagallis_femina_Leitner_2010", "../../../../data/generated/root_systems", 3, 20)
@@ -510,3 +571,4 @@ class Virtual_MRI:
 # for i in range(len(anas)):
 #     my_vi = Virtual_MRI(anas[i], "../../../data/generated/{}".format(filenames[i]), "../../../../soil_simulation_data/generated_20_-90.8_7.1.vtu", "../../../data/generated/virtual_mri")
 #     my_vi.create_virtual_root_mri()
+

@@ -9,7 +9,7 @@ import meshio
 
 class MeshGenerator:
     def __init__(self, path, center=(0.0, 0.0, 0.0), radius=0.032, mesh_size=0.005, 
-                 depth=0.21, num_layers=20):
+                 depth=0.22, num_layers=20):
         """
         Generates a mesh for a cylinder with a specified radius, height and resolution (mesh size).
 

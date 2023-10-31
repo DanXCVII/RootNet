@@ -78,6 +78,7 @@ class RootSystemSimulation:
             print(f"{self.root_save_dir}/{filename}.rsml")
 
             self.rs.write(f"{self.root_save_dir}/{filename}.rsml")
+            self.rs.write(f"{self.root_save_dir}/{filename}.vtp")
 
             # os.remove(f"./{filename}.pvd")
 

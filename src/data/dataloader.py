@@ -16,18 +16,15 @@ class Dataset(torch.utils.data.Dataset):
         'Denotes the total number of samples'
         return self.num_items
 
-  def __getitem__(self, t):
+  def __getitem__(self, index):
         'Generates one sample of data'
         # Select sample
-        generator = DataGenerator()
-        generator.generate_sample()
-
+        
+        
         # Load data and get label
 
-
-
 # Define some dummy data
-params = {'batch_size': 64,
+params = {'batch_size': 32,
           'shuffle': True,
           'num_workers': 1}
 
