@@ -8,6 +8,7 @@ sys.path.append(
 sys.path.append("/Users/daniel/Desktop/FZJ/CPlantBox/DUMUX/CPlantBox/src")
 
 import plantbox as pb
+import rsml.rsml_reader as rsml_reader
 import visualisation.vtk_plot as vp
 import numpy as np
 import functional.bresenham3D as bres3D
@@ -51,10 +52,10 @@ def get_min_max_numpy(array):
 class Virtual_MRI:
     def __init__(
         self,
-        seganalyzer,
         rsml_path,
         vtu_path,
         perlin_noise_intensity,
+        seganalyzer=None,
         width=3,
         depth=20,
         resolution=[0.027, 0.027, 0.1],
@@ -80,7 +81,10 @@ class Virtual_MRI:
         self.rsml_path = rsml_path
         self.vtu_path = vtu_path
         self.perlin_noise_intensity = perlin_noise_intensity
-        self.segana = seganalyzer
+        if seganalyzer is None:
+            self.segana = self._get_root_data_from_rsml(rsml_path)
+        else:
+            self.segana = seganalyzer
         self.snr = snr
         self.water_intensity_grid = None
 
@@ -203,47 +207,27 @@ class Virtual_MRI:
             visited.add(i)
         return True
 
-    # TODO: remove if not needed anymore - Code for reading a rsml file (currently not working)
+    def _get_root_data_from_rsml(self, rsml_path) -> pb.SegmentAnalyser:
+        """
+        Gets the pb.SegmentAnalyser for the given rsml file
 
-    # def _get_root_data_from_rsml(self):
-    #     rsml.read_rsml(self.rsml_path)
-    #     polylines, props, functions = rsml.read_rsml(self.rsml_path)
+        Args:
+        - rsml_path: path to the rsml file
 
-    #     nodes, segments = rsml.get_segments(polylines, props)
-    #     keys = list(props.keys())
-    #     print("keys", keys)
-    #     radius = [props["diameter"][i]/2 for i in range(len(props["diameter"]))]
+        Returns:
+        - segana: pb.SegmentAnalyser
+        """
+        polylines, properties, functions, _ = rsml_reader.read_rsml(rsml_path)
 
-    #     segCTs = np.zeros(len(radius))
+        nodes, segs = rsml_reader.get_segments(polylines, properties)
+        segs_ = [pb.Vector2i(s[0], s[1]) for s in segs]  # convert to CPlantBox types
+        nodes_ = [pb.Vector3d(n[0], n[1], n[2]) for n in nodes]
+        segRadii = np.zeros((segs.shape[0], 1))  # convert to paramter per segment
+        segCTs = np.zeros((segs.shape[0], 1))
 
-    #     ana = pb.SegmentAnalyser(nodes, segments, segCTs, radius)
-    #     # nodes = ana.nodes
-    #     # segments = ana.segments
-    #     # radius = ana.getParameter("radius")
+        segana = pb.SegmentAnalyser(nodes_, segs_, segCTs, segRadii)
 
-    #     # print("nodes", nodes[:3])
-    #     # print("segments", segments[:3])
-    #     # print("radius", radius[:3])
-
-    #     segments = [[int(item) for item in sublist] for sublist in segments]
-
-    #     # list keys of props
-
-    #     # devide the values for "diameter" by 2 and save them in the list radius
-    #     radius = [props["diameter"][i]/2 for i in range(len(props["diameter"]))]
-    #     length = props["length"]
-
-    #     # print("nodes", nodes[:3])
-    #     # print("segments", segments[-3:-1])
-    #     # print("radius", radius[:3])
-    #     # print("length", length[:3])
-
-    #     # print("nodes", len(nodes))
-    #     # print("segments", len(segments))
-    #     # print("radius", len(radius))
-    #     # print("length", len(length))
-
-    #     return nodes, segments, radius, length
+        return segana
 
     def _get_dimensions_container_array(self, nx, ny, nz) -> tuple[int, int, int]:
         """

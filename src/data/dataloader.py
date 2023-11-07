@@ -266,7 +266,9 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
     epoch_loss = 0
     step = 0
     epoch_iterator = tqdm(
-        train_loader, desc="Training (X / X Steps) (loss=X.X)", dynamic_ncols=True
+        train_loader,
+        desc="Training (X / X Steps) (loss=X.X)",
+        dynamic_ncols=True,
     )
     for step, batch in enumerate(epoch_iterator):
         step += 1
