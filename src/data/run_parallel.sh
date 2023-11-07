@@ -12,7 +12,7 @@ run_script() {
     done
 }
 
-for i in {1..3}; do
+for i in {1..6}; do
     run_script &
 done
 

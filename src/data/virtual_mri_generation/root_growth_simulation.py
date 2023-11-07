@@ -1,4 +1,5 @@
 import sys
+
 sys.path.append("../../../../../../../")
 sys.path.append("../../../../../../../src/")
 
@@ -9,8 +10,18 @@ import random
 import os
 import copy
 
+
 class RootSystemSimulation:
-    def __init__(self, model_name, root_save_dir, soil_width, soil_depth, model_path="../../../../../../../modelparameter/structural/rootsystem", container_type="soilcore"):
+    def __init__(
+        self,
+        model_name,
+        root_save_dir,
+        soil_width,
+        soil_depth,
+        seed_pos=(0, 0, 0),
+        model_path="../../../../../../../modelparameter/structural/rootsystem",
+        container_type="soilcore",
+    ):
         """
         Simulates the growth of a root system for a given number of days and the root container parameters.
 
@@ -29,6 +40,7 @@ class RootSystemSimulation:
         self.container_type = container_type
         self.soil_width = soil_width
         self.soil_depth = soil_depth
+        self.seed_pos = seed_pos
         self._set_geometry()
 
     def _set_geometry(self):
@@ -36,29 +48,46 @@ class RootSystemSimulation:
         Sets the geometry for the root system based on the container type.
         """
         if self.container_type == "soilcore":
-            self.geometry = pb.SDF_PlantContainer(self.soil_width, self.soil_width, self.soil_depth, False)
+            self.geometry = pb.SDF_PlantContainer(
+                self.soil_width, self.soil_width, self.soil_depth, False
+            )
         elif self.container_type == "rhizotron":
-            self.geometry = pb.SDF_PlantBox(self.soil_width, self.soil_width, self.soil_depth)
+            self.geometry = pb.SDF_PlantBox(
+                self.soil_width, self.soil_width, self.soil_depth
+            )
         else:
             raise ValueError("Invalid container type.")
         self.rs.setGeometry(self.geometry)
-    
-    def run_simulation(self, days=[10, 20], seed=np.nan):
+
+    def run_simulation(self, days=[10, 20], seed=None) -> tuple[list, list]:
         """
         Runs the root system simulation for a given number of days. If multiple days are given,
         the simulation of the same plant will continue.
 
-        Parameters:
+        Args:
         - days (int): Number of days to run the simulation.
+        - seed (int): Seed for the random number generator. Default is None.
+
+        Returns:
+        - analist (list): List of SegmentAnalyser objects for each day.
+        - filenames (list): List of the filenames of the rsml files for each day.
         """
 
         self.rs.readParameters(self.model_path + "/" + self.model_name + ".xml")
         print(self.model_path + "/" + self.model_name + ".xml")
-        
-        if not np.isnan(seed):
+
+        if not seed is None:
             self.rs.setSeed(seed)
         else:
             self.rs.setSeed(random.randint(0, 100000))
+
+        srp = pb.SeedRandomParameter(self.rs)
+        srp.seedPos = pb.Vector3d(
+            self.seed_pos[0],
+            self.seed_pos[1],
+            self.seed_pos[2],
+        )
+        self.rs.setRootSystemParameter(srp)
 
         self.rs.initialize()
 
@@ -67,7 +96,7 @@ class RootSystemSimulation:
 
         for day in days:
             self.rs.simulate(day)
-            
+
             ana = pb.SegmentAnalyser(self.rs)
             analist.append(ana)
 
@@ -83,9 +112,10 @@ class RootSystemSimulation:
             # os.remove(f"./{filename}.pvd")
 
         return analist, filenames
-        
+
         # Plot results
         # vp.plot_roots(self.rs, "type")
+
 
 # Example Usage
 # sim = RootSystemSimulation("Anagallis_femina_Leitner_2010", "../../../data/generated/root_systems", 3, 20)

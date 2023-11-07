@@ -4,8 +4,13 @@ Benchmark M1.2 static root system in soil (root hydrualics with Meunier and the 
 also works parallel with mpiexec (slower, due to overhead?)
 """
 import os
-import sys; sys.path.append("../../../../../../.."); sys.path.append("../../../../../../../src/")
-sys.path.append("../../../../../../../dumux-rosi/build-cmake/cpp/python_binding/")  # dumux python binding
+import sys
+
+sys.path.append("../../../../../../..")
+sys.path.append("../../../../../../../src/")
+sys.path.append(
+    "../../../../../../../dumux-rosi/build-cmake/cpp/python_binding/"
+)  # dumux python binding
 sys.path.append("../../../../../../../dumux-rosi/python/modules/")  # python wrappers
 
 import plantbox as pb
@@ -23,15 +28,29 @@ from math import *
 import numpy as np
 import matplotlib.pyplot as plt
 import timeit
-from mpi4py import MPI; comm = MPI.COMM_WORLD; rank = comm.Get_rank()
+from mpi4py import MPI
+
+comm = MPI.COMM_WORLD
+rank = comm.Get_rank()
 
 
 def sinusoidal(t):
-    return np.sin(2. * pi * np.array(t) - 0.5 * pi) + 1.
+    return np.sin(2.0 * pi * np.array(t) - 0.5 * pi) + 1.0
 
 
 class SoilWaterSimulation:
-    def __init__(self, mesh_path, rsml_path, output_path, soil_type, initial=-659.8 + 10, trans=6.4, wilting_point=-15000, age_dependent=False, sim_time=7.1):
+    def __init__(
+        self,
+        mesh_path,
+        rsml_path,
+        output_path,
+        soil_type,
+        initial=-659.8 + 10,
+        trans=6.4,
+        wilting_point=-15000,
+        age_dependent=False,
+        sim_time=7.1,
+    ):
         """
         Simulates the water movement in the soil for a given root system and soil properties.
 
@@ -48,7 +67,7 @@ class SoilWaterSimulation:
         - sim_time (float): Simulation time. Default is 7.1.
         - age_dependent (bool): If True, the root conductivities will be age dependent. Default is False.
         """
-        
+
         self.mesh_path = mesh_path
         self.rsml_path = rsml_path
         self.output_path = output_path
@@ -59,7 +78,7 @@ class SoilWaterSimulation:
         self.wilting_point = wilting_point
         self.sim_time = sim_time
         self.age_dependent = age_dependent
-        
+
         if wilting_point is None:
             if self.soil_type == "sand":
                 self.wilting_point = -2500
@@ -68,9 +87,18 @@ class SoilWaterSimulation:
             elif self.soil_type == "clay":
                 self.wilting_point = -15000
 
-    def _sinusoidal(self, t):
-        return np.sin(2. * pi * np.array(t) - 0.5 * pi) + 1.
-    
+    def _sinusoidal(self, t) -> float:
+        """
+        Calculates the value of a sinusoidal function for a given time.
+
+        Args:
+        - t (float): Time.
+
+        Returns:
+        - float: Value of the sinusoidal function for the given time.
+        """
+        return np.sin(2.0 * pi * np.array(t) - 0.5 * pi) + 1.0
+
     def _set_ground_type(self, soil_type):
         """
         Sets the ground type for the soil water simulation.
@@ -88,19 +116,21 @@ class SoilWaterSimulation:
         elif soil_type == "clay":
             self.soil_type_params = clay
             self.dt = 360
-    
+
     def _init_soil_model(self):
         sp = vg.Parameters(self.soil_type_params)  # for debugging
         self.s = RichardsWrapper(RichardsUG())
         self.s.initialize()
-        self.s.readGrid(self.mesh_path)   # [cm]
+        self.s.readGrid(self.mesh_path)  # [cm]
         self.s.setHomogeneousIC(self.initial, True)  # cm pressure head, equilibrium
         self.s.setTopBC("noFlux")
         self.s.setBotBC("noFlux")
         self.s.setVGParameters([self.soil_type_params])
         self.s.setParameter("Newton.EnableChop", "True")
         self.s.setParameter("Newton.EnableAbsoluteResidualCriterion", "True")
-        self.s.setParameter("Soil.SourceSlope", "1000")  # turns regularisation of the source term on, will change the shape of actual transpiration...
+        self.s.setParameter(
+            "Soil.SourceSlope", "1000"
+        )  # turns regularisation of the source term on, will change the shape of actual transpiration...
         self.s.initializeProblem()
         self.s.setCriticalPressure(self.wilting_point)
 
@@ -109,20 +139,28 @@ class SoilWaterSimulation:
         init_conductivities(self.r, self.age_dependent)
 
     def _print_progress_bar(self, iteration, total, info="", bar_length=50):
-        progress = (iteration / total)
-        arrow = '=' * int(round(progress * bar_length)-1) + '>'
-        spaces = ' ' * (bar_length - len(arrow))
-        
+        progress = iteration / total
+        arrow = "=" * int(round(progress * bar_length) - 1) + ">"
+        spaces = " " * (bar_length - len(arrow))
+
         sys.stdout.write(f"\rProgress: [{arrow + spaces}] {int(progress*100)}% {info}")
         sys.stdout.flush()  # This is important to ensure the progress is updated
 
-    def run(self):
+    def run(self) -> str:
+        """
+        Runs the soil water simulation for the given root system and soil properties.
+
+        Returns:
+        - filename (str): Name of the vtu file, containing the soil water simulation data.
+        """
         self._init_soil_model()
         self._init_xylem_model()
 
         """ Coupling (map indices) """
         picker = lambda x, y, z: self.s.pick([x, y, z])
-        cci = picker(self.r.rs.nodes[0].x, self.r.rs.nodes[0].y, self.r.rs.nodes[0].z)  # collar cell index
+        cci = picker(
+            self.r.rs.nodes[0].x, self.r.rs.nodes[0].y, self.r.rs.nodes[0].z
+        )  # collar cell index
         self.r.rs.setSoilGrid(picker)  # maps segment
 
         """ sanity checks """
@@ -138,23 +176,33 @@ class SoilWaterSimulation:
         x_, y_, z_ = [], [], []
         sink1d = []
         sx = self.s.getSolutionHead()  # inital condition, solverbase.py
-        dt = self.dt / (24 * 3600) # seconds divided by rest (don't change rest) # 120 sand, 360 loam, clay # coupling zu groß wenns oszilliert # sand -100 , 15sec
+        dt = self.dt / (
+            24 * 3600
+        )  # seconds divided by rest (don't change rest) # 120 sand, 360 loam, clay # coupling zu groß wenns oszilliert # sand -100 , 15sec
         skip = 1
 
         N = round(self.sim_time / dt)
-        t = 0.
+        t = 0.0
         run_number = 0
         for i in range(0, N):
-
             if rank == 0:  # Root part is not parallel
-
-                rx = self.r.solve(rs_age + t, -self.trans * sinusoidal(t), 0., sx, True, self.wilting_point, [])  # xylem_flux.py, cells = True
-                fluxes = self.r.soilFluxes(rs_age + t, rx, sx, False)  # class XylemFlux is defined in MappedOrganism.h, approx = True
+                rx = self.r.solve(
+                    rs_age + t,
+                    -self.trans * sinusoidal(t),
+                    0.0,
+                    sx,
+                    True,
+                    self.wilting_point,
+                    [],
+                )  # xylem_flux.py, cells = True
+                fluxes = self.r.soilFluxes(
+                    rs_age + t, rx, sx, False
+                )  # class XylemFlux is defined in MappedOrganism.h, approx = True
 
             else:
                 fluxes = None
 
-            fluxes = comm.bcast(fluxes, root = 0)  # Soil part runs parallel
+            fluxes = comm.bcast(fluxes, root=0)  # Soil part runs parallel
 
             water = self.s.getWaterVolume()
             self.s.setSource(fluxes.copy())  # richards.py
@@ -169,7 +217,7 @@ class SoilWaterSimulation:
                 max_sx = np.max(sx)
                 max_rx = np.max(rx)
                 x_.append(t)
-                sum_flux = 0.
+                sum_flux = 0.0
                 for f in fluxes.values():
                     sum_flux += f
                 # print("Summed fluxes ", sum_flux, "= collar flux", self.r.collar_flux(rs_age + t, rx, sx), "= prescribed", -self.trans * sinusoidal(t))
@@ -180,32 +228,55 @@ class SoilWaterSimulation:
 
                 collar_flux = round(self.r.collar_flux(rs_age + t, rx, sx)[0], 3)
                 prescribed = round(-self.trans * sinusoidal(t), 3)
-                self._print_progress_bar(i+1, N, info=f"collar flux: {collar_flux} | {prescribed} :prescribed")
+                self._print_progress_bar(
+                    i + 1,
+                    N,
+                    info=f"collar flux: {collar_flux} | {prescribed} :prescribed",
+                )
 
                 # n = round(float(i) / float(N) * 100.)
                 # print("[" + ''.join(["*"]) * n + ''.join([" "]) * (100 - n) + "], soil [{:g}, {:g}] cm, root [{:g}, {:g}] cm, {:g} days {:g}\n"
                 #     .format(min_sx, max_sx, min_rx, max_rx, self.s.simTime, rx[0]))
 
-                run_number +=1
-                
+                run_number += 1
+
             t += dt
 
-        print("\n" + "\033[92m" + # Green text
-          "====================================================" + "\n" +
-          "||       Water Soil Simulation: COMPLETE!        ||" + "\n" +
-          "====================================================" +
-          "\033[0m")  # Reset text color
-        
-        rsml_name = self.rsml_path[self.rsml_path.rfind('/')+1:self.rsml_path.rfind('.')]
+        print(
+            "\n"
+            + "\033[92m"
+            + "===================================================="  # Green text
+            + "\n"
+            + "||       Water Soil Simulation: COMPLETE!        ||"
+            + "\n"
+            + "===================================================="
+            + "\033[0m"
+        )  # Reset text color
+
+        rsml_name = self.rsml_path[
+            self.rsml_path.rfind("/") + 1 : self.rsml_path.rfind(".")
+        ]
         self.s.writeDumuxVTK(rsml_name)
-        
-        filename = str(rsml_name)+"_soil_"+self.soil_type+"_initial"+str(self.initial)+"_sim-time"+str(self.sim_time)+".vtu"
-        os.system("mv "+str(rsml_name)+"-00000.vtu "+self.output_path+"/"+filename)
+
+        filename = (
+            str(rsml_name)
+            + "_soil_"
+            + self.soil_type
+            + "_initial"
+            + str(self.initial)
+            + "_sim-time"
+            + str(self.sim_time)
+            + ".vtu"
+        )
+        os.system(
+            "mv " + str(rsml_name) + "-00000.vtu " + self.output_path + "/" + filename
+        )
 
         print(f"{rsml_name}.pvd")
         os.remove(f"{rsml_name}.pvd")
 
         return filename
+
 
 # Example usage:
 # my_soil_sim = SoilWaterSimulation("../../../data_assets/meshes/cylinder_r_0.03_d_-0.2_res_0.004_loam.msh", "../../../data/generated/root_systems/Anagallis_femina_Leitner_2010_day_12.rsml", "../../../data/generated/", "loam")
