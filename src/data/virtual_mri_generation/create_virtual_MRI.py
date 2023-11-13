@@ -29,8 +29,7 @@ from scipy.ndimage import distance_transform_edt
 import nibabel as nib
 import random
 import os
-import cv2
-import h5py
+from typing import Tuple
 import time
 
 
@@ -58,8 +57,9 @@ class Virtual_MRI:
         seganalyzer=None,
         width=3,
         depth=20,
-        resolution=[0.027, 0.027, 0.1],
+        res_mri=[0.027, 0.027, 0.1],
         snr=3,
+        scale_factor=1,
     ):
         """
         creates a virtual MRI for the given root system with simulating noise based on the water content of the soil.
@@ -73,9 +73,11 @@ class Virtual_MRI:
         - resolution: resolution of the MRI
         - snr: signal to noise ratio
         """
-        self.resx = resolution[0]
-        self.resy = resolution[1]
-        self.resz = resolution[2]
+        self.resx = res_mri[0] / scale_factor
+        self.resy = res_mri[1] / scale_factor
+        self.resz = res_mri[2] / scale_factor
+        self.res_mri = res_mri
+        self.scale_factor = scale_factor
         self.width = width
         self.depth = depth
         self.rsml_path = rsml_path
@@ -229,7 +231,7 @@ class Virtual_MRI:
 
         return segana
 
-    def _get_dimensions_container_array(self, nx, ny, nz) -> tuple[int, int, int]:
+    def _get_dimensions_container_array(self, nx, ny, nz) -> Tuple[int, int, int]:
         """
         creates the dimensions of the container array, which must consist of consecutive values for each pixel
         representing a gray intensity value for the MRI
@@ -392,9 +394,7 @@ class Virtual_MRI:
             self.vtu_path, resolution=[self.resx, self.resy, self.resz]
         )
 
-        _, grid_data = interpolator.process(
-            interpolating_coords=[X[:-1], Y[:-1], Z[:-1]]
-        )
+        _, grid_data = interpolator.process(interpolating_coords=[X, Y, Z])
 
         water_intensity_grid = np.nan_to_num(grid_data, nan=0)
         water_intensity_grid = water_intensity_grid.reshape(self.nx, self.ny, self.nz)
@@ -578,8 +578,11 @@ class Virtual_MRI:
         nib.save(img, filename)
 
     def create_virtual_root_mri(
-        self, mri_output_path, add_noise=True, label=False
-    ) -> tuple[np.array, int]:
+        self,
+        mri_output_path,
+        add_noise=True,
+        label=False,
+    ) -> Tuple[np.array, int]:
         """
         creates a virtual MRI for the given root system with simulating noise based on the water content of the soil.
 
@@ -647,6 +650,11 @@ class Virtual_MRI:
             mri_grid = self._add_noise_to_grid(mri_grid, water_grid)
 
         # do the necessary tranformations to the grid, such that it has the same format as an original MRI
+        nx = int(self.width * 2 / self.resx) * self.scale_factor
+        ny = int(self.width * 2 / self.resy) * self.scale_factor
+        nz = int(self.depth / self.resz) * self.scale_factor
+
+        mri_final_grid = mri_grid[:nx, :ny, :nz]
         mri_final_grid = np.swapaxes(mri_grid, 0, 2)
         mri_final_grid = mri_final_grid[::-1]
         root_system_name = self.rsml_path.split("/")[-1].split(".")[0]

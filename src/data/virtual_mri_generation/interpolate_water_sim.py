@@ -3,6 +3,7 @@ import vtk
 from scipy.interpolate import LinearNDInterpolator
 import SimpleITK as sitk
 import time
+from typing import Tuple
 
 from vtk.util.numpy_support import vtk_to_numpy
 import matplotlib.pyplot as plt
@@ -55,7 +56,7 @@ class VTUInterpolatedGrid:
         ).reshape(-1, 8)
         self.cell_data = vtk_to_numpy(self.unstructured_grid.GetCellData().GetArray(1))
 
-    def _get_cylindar_surface_data(self) -> tuple[np.ndarray, np.ndarray]:
+    def _get_cylindar_surface_data(self) -> Tuple[np.ndarray, np.ndarray]:
         """
         Calculates the datapoints of the mesh spanning the surface of the cylinder and the associated data values
         which are averaged over the cells that use the point.

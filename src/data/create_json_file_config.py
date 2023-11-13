@@ -82,6 +82,9 @@ class CreateJsonFileConfig:
         """
         Creates a config file for the deep learning model for which the necessary required config is found in the
         constructor.
+
+        Returns:
+        - filename (str): Filename of the config file.
         """
         training_files = self._find_files(
             self.data_dir + self.training_dir,
@@ -119,10 +122,10 @@ class CreateJsonFileConfig:
 
         config_dict["numTraining"] = len(config_dict["training"])
         config_dict["numTest"] = len(config_dict["test"])
-
-        with open("data_config.json", "w") as json_file:
+        
+        filename = "data_config.json"
+        with open(filename, "w") as json_file:
             json.dump(config_dict, json_file, indent=4)
 
+        return config_dict
 
-myCreateJsonFileConfig = CreateJsonFileConfig()
-myCreateJsonFileConfig.create_config()

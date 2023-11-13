@@ -9,6 +9,7 @@ import numpy as np
 import random
 import os
 import copy
+from typing import Tuple
 
 
 class RootSystemSimulation:
@@ -59,7 +60,7 @@ class RootSystemSimulation:
             raise ValueError("Invalid container type.")
         self.rs.setGeometry(self.geometry)
 
-    def run_simulation(self, days=[10, 20], seed=None) -> tuple[list, list]:
+    def run_simulation(self, days=[10, 20], seed=None) -> Tuple[list, list]:
         """
         Runs the root system simulation for a given number of days. If multiple days are given,
         the simulation of the same plant will continue.

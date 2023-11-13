@@ -15,7 +15,6 @@ class SingleDeconv3DBlock(nn.Module):
     def forward(self, x):
         return self.block(x)
 
-
 class SingleConv3DBlock(nn.Module):
     def __init__(self, in_planes, out_planes, kernel_size):
         super().__init__()

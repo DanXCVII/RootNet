@@ -295,44 +295,49 @@ class DataGenerator:
             vtu_path,
             perlin_noise_intensity,
             seganalyzer=seganalyzer,
-            resolution=[0.027, 0.027, 0.1],
+            res_mri=[0.027, 0.027, 0.1],
             depth=depth + 0.2,
             width=width + 0.1,
         )
-        grid_values, filename = my_vi.create_virtual_root_mri(data_path, add_noise=True)
+        grid_values, filename = my_vi.create_virtual_root_mri(
+            data_path,
+            add_noise=True,
+        )
         my_vi.__init__(
             rsml_path,
             vtu_path,
             perlin_noise_intensity,
             seganalyzer=seganalyzer,
-            resolution=[0.027 / 2, 0.027 / 2, 0.1 / 2],
+            res_mri=[0.027, 0.027, 0.1],
             depth=depth + 0.2,
             width=width + 0.1,
+            scale_factor=2,
         )
 
         label_grid_values, filename = my_vi.create_virtual_root_mri(
             data_path,
             add_noise=False,
             label=True,
+            scale_factor=2,
         )
 
 
 generator = DataGenerator("../../data_assets")
-# generator.remove_incomplete_samples("../../data/generated")
-# Generate training data
-generator.generate_samples_grid(
-    data_path="../../data/generated/training",
-    num_samples_per_config=12,
-)
-# Generate validation data
-generator.generate_samples_grid(
-    data_path="../../data/generated/validation",
-    num_samples_per_config=2,
-)
-# Generate test data
-generator.generate_samples_grid(
-    data_path="../../data/generated/test",
-    num_samples_per_config=2,
-)
+generator.remove_incomplete_samples("../../data/generated")
+# # Generate training data
+# generator.generate_samples_grid(
+#     data_path="../../data/generated/training",
+#     num_samples_per_config=12,
+# )
+# # Generate validation data
+# generator.generate_samples_grid(
+#     data_path="../../data/generated/validation",
+#     num_samples_per_config=2,
+# )
+# # Generate test data
+# generator.generate_samples_grid(
+#     data_path="../../data/generated/test",
+#     num_samples_per_config=2,
+# )
 
 # generator.modify_nifti_values("../../data/generated")
