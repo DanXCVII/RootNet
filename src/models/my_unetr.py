@@ -9,21 +9,28 @@ class SingleDeconv3DBlock(nn.Module):
     def __init__(self, in_planes, out_planes):
         super().__init__()
         self.block = nn.ConvTranspose3d(
-            in_planes, out_planes, kernel_size=2, stride=2, padding=0, output_padding=0
+            in_planes,
+            out_planes,
+            kernel_size=2,
+            stride=2,
+            padding=0,
+            output_padding=0,
         )
 
     def forward(self, x):
         return self.block(x)
 
+
 class SingleConv3DBlock(nn.Module):
     def __init__(self, in_planes, out_planes, kernel_size):
         super().__init__()
+        padding = torch.div((kernel_size - 1), 2, rounding_mode='trunc').item()
         self.block = nn.Conv3d(
             in_planes,
             out_planes,
             kernel_size=kernel_size,
             stride=1,
-            padding=((kernel_size - 1) // 2),
+            padding=padding,#(kernel_size - 1) // 2,
         )
 
     def forward(self, x):
@@ -36,7 +43,7 @@ class Conv3DBlock(nn.Module):
         self.block = nn.Sequential(
             SingleConv3DBlock(in_planes, out_planes, kernel_size),
             nn.BatchNorm3d(out_planes),
-            nn.ReLU(True),
+            nn.ReLU(inplace=True), # TODO: True default
         )
 
     def forward(self, x):
@@ -50,7 +57,7 @@ class Deconv3DBlock(nn.Module):
             SingleDeconv3DBlock(in_planes, out_planes),
             SingleConv3DBlock(out_planes, out_planes, kernel_size),
             nn.BatchNorm3d(out_planes),
-            nn.ReLU(True),
+            nn.ReLU(inplace=True), # TODO: True default
         )
 
     def forward(self, x):
@@ -206,7 +213,7 @@ class Transformer(nn.Module):
             input_dim, embed_dim, cube_size, patch_size, dropout
         )
         self.layer = nn.ModuleList()
-        self.encoder_norm = nn.LayerNorm(embed_dim, eps=1e-6)
+        # self.encoder_norm = nn.LayerNorm(embed_dim, eps=1e-6)
         self.extract_layers = extract_layers
         for _ in range(num_layers):
             layer = TransformerBlock(
@@ -231,16 +238,16 @@ class MyUNETR(nn.Module):
         self,
         feature_size=16,
         img_shape=(128, 128, 128),
-        input_dim=4,
-        output_dim=3,
+        in_channels=1,
+        out_channels=3,
         embed_dim=768,
         patch_size=16,
         num_heads=12,
         dropout=0.1,
     ):
         super().__init__()
-        self.input_dim = input_dim
-        self.output_dim = output_dim
+        self.input_dim = in_channels
+        self.output_dim = out_channels
         self.embed_dim = embed_dim
         self.img_shape = img_shape
         self.patch_size = patch_size
@@ -253,7 +260,7 @@ class MyUNETR(nn.Module):
 
         # Transformer Encoder
         self.transformer = Transformer(
-            input_dim,
+            in_channels,
             embed_dim,
             img_shape,
             patch_size,
@@ -267,54 +274,55 @@ class MyUNETR(nn.Module):
 
         # U-Net Decoder
         self.decoder0 = nn.Sequential(
-            Conv3DBlock(input_dim, feature_size * 2, 3),
-            Conv3DBlock(feature_size * 2, feature_size * 4, 3),
+            Conv3DBlock(in_channels, feature_size, 3),
+            Conv3DBlock(feature_size, feature_size * 2, 3),
         )
 
         self.decoder3 = nn.Sequential(
-            Deconv3DBlock(embed_dim, feature_size * 32),
-            Deconv3DBlock(feature_size * 32, feature_size * 16),
+            Deconv3DBlock(embed_dim, feature_size * 16),
             Deconv3DBlock(feature_size * 16, feature_size * 8),
+            Deconv3DBlock(feature_size * 8, feature_size * 4),
         )
 
         self.decoder6 = nn.Sequential(
-            Deconv3DBlock(embed_dim, feature_size * 32),
-            Deconv3DBlock(feature_size * 32, feature_size * 16),
+            Deconv3DBlock(embed_dim, feature_size * 16),
+            Deconv3DBlock(feature_size * 16, feature_size * 8),
         )
 
-        self.decoder9 = Deconv3DBlock(embed_dim, feature_size * 32)
+        self.decoder9 = Deconv3DBlock(embed_dim, feature_size * 16)
 
-        self.decoder12_upsampler = SingleDeconv3DBlock(embed_dim, feature_size * 32)
+        self.decoder12_upsampler = SingleDeconv3DBlock(embed_dim, feature_size * 16)
 
         self.decoder9_upsampler = nn.Sequential(
-            Conv3DBlock(1024, feature_size * 32),
-            Conv3DBlock(feature_size * 32, feature_size * 32),
-            Conv3DBlock(feature_size * 32, feature_size * 32),
-            SingleDeconv3DBlock(feature_size * 32, feature_size * 16),
-        )
-
-        self.decoder6_upsampler = nn.Sequential(
             Conv3DBlock(feature_size * 32, feature_size * 16),
+            Conv3DBlock(feature_size * 16, feature_size * 16),
             Conv3DBlock(feature_size * 16, feature_size * 16),
             SingleDeconv3DBlock(feature_size * 16, feature_size * 8),
         )
 
-        self.decoder3_upsampler = nn.Sequential(
+        self.decoder6_upsampler = nn.Sequential(
             Conv3DBlock(feature_size * 16, feature_size * 8),
             Conv3DBlock(feature_size * 8, feature_size * 8),
             SingleDeconv3DBlock(feature_size * 8, feature_size * 4),
         )
 
-        self.decoder0_upsampler = nn.Sequential(
+        self.decoder3_upsampler = nn.Sequential(
             Conv3DBlock(feature_size * 8, feature_size * 4),
             Conv3DBlock(feature_size * 4, feature_size * 4),
             SingleDeconv3DBlock(feature_size * 4, feature_size * 2),
         )
 
-        self.decoder0_header = nn.Sequential(
-            Conv3DBlock(feature_size * 3, feature_size * 2),
+        self.decoder0_upsampler = nn.Sequential(
+            Conv3DBlock(feature_size * 4, feature_size * 2),
             Conv3DBlock(feature_size * 2, feature_size * 2),
-            SingleConv3DBlock(feature_size * 2, output_dim, 1),
+            SingleDeconv3DBlock(feature_size * 2, feature_size),
+        )
+
+        self.decoder0_header = nn.Sequential(
+            Conv3DBlock(feature_size * 2, feature_size),
+            Conv3DBlock(feature_size, feature_size),
+            SingleConv3DBlock(feature_size, out_channels, 1),
+            nn.Sigmoid()
         )
 
         # self.decoder0_header = \
@@ -324,7 +332,29 @@ class MyUNETR(nn.Module):
         #         SingleConv3DBlock(feature_size * 4, output_dim, 1)
         #     )
 
+    def _print_available_memory(self, cuda_device_index=0):
+        # Set the device to the desired CUDA device
+        torch.cuda.set_device(cuda_device_index)
+
+        # Get total and allocated memory in bytes
+        total_memory = torch.cuda.get_device_properties(cuda_device_index).total_memory
+        allocated_memory = torch.cuda.memory_allocated(cuda_device_index)
+
+        # Calculate free memory
+        free_memory = total_memory - allocated_memory
+
+        # Convert bytes to gigabytes for easier interpretation
+        total_memory_gb = total_memory / (1024**3)
+        allocated_memory_gb = allocated_memory / (1024**3)
+        free_memory_gb = free_memory / (1024**3)
+        print("--------------------------------------")
+        print(f"Total VRAM: {total_memory_gb:.2f} GB")
+        print(f"Allocated VRAM: {allocated_memory_gb:.2f} GB")
+        print(f"Free VRAM: {free_memory_gb:.2f} GB")
+        print("--------------------------------------")
+
     def forward(self, x):
+        print("UNETR input shape", x.shape)
         z = self.transformer(x)
         z0, z3, z6, z9, z12 = x, *z
         z3 = z3.transpose(-1, -2).view(-1, self.embed_dim, *self.patch_dim)
@@ -332,23 +362,35 @@ class MyUNETR(nn.Module):
         z9 = z9.transpose(-1, -2).view(-1, self.embed_dim, *self.patch_dim)
         z12 = z12.transpose(-1, -2).view(-1, self.embed_dim, *self.patch_dim)
 
+        # print("input z0 zeros:", torch.sum(z0.eq(0)), torch.sum(z0 == 0) / z0.numel())
+        # print("z3 zeros:", torch.sum(z3.eq(0)), torch.sum(z3 == 0) / z3.numel())
+        # print("z6 zeros:", torch.sum(z6.eq(0)), torch.sum(z6 == 0) / z6.numel())
+        # print("z9 zeros:", torch.sum(z9.eq(0)), torch.sum(z9 == 0) / z9.numel())
+        # print("z12 zeros:", torch.sum(z12.eq(0)), torch.sum(z12 == 0) / z12.numel())
+
+
         zu = self.upsampler(z0)  # added
         z12 = self.decoder12_upsampler(z12)
         z9 = self.decoder9(z9)
-        print("z9", z9.shape)
         z9 = self.decoder9_upsampler(torch.cat([z9, z12], dim=1))
         z6 = self.decoder6(z6)
         z6 = self.decoder6_upsampler(torch.cat([z6, z9], dim=1))
-        print("z6", z6.shape)
         z3 = self.decoder3(z3)
         z3 = self.decoder3_upsampler(torch.cat([z3, z6], dim=1))
         z0 = self.decoder0(z0)
-        print("z0", z0.shape)
+        # print("z0 zeros:", torch.sum(z0.eq(0)), torch.sum(z0 == 0) / z0.numel())
         z0d = self.decoder0_upsampler(torch.cat([z0, z3], dim=1))
-        print("z0d", z0d.shape)
-        print("zu", zu.shape)
-        print("z0d", z0d.shape)
+
+        # Set the device to the desired CUDA device
+
+        # print the mean of z0d
+        # print("zu zeros:", torch.sum(zu.eq(0)), torch.sum(zu == 0) / zu.numel())
+        # print("z0d zeros:", torch.sum(z0d.eq(0)), torch.sum(z0d == 0) / z0d.numel())
         output = self.decoder0_header(torch.cat([zu, z0d], dim=1))
+
+        # print("output zeros:", torch.sum(output.eq(0)), torch.sum(output == 0) / output.numel())
+        # torch.cuda.empty_cache()
+
         return output
 
 

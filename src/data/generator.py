@@ -318,7 +318,6 @@ class DataGenerator:
             data_path,
             add_noise=False,
             label=True,
-            scale_factor=2,
         )
 
 

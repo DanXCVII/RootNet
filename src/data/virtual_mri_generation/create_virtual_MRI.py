@@ -63,6 +63,8 @@ class Virtual_MRI:
     ):
         """
         creates a virtual MRI for the given root system with simulating noise based on the water content of the soil.
+
+        Parameters:
         - rootsystem: root system object (pb.RootSystem)
         - rsml_path: path to the rsml file of the root system # currently not used but if it is possible to read the
                      rsml file and get the seganalyser from it, it would be better
@@ -394,7 +396,7 @@ class Virtual_MRI:
             self.vtu_path, resolution=[self.resx, self.resy, self.resz]
         )
 
-        _, grid_data = interpolator.process(interpolating_coords=[X, Y, Z])
+        _, grid_data = interpolator.process(interpolating_coords=[X[:-1], Y[:-1], Z[:-1]])
 
         water_intensity_grid = np.nan_to_num(grid_data, nan=0)
         water_intensity_grid = water_intensity_grid.reshape(self.nx, self.ny, self.nz)

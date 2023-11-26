@@ -9,797 +9,914 @@
     },
     "name": "btcv",
     "reference": "Vanderbilt University",
-    "release": "1.0 09/11/2023",
+    "release": "1.0 26/11/2023",
     "tensorImageSize": "3D",
     "training": [
         {
             "image": "../../data/generated/training/Moraesetal_2020/loam/sim_days_8-initial_-230-noise_0.9/Moraesetal_2020_day_8_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Moraesetal_2020/loam/sim_days_8-initial_-230-noise_0.9/label_Moraesetal_2020_day_8_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Moraesetal_2020/loam/sim_days_8-initial_-230-noise_0.9/label_Moraesetal_2020_day_8_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Moraesetal_2020/loam/sim_days_7-initial_-360-noise_0.8/Moraesetal_2020_day_7_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Moraesetal_2020/loam/sim_days_7-initial_-360-noise_0.8/label_Moraesetal_2020_day_7_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Moraesetal_2020/loam/sim_days_7-initial_-360-noise_0.8/label_Moraesetal_2020_day_7_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Moraesetal_2020/loam/sim_days_7-initial_-440-noise_0.5/Moraesetal_2020_day_7_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Moraesetal_2020/loam/sim_days_7-initial_-440-noise_0.5/label_Moraesetal_2020_day_7_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Moraesetal_2020/loam/sim_days_7-initial_-440-noise_0.5/label_Moraesetal_2020_day_7_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Moraesetal_2020/loam/sim_days_10-initial_-40-noise_0.9/Moraesetal_2020_day_10_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Moraesetal_2020/loam/sim_days_10-initial_-40-noise_0.9/label_Moraesetal_2020_day_10_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Moraesetal_2020/loam/sim_days_10-initial_-40-noise_0.9/label_Moraesetal_2020_day_10_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Moraesetal_2020/loam/sim_days_7-initial_-330-noise_0.8/Moraesetal_2020_day_7_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Moraesetal_2020/loam/sim_days_7-initial_-330-noise_0.8/label_Moraesetal_2020_day_7_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Moraesetal_2020/loam/sim_days_7-initial_-330-noise_0.8/label_Moraesetal_2020_day_7_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Moraesetal_2020/loam/sim_days_9-initial_-490-noise_0.8/Moraesetal_2020_day_9_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Moraesetal_2020/loam/sim_days_9-initial_-490-noise_0.8/label_Moraesetal_2020_day_9_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Moraesetal_2020/loam/sim_days_9-initial_-490-noise_0.8/label_Moraesetal_2020_day_9_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Moraesetal_2020/loam/sim_days_9-initial_-180-noise_0.5/Moraesetal_2020_day_9_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Moraesetal_2020/loam/sim_days_9-initial_-180-noise_0.5/label_Moraesetal_2020_day_9_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Moraesetal_2020/loam/sim_days_9-initial_-180-noise_0.5/label_Moraesetal_2020_day_9_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Moraesetal_2020/loam/sim_days_9-initial_-360-noise_0.7/Moraesetal_2020_day_9_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Moraesetal_2020/loam/sim_days_9-initial_-360-noise_0.7/label_Moraesetal_2020_day_9_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Moraesetal_2020/loam/sim_days_9-initial_-360-noise_0.7/label_Moraesetal_2020_day_9_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Moraesetal_2020/loam/sim_days_9-initial_-400-noise_0.5/Moraesetal_2020_day_9_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Moraesetal_2020/loam/sim_days_9-initial_-400-noise_0.5/label_Moraesetal_2020_day_9_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Moraesetal_2020/loam/sim_days_9-initial_-400-noise_0.5/label_Moraesetal_2020_day_9_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Moraesetal_2020/loam/sim_days_9-initial_-390-noise_0.5/Moraesetal_2020_day_9_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Moraesetal_2020/loam/sim_days_9-initial_-390-noise_0.5/label_Moraesetal_2020_day_9_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Moraesetal_2020/loam/sim_days_9-initial_-390-noise_0.5/label_Moraesetal_2020_day_9_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Moraesetal_2020/loam/sim_days_7-initial_-50-noise_0.9/Moraesetal_2020_day_7_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Moraesetal_2020/loam/sim_days_7-initial_-50-noise_0.9/label_Moraesetal_2020_day_7_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Moraesetal_2020/loam/sim_days_7-initial_-50-noise_0.9/label_Moraesetal_2020_day_7_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Moraesetal_2020/sand/sim_days_8-initial_-15-noise_0.8/Moraesetal_2020_day_8_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Moraesetal_2020/sand/sim_days_8-initial_-15-noise_0.8/label_Moraesetal_2020_day_8_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Moraesetal_2020/sand/sim_days_8-initial_-15-noise_0.8/label_Moraesetal_2020_day_8_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Moraesetal_2020/sand/sim_days_10-initial_-30-noise_0.9/Moraesetal_2020_day_10_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Moraesetal_2020/sand/sim_days_10-initial_-30-noise_0.9/label_Moraesetal_2020_day_10_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Moraesetal_2020/sand/sim_days_10-initial_-30-noise_0.9/label_Moraesetal_2020_day_10_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Moraesetal_2020/sand/sim_days_6-initial_-20-noise_0.5/Moraesetal_2020_day_6_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Moraesetal_2020/sand/sim_days_6-initial_-20-noise_0.5/label_Moraesetal_2020_day_6_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Moraesetal_2020/sand/sim_days_6-initial_-20-noise_0.5/label_Moraesetal_2020_day_6_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Moraesetal_2020/sand/sim_days_7-initial_-15-noise_0.7/Moraesetal_2020_day_7_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Moraesetal_2020/sand/sim_days_7-initial_-15-noise_0.7/label_Moraesetal_2020_day_7_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Moraesetal_2020/sand/sim_days_7-initial_-15-noise_0.7/label_Moraesetal_2020_day_7_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Moraesetal_2020/sand/sim_days_7-initial_-30-noise_0.7/Moraesetal_2020_day_7_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Moraesetal_2020/sand/sim_days_7-initial_-30-noise_0.7/label_Moraesetal_2020_day_7_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Moraesetal_2020/sand/sim_days_7-initial_-30-noise_0.7/label_Moraesetal_2020_day_7_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Moraesetal_2020/sand/sim_days_10-initial_-30-noise_0.5/Moraesetal_2020_day_10_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Moraesetal_2020/sand/sim_days_10-initial_-30-noise_0.5/label_Moraesetal_2020_day_10_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Moraesetal_2020/sand/sim_days_10-initial_-30-noise_0.5/label_Moraesetal_2020_day_10_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Moraesetal_2020/sand/sim_days_9-initial_-30-noise_0.6/Moraesetal_2020_day_9_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Moraesetal_2020/sand/sim_days_9-initial_-30-noise_0.6/label_Moraesetal_2020_day_9_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Moraesetal_2020/sand/sim_days_9-initial_-30-noise_0.6/label_Moraesetal_2020_day_9_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Moraesetal_2020/sand/sim_days_5-initial_-30-noise_0.7/Moraesetal_2020_day_5_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Moraesetal_2020/sand/sim_days_5-initial_-30-noise_0.7/label_Moraesetal_2020_day_5_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Moraesetal_2020/sand/sim_days_5-initial_-30-noise_0.7/label_Moraesetal_2020_day_5_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Moraesetal_2020/sand/sim_days_10-initial_-15-noise_0.6/Moraesetal_2020_day_10_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Moraesetal_2020/sand/sim_days_10-initial_-15-noise_0.6/label_Moraesetal_2020_day_10_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Moraesetal_2020/sand/sim_days_10-initial_-15-noise_0.6/label_Moraesetal_2020_day_10_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Moraesetal_2020/sand/sim_days_10-initial_-15-noise_0.8/Moraesetal_2020_day_10_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Moraesetal_2020/sand/sim_days_10-initial_-15-noise_0.8/label_Moraesetal_2020_day_10_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Moraesetal_2020/sand/sim_days_10-initial_-15-noise_0.8/label_Moraesetal_2020_day_10_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Moraesetal_2020/sand/sim_days_9-initial_-25-noise_0.9/Moraesetal_2020_day_9_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Moraesetal_2020/sand/sim_days_9-initial_-25-noise_0.9/label_Moraesetal_2020_day_9_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Moraesetal_2020/sand/sim_days_9-initial_-25-noise_0.9/label_Moraesetal_2020_day_9_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Moraesetal_2020/clay/sim_days_7-initial_-700-noise_0.5/Moraesetal_2020_day_7_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Moraesetal_2020/clay/sim_days_7-initial_-700-noise_0.5/label_Moraesetal_2020_day_7_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Moraesetal_2020/clay/sim_days_7-initial_-700-noise_0.5/label_Moraesetal_2020_day_7_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Moraesetal_2020/clay/sim_days_5-initial_-700-noise_0.8/Moraesetal_2020_day_5_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Moraesetal_2020/clay/sim_days_5-initial_-700-noise_0.8/label_Moraesetal_2020_day_5_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Moraesetal_2020/clay/sim_days_5-initial_-700-noise_0.8/label_Moraesetal_2020_day_5_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Moraesetal_2020/clay/sim_days_10-initial_-400-noise_0.9/Moraesetal_2020_day_10_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Moraesetal_2020/clay/sim_days_10-initial_-400-noise_0.9/label_Moraesetal_2020_day_10_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Moraesetal_2020/clay/sim_days_10-initial_-400-noise_0.9/label_Moraesetal_2020_day_10_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Moraesetal_2020/clay/sim_days_7-initial_-400-noise_0.6/Moraesetal_2020_day_7_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Moraesetal_2020/clay/sim_days_7-initial_-400-noise_0.6/label_Moraesetal_2020_day_7_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Moraesetal_2020/clay/sim_days_7-initial_-400-noise_0.6/label_Moraesetal_2020_day_7_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Moraesetal_2020/clay/sim_days_6-initial_-400-noise_0.7/Moraesetal_2020_day_6_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Moraesetal_2020/clay/sim_days_6-initial_-400-noise_0.7/label_Moraesetal_2020_day_6_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Moraesetal_2020/clay/sim_days_6-initial_-400-noise_0.7/label_Moraesetal_2020_day_6_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Moraesetal_2020/clay/sim_days_10-initial_-700-noise_0.8/Moraesetal_2020_day_10_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Moraesetal_2020/clay/sim_days_10-initial_-700-noise_0.8/label_Moraesetal_2020_day_10_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Moraesetal_2020/clay/sim_days_10-initial_-700-noise_0.8/label_Moraesetal_2020_day_10_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Moraesetal_2020/clay/sim_days_10-initial_-600-noise_0.7/Moraesetal_2020_day_10_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Moraesetal_2020/clay/sim_days_10-initial_-600-noise_0.7/label_Moraesetal_2020_day_10_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Moraesetal_2020/clay/sim_days_10-initial_-600-noise_0.7/label_Moraesetal_2020_day_10_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Moraesetal_2020/clay/sim_days_10-initial_-600-noise_0.6/Moraesetal_2020_day_10_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Moraesetal_2020/clay/sim_days_10-initial_-600-noise_0.6/label_Moraesetal_2020_day_10_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Moraesetal_2020/clay/sim_days_10-initial_-600-noise_0.6/label_Moraesetal_2020_day_10_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Moraesetal_2020/clay/sim_days_5-initial_-1000-noise_0.6/Moraesetal_2020_day_5_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Moraesetal_2020/clay/sim_days_5-initial_-1000-noise_0.6/label_Moraesetal_2020_day_5_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Moraesetal_2020/clay/sim_days_5-initial_-1000-noise_0.6/label_Moraesetal_2020_day_5_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Moraesetal_2020/clay/sim_days_10-initial_-300-noise_0.9/Moraesetal_2020_day_10_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Moraesetal_2020/clay/sim_days_10-initial_-300-noise_0.9/label_Moraesetal_2020_day_10_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Moraesetal_2020/clay/sim_days_10-initial_-300-noise_0.9/label_Moraesetal_2020_day_10_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Moraesetal_2020/clay/sim_days_7-initial_-700-noise_0.8/Moraesetal_2020_day_7_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Moraesetal_2020/clay/sim_days_7-initial_-700-noise_0.8/label_Moraesetal_2020_day_7_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Moraesetal_2020/clay/sim_days_7-initial_-700-noise_0.8/label_Moraesetal_2020_day_7_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/loam/sim_days_10-initial_-140-noise_0.5/Crypsis_aculeata_Clausnitzer_1994_day_10_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/loam/sim_days_10-initial_-140-noise_0.5/label_Crypsis_aculeata_Clausnitzer_1994_day_10_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/loam/sim_days_10-initial_-140-noise_0.5/label_Crypsis_aculeata_Clausnitzer_1994_day_10_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/loam/sim_days_8-initial_-340-noise_0.7/Crypsis_aculeata_Clausnitzer_1994_day_8_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/loam/sim_days_8-initial_-340-noise_0.7/label_Crypsis_aculeata_Clausnitzer_1994_day_8_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/loam/sim_days_8-initial_-340-noise_0.7/label_Crypsis_aculeata_Clausnitzer_1994_day_8_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/loam/sim_days_7-initial_-60-noise_0.5/Crypsis_aculeata_Clausnitzer_1994_day_7_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/loam/sim_days_7-initial_-60-noise_0.5/label_Crypsis_aculeata_Clausnitzer_1994_day_7_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/loam/sim_days_7-initial_-60-noise_0.5/label_Crypsis_aculeata_Clausnitzer_1994_day_7_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/loam/sim_days_5-initial_-50-noise_0.5/Crypsis_aculeata_Clausnitzer_1994_day_5_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/loam/sim_days_5-initial_-50-noise_0.5/label_Crypsis_aculeata_Clausnitzer_1994_day_5_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/loam/sim_days_5-initial_-50-noise_0.5/label_Crypsis_aculeata_Clausnitzer_1994_day_5_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/loam/sim_days_10-initial_-110-noise_0.7/Crypsis_aculeata_Clausnitzer_1994_day_10_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/loam/sim_days_10-initial_-110-noise_0.7/label_Crypsis_aculeata_Clausnitzer_1994_day_10_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/loam/sim_days_10-initial_-110-noise_0.7/label_Crypsis_aculeata_Clausnitzer_1994_day_10_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/loam/sim_days_8-initial_-430-noise_0.5/Crypsis_aculeata_Clausnitzer_1994_day_8_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/loam/sim_days_8-initial_-430-noise_0.5/label_Crypsis_aculeata_Clausnitzer_1994_day_8_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/loam/sim_days_8-initial_-430-noise_0.5/label_Crypsis_aculeata_Clausnitzer_1994_day_8_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/loam/sim_days_8-initial_-370-noise_0.7/Crypsis_aculeata_Clausnitzer_1994_day_8_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/loam/sim_days_8-initial_-370-noise_0.7/label_Crypsis_aculeata_Clausnitzer_1994_day_8_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/loam/sim_days_8-initial_-370-noise_0.7/label_Crypsis_aculeata_Clausnitzer_1994_day_8_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/loam/sim_days_8-initial_-260-noise_0.9/Crypsis_aculeata_Clausnitzer_1994_day_8_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/loam/sim_days_8-initial_-260-noise_0.9/label_Crypsis_aculeata_Clausnitzer_1994_day_8_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/loam/sim_days_8-initial_-260-noise_0.9/label_Crypsis_aculeata_Clausnitzer_1994_day_8_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/loam/sim_days_7-initial_-340-noise_0.6/Crypsis_aculeata_Clausnitzer_1994_day_7_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/loam/sim_days_7-initial_-340-noise_0.6/label_Crypsis_aculeata_Clausnitzer_1994_day_7_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/loam/sim_days_7-initial_-340-noise_0.6/label_Crypsis_aculeata_Clausnitzer_1994_day_7_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/loam/sim_days_6-initial_-290-noise_0.6/Crypsis_aculeata_Clausnitzer_1994_day_6_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/loam/sim_days_6-initial_-290-noise_0.6/label_Crypsis_aculeata_Clausnitzer_1994_day_6_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/loam/sim_days_6-initial_-290-noise_0.6/label_Crypsis_aculeata_Clausnitzer_1994_day_6_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/loam/sim_days_6-initial_-350-noise_0.8/Crypsis_aculeata_Clausnitzer_1994_day_6_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/loam/sim_days_6-initial_-350-noise_0.8/label_Crypsis_aculeata_Clausnitzer_1994_day_6_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/loam/sim_days_6-initial_-350-noise_0.8/label_Crypsis_aculeata_Clausnitzer_1994_day_6_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/sand/sim_days_10-initial_-10-noise_0.5/Crypsis_aculeata_Clausnitzer_1994_day_10_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/sand/sim_days_10-initial_-10-noise_0.5/label_Crypsis_aculeata_Clausnitzer_1994_day_10_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/sand/sim_days_10-initial_-10-noise_0.5/label_Crypsis_aculeata_Clausnitzer_1994_day_10_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/sand/sim_days_8-initial_-15-noise_0.9/Crypsis_aculeata_Clausnitzer_1994_day_8_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/sand/sim_days_8-initial_-15-noise_0.9/label_Crypsis_aculeata_Clausnitzer_1994_day_8_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/sand/sim_days_8-initial_-15-noise_0.9/label_Crypsis_aculeata_Clausnitzer_1994_day_8_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/sand/sim_days_7-initial_-25-noise_0.8/Crypsis_aculeata_Clausnitzer_1994_day_7_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/sand/sim_days_7-initial_-25-noise_0.8/label_Crypsis_aculeata_Clausnitzer_1994_day_7_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/sand/sim_days_7-initial_-25-noise_0.8/label_Crypsis_aculeata_Clausnitzer_1994_day_7_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/sand/sim_days_5-initial_-15-noise_0.5/Crypsis_aculeata_Clausnitzer_1994_day_5_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/sand/sim_days_5-initial_-15-noise_0.5/label_Crypsis_aculeata_Clausnitzer_1994_day_5_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/sand/sim_days_5-initial_-15-noise_0.5/label_Crypsis_aculeata_Clausnitzer_1994_day_5_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/sand/sim_days_10-initial_-25-noise_0.5/Crypsis_aculeata_Clausnitzer_1994_day_10_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/sand/sim_days_10-initial_-25-noise_0.5/label_Crypsis_aculeata_Clausnitzer_1994_day_10_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/sand/sim_days_10-initial_-25-noise_0.5/label_Crypsis_aculeata_Clausnitzer_1994_day_10_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/sand/sim_days_7-initial_-30-noise_0.5/Crypsis_aculeata_Clausnitzer_1994_day_7_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/sand/sim_days_7-initial_-30-noise_0.5/label_Crypsis_aculeata_Clausnitzer_1994_day_7_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/sand/sim_days_7-initial_-30-noise_0.5/label_Crypsis_aculeata_Clausnitzer_1994_day_7_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/sand/sim_days_5-initial_-10-noise_0.7/Crypsis_aculeata_Clausnitzer_1994_day_5_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/sand/sim_days_5-initial_-10-noise_0.7/label_Crypsis_aculeata_Clausnitzer_1994_day_5_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/sand/sim_days_5-initial_-10-noise_0.7/label_Crypsis_aculeata_Clausnitzer_1994_day_5_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/sand/sim_days_10-initial_-15-noise_0.6/Crypsis_aculeata_Clausnitzer_1994_day_10_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/sand/sim_days_10-initial_-15-noise_0.6/label_Crypsis_aculeata_Clausnitzer_1994_day_10_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/sand/sim_days_10-initial_-15-noise_0.6/label_Crypsis_aculeata_Clausnitzer_1994_day_10_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/sand/sim_days_7-initial_-20-noise_0.9/Crypsis_aculeata_Clausnitzer_1994_day_7_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/sand/sim_days_7-initial_-20-noise_0.9/label_Crypsis_aculeata_Clausnitzer_1994_day_7_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/sand/sim_days_7-initial_-20-noise_0.9/label_Crypsis_aculeata_Clausnitzer_1994_day_7_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/sand/sim_days_6-initial_-15-noise_0.5/Crypsis_aculeata_Clausnitzer_1994_day_6_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/sand/sim_days_6-initial_-15-noise_0.5/label_Crypsis_aculeata_Clausnitzer_1994_day_6_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/sand/sim_days_6-initial_-15-noise_0.5/label_Crypsis_aculeata_Clausnitzer_1994_day_6_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/sand/sim_days_10-initial_-25-noise_0.7/Crypsis_aculeata_Clausnitzer_1994_day_10_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/sand/sim_days_10-initial_-25-noise_0.7/label_Crypsis_aculeata_Clausnitzer_1994_day_10_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/sand/sim_days_10-initial_-25-noise_0.7/label_Crypsis_aculeata_Clausnitzer_1994_day_10_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_10-initial_-1000-noise_0.6/Crypsis_aculeata_Clausnitzer_1994_day_10_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_10-initial_-1000-noise_0.6/label_Crypsis_aculeata_Clausnitzer_1994_day_10_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_10-initial_-1000-noise_0.6/label_Crypsis_aculeata_Clausnitzer_1994_day_10_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_6-initial_-900-noise_0.5/Crypsis_aculeata_Clausnitzer_1994_day_6_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_6-initial_-900-noise_0.5/label_Crypsis_aculeata_Clausnitzer_1994_day_6_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_6-initial_-900-noise_0.5/label_Crypsis_aculeata_Clausnitzer_1994_day_6_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_5-initial_-500-noise_0.6/Crypsis_aculeata_Clausnitzer_1994_day_5_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_5-initial_-500-noise_0.6/label_Crypsis_aculeata_Clausnitzer_1994_day_5_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_5-initial_-500-noise_0.6/label_Crypsis_aculeata_Clausnitzer_1994_day_5_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_10-initial_-500-noise_0.8/Crypsis_aculeata_Clausnitzer_1994_day_10_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_10-initial_-500-noise_0.8/label_Crypsis_aculeata_Clausnitzer_1994_day_10_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_10-initial_-500-noise_0.8/label_Crypsis_aculeata_Clausnitzer_1994_day_10_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_5-initial_-300-noise_0.7/Crypsis_aculeata_Clausnitzer_1994_day_5_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_5-initial_-300-noise_0.7/label_Crypsis_aculeata_Clausnitzer_1994_day_5_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_5-initial_-300-noise_0.7/label_Crypsis_aculeata_Clausnitzer_1994_day_5_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_7-initial_-800-noise_0.7/Crypsis_aculeata_Clausnitzer_1994_day_7_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_7-initial_-800-noise_0.7/label_Crypsis_aculeata_Clausnitzer_1994_day_7_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_7-initial_-800-noise_0.7/label_Crypsis_aculeata_Clausnitzer_1994_day_7_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_10-initial_-600-noise_0.7/Crypsis_aculeata_Clausnitzer_1994_day_10_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_10-initial_-600-noise_0.7/label_Crypsis_aculeata_Clausnitzer_1994_day_10_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_10-initial_-600-noise_0.7/label_Crypsis_aculeata_Clausnitzer_1994_day_10_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_8-initial_-300-noise_0.8/Crypsis_aculeata_Clausnitzer_1994_day_8_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_8-initial_-300-noise_0.8/label_Crypsis_aculeata_Clausnitzer_1994_day_8_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_8-initial_-300-noise_0.8/label_Crypsis_aculeata_Clausnitzer_1994_day_8_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_6-initial_-800-noise_0.5/Crypsis_aculeata_Clausnitzer_1994_day_6_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_6-initial_-800-noise_0.5/label_Crypsis_aculeata_Clausnitzer_1994_day_6_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_6-initial_-800-noise_0.5/label_Crypsis_aculeata_Clausnitzer_1994_day_6_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_8-initial_-1000-noise_0.9/Crypsis_aculeata_Clausnitzer_1994_day_8_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_8-initial_-1000-noise_0.9/label_Crypsis_aculeata_Clausnitzer_1994_day_8_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_8-initial_-1000-noise_0.9/label_Crypsis_aculeata_Clausnitzer_1994_day_8_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_6-initial_-1000-noise_0.6/Crypsis_aculeata_Clausnitzer_1994_day_6_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_6-initial_-1000-noise_0.6/label_Crypsis_aculeata_Clausnitzer_1994_day_6_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_6-initial_-1000-noise_0.6/label_Crypsis_aculeata_Clausnitzer_1994_day_6_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Bench_lupin/loam/sim_days_9-initial_-180-noise_0.6/Bench_lupin_day_9_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Bench_lupin/loam/sim_days_9-initial_-180-noise_0.6/label_Bench_lupin_day_9_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Bench_lupin/loam/sim_days_9-initial_-180-noise_0.6/label_Bench_lupin_day_9_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Bench_lupin/loam/sim_days_10-initial_-430-noise_0.9/Bench_lupin_day_10_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Bench_lupin/loam/sim_days_10-initial_-430-noise_0.9/label_Bench_lupin_day_10_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Bench_lupin/loam/sim_days_10-initial_-430-noise_0.9/label_Bench_lupin_day_10_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Bench_lupin/loam/sim_days_5-initial_-130-noise_0.7/Bench_lupin_day_5_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Bench_lupin/loam/sim_days_5-initial_-130-noise_0.7/label_Bench_lupin_day_5_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Bench_lupin/loam/sim_days_5-initial_-130-noise_0.7/label_Bench_lupin_day_5_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Bench_lupin/loam/sim_days_5-initial_-190-noise_0.7/Bench_lupin_day_5_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Bench_lupin/loam/sim_days_5-initial_-190-noise_0.7/label_Bench_lupin_day_5_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Bench_lupin/loam/sim_days_5-initial_-190-noise_0.7/label_Bench_lupin_day_5_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Bench_lupin/loam/sim_days_8-initial_-50-noise_0.6/Bench_lupin_day_8_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Bench_lupin/loam/sim_days_8-initial_-50-noise_0.6/label_Bench_lupin_day_8_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Bench_lupin/loam/sim_days_8-initial_-50-noise_0.6/label_Bench_lupin_day_8_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Bench_lupin/loam/sim_days_6-initial_-370-noise_0.5/Bench_lupin_day_6_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Bench_lupin/loam/sim_days_6-initial_-370-noise_0.5/label_Bench_lupin_day_6_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Bench_lupin/loam/sim_days_6-initial_-370-noise_0.5/label_Bench_lupin_day_6_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Bench_lupin/loam/sim_days_10-initial_-170-noise_0.9/Bench_lupin_day_10_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Bench_lupin/loam/sim_days_10-initial_-170-noise_0.9/label_Bench_lupin_day_10_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Bench_lupin/loam/sim_days_10-initial_-170-noise_0.9/label_Bench_lupin_day_10_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Bench_lupin/loam/sim_days_7-initial_-420-noise_0.8/Bench_lupin_day_7_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Bench_lupin/loam/sim_days_7-initial_-420-noise_0.8/label_Bench_lupin_day_7_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Bench_lupin/loam/sim_days_7-initial_-420-noise_0.8/label_Bench_lupin_day_7_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Bench_lupin/loam/sim_days_5-initial_-160-noise_0.6/Bench_lupin_day_5_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Bench_lupin/loam/sim_days_5-initial_-160-noise_0.6/label_Bench_lupin_day_5_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Bench_lupin/loam/sim_days_5-initial_-160-noise_0.6/label_Bench_lupin_day_5_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Bench_lupin/loam/sim_days_6-initial_-50-noise_0.7/Bench_lupin_day_6_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Bench_lupin/loam/sim_days_6-initial_-50-noise_0.7/label_Bench_lupin_day_6_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Bench_lupin/loam/sim_days_6-initial_-50-noise_0.7/label_Bench_lupin_day_6_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Bench_lupin/loam/sim_days_5-initial_-440-noise_0.8/Bench_lupin_day_5_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Bench_lupin/loam/sim_days_5-initial_-440-noise_0.8/label_Bench_lupin_day_5_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Bench_lupin/loam/sim_days_5-initial_-440-noise_0.8/label_Bench_lupin_day_5_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Bench_lupin/sand/sim_days_7-initial_-10-noise_0.6/Bench_lupin_day_7_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Bench_lupin/sand/sim_days_7-initial_-10-noise_0.6/label_Bench_lupin_day_7_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Bench_lupin/sand/sim_days_7-initial_-10-noise_0.6/label_Bench_lupin_day_7_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Bench_lupin/sand/sim_days_10-initial_-10-noise_0.5/Bench_lupin_day_10_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Bench_lupin/sand/sim_days_10-initial_-10-noise_0.5/label_Bench_lupin_day_10_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Bench_lupin/sand/sim_days_10-initial_-10-noise_0.5/label_Bench_lupin_day_10_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Bench_lupin/sand/sim_days_10-initial_-30-noise_0.7/Bench_lupin_day_10_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Bench_lupin/sand/sim_days_10-initial_-30-noise_0.7/label_Bench_lupin_day_10_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Bench_lupin/sand/sim_days_10-initial_-30-noise_0.7/label_Bench_lupin_day_10_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Bench_lupin/sand/sim_days_10-initial_-25-noise_0.9/Bench_lupin_day_10_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Bench_lupin/sand/sim_days_10-initial_-25-noise_0.9/label_Bench_lupin_day_10_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Bench_lupin/sand/sim_days_10-initial_-25-noise_0.9/label_Bench_lupin_day_10_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Bench_lupin/sand/sim_days_10-initial_-25-noise_0.6/Bench_lupin_day_10_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Bench_lupin/sand/sim_days_10-initial_-25-noise_0.6/label_Bench_lupin_day_10_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Bench_lupin/sand/sim_days_10-initial_-25-noise_0.6/label_Bench_lupin_day_10_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Bench_lupin/sand/sim_days_6-initial_-20-noise_0.6/Bench_lupin_day_6_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Bench_lupin/sand/sim_days_6-initial_-20-noise_0.6/label_Bench_lupin_day_6_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Bench_lupin/sand/sim_days_6-initial_-20-noise_0.6/label_Bench_lupin_day_6_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Bench_lupin/sand/sim_days_6-initial_-30-noise_0.8/Bench_lupin_day_6_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Bench_lupin/sand/sim_days_6-initial_-30-noise_0.8/label_Bench_lupin_day_6_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Bench_lupin/sand/sim_days_6-initial_-30-noise_0.8/label_Bench_lupin_day_6_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Bench_lupin/sand/sim_days_7-initial_-10-noise_0.9/Bench_lupin_day_7_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Bench_lupin/sand/sim_days_7-initial_-10-noise_0.9/label_Bench_lupin_day_7_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Bench_lupin/sand/sim_days_7-initial_-10-noise_0.9/label_Bench_lupin_day_7_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Bench_lupin/sand/sim_days_6-initial_-30-noise_0.6/Bench_lupin_day_6_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Bench_lupin/sand/sim_days_6-initial_-30-noise_0.6/label_Bench_lupin_day_6_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Bench_lupin/sand/sim_days_6-initial_-30-noise_0.6/label_Bench_lupin_day_6_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Bench_lupin/sand/sim_days_10-initial_-20-noise_0.9/Bench_lupin_day_10_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Bench_lupin/sand/sim_days_10-initial_-20-noise_0.9/label_Bench_lupin_day_10_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Bench_lupin/sand/sim_days_10-initial_-20-noise_0.9/label_Bench_lupin_day_10_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Bench_lupin/sand/sim_days_7-initial_-20-noise_0.8/Bench_lupin_day_7_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Bench_lupin/sand/sim_days_7-initial_-20-noise_0.8/label_Bench_lupin_day_7_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Bench_lupin/sand/sim_days_7-initial_-20-noise_0.8/label_Bench_lupin_day_7_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Bench_lupin/sand/sim_days_9-initial_-25-noise_0.9/Bench_lupin_day_9_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Bench_lupin/sand/sim_days_9-initial_-25-noise_0.9/label_Bench_lupin_day_9_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Bench_lupin/sand/sim_days_9-initial_-25-noise_0.9/label_Bench_lupin_day_9_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Bench_lupin/clay/sim_days_7-initial_-400-noise_0.6/Bench_lupin_day_7_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Bench_lupin/clay/sim_days_7-initial_-400-noise_0.6/label_Bench_lupin_day_7_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Bench_lupin/clay/sim_days_7-initial_-400-noise_0.6/label_Bench_lupin_day_7_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Bench_lupin/clay/sim_days_9-initial_-1000-noise_0.7/Bench_lupin_day_9_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Bench_lupin/clay/sim_days_9-initial_-1000-noise_0.7/label_Bench_lupin_day_9_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Bench_lupin/clay/sim_days_9-initial_-1000-noise_0.7/label_Bench_lupin_day_9_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Bench_lupin/clay/sim_days_5-initial_-300-noise_0.8/Bench_lupin_day_5_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Bench_lupin/clay/sim_days_5-initial_-300-noise_0.8/label_Bench_lupin_day_5_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Bench_lupin/clay/sim_days_5-initial_-300-noise_0.8/label_Bench_lupin_day_5_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Bench_lupin/clay/sim_days_10-initial_-600-noise_0.5/Bench_lupin_day_10_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Bench_lupin/clay/sim_days_10-initial_-600-noise_0.5/label_Bench_lupin_day_10_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Bench_lupin/clay/sim_days_10-initial_-600-noise_0.5/label_Bench_lupin_day_10_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Bench_lupin/clay/sim_days_6-initial_-1000-noise_0.7/Bench_lupin_day_6_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Bench_lupin/clay/sim_days_6-initial_-1000-noise_0.7/label_Bench_lupin_day_6_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Bench_lupin/clay/sim_days_6-initial_-1000-noise_0.7/label_Bench_lupin_day_6_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Bench_lupin/clay/sim_days_10-initial_-400-noise_0.7/Bench_lupin_day_10_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Bench_lupin/clay/sim_days_10-initial_-400-noise_0.7/label_Bench_lupin_day_10_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Bench_lupin/clay/sim_days_10-initial_-400-noise_0.7/label_Bench_lupin_day_10_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Bench_lupin/clay/sim_days_8-initial_-700-noise_0.6/Bench_lupin_day_8_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Bench_lupin/clay/sim_days_8-initial_-700-noise_0.6/label_Bench_lupin_day_8_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Bench_lupin/clay/sim_days_8-initial_-700-noise_0.6/label_Bench_lupin_day_8_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Bench_lupin/clay/sim_days_10-initial_-1000-noise_0.8/Bench_lupin_day_10_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Bench_lupin/clay/sim_days_10-initial_-1000-noise_0.8/label_Bench_lupin_day_10_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Bench_lupin/clay/sim_days_10-initial_-1000-noise_0.8/label_Bench_lupin_day_10_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Bench_lupin/clay/sim_days_9-initial_-500-noise_0.6/Bench_lupin_day_9_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Bench_lupin/clay/sim_days_9-initial_-500-noise_0.6/label_Bench_lupin_day_9_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Bench_lupin/clay/sim_days_9-initial_-500-noise_0.6/label_Bench_lupin_day_9_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Bench_lupin/clay/sim_days_8-initial_-1000-noise_0.6/Bench_lupin_day_8_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Bench_lupin/clay/sim_days_8-initial_-1000-noise_0.6/label_Bench_lupin_day_8_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Bench_lupin/clay/sim_days_8-initial_-1000-noise_0.6/label_Bench_lupin_day_8_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Bench_lupin/clay/sim_days_7-initial_-700-noise_0.8/Bench_lupin_day_7_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Bench_lupin/clay/sim_days_7-initial_-700-noise_0.8/label_Bench_lupin_day_7_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Bench_lupin/clay/sim_days_7-initial_-700-noise_0.8/label_Bench_lupin_day_7_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max/loam/sim_days_6-initial_-50-noise_0.5/Glycine_max_day_6_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max/loam/sim_days_6-initial_-50-noise_0.5/label_Glycine_max_day_6_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max/loam/sim_days_6-initial_-50-noise_0.5/label_Glycine_max_day_6_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max/loam/sim_days_6-initial_-80-noise_0.8/Glycine_max_day_6_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max/loam/sim_days_6-initial_-80-noise_0.8/label_Glycine_max_day_6_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max/loam/sim_days_6-initial_-80-noise_0.8/label_Glycine_max_day_6_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max/loam/sim_days_7-initial_-350-noise_0.8/Glycine_max_day_7_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max/loam/sim_days_7-initial_-350-noise_0.8/label_Glycine_max_day_7_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max/loam/sim_days_7-initial_-350-noise_0.8/label_Glycine_max_day_7_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max/loam/sim_days_9-initial_-400-noise_0.8/Glycine_max_day_9_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max/loam/sim_days_9-initial_-400-noise_0.8/label_Glycine_max_day_9_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max/loam/sim_days_9-initial_-400-noise_0.8/label_Glycine_max_day_9_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max/loam/sim_days_8-initial_-150-noise_0.8/Glycine_max_day_8_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max/loam/sim_days_8-initial_-150-noise_0.8/label_Glycine_max_day_8_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max/loam/sim_days_8-initial_-150-noise_0.8/label_Glycine_max_day_8_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max/loam/sim_days_9-initial_-110-noise_0.8/Glycine_max_day_9_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max/loam/sim_days_9-initial_-110-noise_0.8/label_Glycine_max_day_9_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max/loam/sim_days_9-initial_-110-noise_0.8/label_Glycine_max_day_9_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max/loam/sim_days_5-initial_-210-noise_0.5/Glycine_max_day_5_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max/loam/sim_days_5-initial_-210-noise_0.5/label_Glycine_max_day_5_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max/loam/sim_days_5-initial_-210-noise_0.5/label_Glycine_max_day_5_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max/loam/sim_days_9-initial_-450-noise_0.8/Glycine_max_day_9_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max/loam/sim_days_9-initial_-450-noise_0.8/label_Glycine_max_day_9_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max/loam/sim_days_9-initial_-450-noise_0.8/label_Glycine_max_day_9_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max/loam/sim_days_6-initial_-300-noise_0.6/Glycine_max_day_6_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max/loam/sim_days_6-initial_-300-noise_0.6/label_Glycine_max_day_6_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max/loam/sim_days_6-initial_-300-noise_0.6/label_Glycine_max_day_6_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max/loam/sim_days_6-initial_-270-noise_0.7/Glycine_max_day_6_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max/loam/sim_days_6-initial_-270-noise_0.7/label_Glycine_max_day_6_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max/loam/sim_days_6-initial_-270-noise_0.7/label_Glycine_max_day_6_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max/loam/sim_days_10-initial_-170-noise_0.7/Glycine_max_day_10_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max/loam/sim_days_10-initial_-170-noise_0.7/label_Glycine_max_day_10_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max/loam/sim_days_10-initial_-170-noise_0.7/label_Glycine_max_day_10_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max/sand/sim_days_9-initial_-10-noise_0.9/Glycine_max_day_9_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max/sand/sim_days_9-initial_-10-noise_0.9/label_Glycine_max_day_9_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max/sand/sim_days_9-initial_-10-noise_0.9/label_Glycine_max_day_9_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max/sand/sim_days_8-initial_-25-noise_0.9/Glycine_max_day_8_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max/sand/sim_days_8-initial_-25-noise_0.9/label_Glycine_max_day_8_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max/sand/sim_days_8-initial_-25-noise_0.9/label_Glycine_max_day_8_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max/sand/sim_days_8-initial_-20-noise_0.9/Glycine_max_day_8_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max/sand/sim_days_8-initial_-20-noise_0.9/label_Glycine_max_day_8_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max/sand/sim_days_8-initial_-20-noise_0.9/label_Glycine_max_day_8_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max/sand/sim_days_9-initial_-20-noise_0.7/Glycine_max_day_9_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max/sand/sim_days_9-initial_-20-noise_0.7/label_Glycine_max_day_9_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max/sand/sim_days_9-initial_-20-noise_0.7/label_Glycine_max_day_9_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max/sand/sim_days_8-initial_-30-noise_0.5/Glycine_max_day_8_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max/sand/sim_days_8-initial_-30-noise_0.5/label_Glycine_max_day_8_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max/sand/sim_days_8-initial_-30-noise_0.5/label_Glycine_max_day_8_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max/sand/sim_days_10-initial_-30-noise_0.5/Glycine_max_day_10_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max/sand/sim_days_10-initial_-30-noise_0.5/label_Glycine_max_day_10_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max/sand/sim_days_10-initial_-30-noise_0.5/label_Glycine_max_day_10_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max/sand/sim_days_7-initial_-30-noise_0.9/Glycine_max_day_7_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max/sand/sim_days_7-initial_-30-noise_0.9/label_Glycine_max_day_7_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max/sand/sim_days_7-initial_-30-noise_0.9/label_Glycine_max_day_7_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max/sand/sim_days_5-initial_-10-noise_0.7/Glycine_max_day_5_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max/sand/sim_days_5-initial_-10-noise_0.7/label_Glycine_max_day_5_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max/sand/sim_days_5-initial_-10-noise_0.7/label_Glycine_max_day_5_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max/sand/sim_days_10-initial_-30-noise_0.8/Glycine_max_day_10_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max/sand/sim_days_10-initial_-30-noise_0.8/label_Glycine_max_day_10_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max/sand/sim_days_10-initial_-30-noise_0.8/label_Glycine_max_day_10_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max/sand/sim_days_9-initial_-15-noise_0.7/Glycine_max_day_9_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max/sand/sim_days_9-initial_-15-noise_0.7/label_Glycine_max_day_9_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max/sand/sim_days_9-initial_-15-noise_0.7/label_Glycine_max_day_9_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max/sand/sim_days_8-initial_-25-noise_0.6/Glycine_max_day_8_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max/sand/sim_days_8-initial_-25-noise_0.6/label_Glycine_max_day_8_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max/sand/sim_days_8-initial_-25-noise_0.6/label_Glycine_max_day_8_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max/clay/sim_days_5-initial_-1000-noise_0.7/Glycine_max_day_5_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max/clay/sim_days_5-initial_-1000-noise_0.7/label_Glycine_max_day_5_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max/clay/sim_days_5-initial_-1000-noise_0.7/label_Glycine_max_day_5_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max/clay/sim_days_10-initial_-300-noise_0.8/Glycine_max_day_10_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max/clay/sim_days_10-initial_-300-noise_0.8/label_Glycine_max_day_10_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max/clay/sim_days_10-initial_-300-noise_0.8/label_Glycine_max_day_10_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max/clay/sim_days_5-initial_-800-noise_0.5/Glycine_max_day_5_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max/clay/sim_days_5-initial_-800-noise_0.5/label_Glycine_max_day_5_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max/clay/sim_days_5-initial_-800-noise_0.5/label_Glycine_max_day_5_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max/clay/sim_days_8-initial_-500-noise_0.9/Glycine_max_day_8_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max/clay/sim_days_8-initial_-500-noise_0.9/label_Glycine_max_day_8_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max/clay/sim_days_8-initial_-500-noise_0.9/label_Glycine_max_day_8_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max/clay/sim_days_8-initial_-500-noise_0.7/Glycine_max_day_8_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max/clay/sim_days_8-initial_-500-noise_0.7/label_Glycine_max_day_8_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max/clay/sim_days_8-initial_-500-noise_0.7/label_Glycine_max_day_8_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max/clay/sim_days_10-initial_-800-noise_0.8/Glycine_max_day_10_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max/clay/sim_days_10-initial_-800-noise_0.8/label_Glycine_max_day_10_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max/clay/sim_days_10-initial_-800-noise_0.8/label_Glycine_max_day_10_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max/clay/sim_days_9-initial_-800-noise_0.5/Glycine_max_day_9_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max/clay/sim_days_9-initial_-800-noise_0.5/label_Glycine_max_day_9_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max/clay/sim_days_9-initial_-800-noise_0.5/label_Glycine_max_day_9_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max/clay/sim_days_9-initial_-800-noise_0.9/Glycine_max_day_9_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max/clay/sim_days_9-initial_-800-noise_0.9/label_Glycine_max_day_9_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max/clay/sim_days_9-initial_-800-noise_0.9/label_Glycine_max_day_9_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max/clay/sim_days_10-initial_-800-noise_0.9/Glycine_max_day_10_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max/clay/sim_days_10-initial_-800-noise_0.9/label_Glycine_max_day_10_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max/clay/sim_days_10-initial_-800-noise_0.9/label_Glycine_max_day_10_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max/clay/sim_days_6-initial_-700-noise_0.8/Glycine_max_day_6_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max/clay/sim_days_6-initial_-700-noise_0.8/label_Glycine_max_day_6_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max/clay/sim_days_6-initial_-700-noise_0.8/label_Glycine_max_day_6_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max/clay/sim_days_7-initial_-300-noise_0.5/Glycine_max_day_7_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max/clay/sim_days_7-initial_-300-noise_0.5/label_Glycine_max_day_7_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max/clay/sim_days_7-initial_-300-noise_0.5/label_Glycine_max_day_7_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max_Moraes2020_opt2/loam/sim_days_10-initial_-420-noise_0.8/Glycine_max_Moraes2020_opt2_day_10_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/loam/sim_days_10-initial_-420-noise_0.8/label_Glycine_max_Moraes2020_opt2_day_10_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/loam/sim_days_10-initial_-420-noise_0.8/label_Glycine_max_Moraes2020_opt2_day_10_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max_Moraes2020_opt2/loam/sim_days_6-initial_-450-noise_0.8/Glycine_max_Moraes2020_opt2_day_6_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/loam/sim_days_6-initial_-450-noise_0.8/label_Glycine_max_Moraes2020_opt2_day_6_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/loam/sim_days_6-initial_-450-noise_0.8/label_Glycine_max_Moraes2020_opt2_day_6_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max_Moraes2020_opt2/loam/sim_days_10-initial_-360-noise_0.6/Glycine_max_Moraes2020_opt2_day_10_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/loam/sim_days_10-initial_-360-noise_0.6/label_Glycine_max_Moraes2020_opt2_day_10_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/loam/sim_days_10-initial_-360-noise_0.6/label_Glycine_max_Moraes2020_opt2_day_10_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max_Moraes2020_opt2/loam/sim_days_10-initial_-280-noise_0.5/Glycine_max_Moraes2020_opt2_day_10_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/loam/sim_days_10-initial_-280-noise_0.5/label_Glycine_max_Moraes2020_opt2_day_10_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/loam/sim_days_10-initial_-280-noise_0.5/label_Glycine_max_Moraes2020_opt2_day_10_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max_Moraes2020_opt2/loam/sim_days_7-initial_-480-noise_0.5/Glycine_max_Moraes2020_opt2_day_7_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/loam/sim_days_7-initial_-480-noise_0.5/label_Glycine_max_Moraes2020_opt2_day_7_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/loam/sim_days_7-initial_-480-noise_0.5/label_Glycine_max_Moraes2020_opt2_day_7_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max_Moraes2020_opt2/loam/sim_days_10-initial_-200-noise_0.7/Glycine_max_Moraes2020_opt2_day_10_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/loam/sim_days_10-initial_-200-noise_0.7/label_Glycine_max_Moraes2020_opt2_day_10_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/loam/sim_days_10-initial_-200-noise_0.7/label_Glycine_max_Moraes2020_opt2_day_10_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max_Moraes2020_opt2/loam/sim_days_9-initial_-410-noise_0.8/Glycine_max_Moraes2020_opt2_day_9_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/loam/sim_days_9-initial_-410-noise_0.8/label_Glycine_max_Moraes2020_opt2_day_9_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/loam/sim_days_9-initial_-410-noise_0.8/label_Glycine_max_Moraes2020_opt2_day_9_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max_Moraes2020_opt2/loam/sim_days_5-initial_-160-noise_0.9/Glycine_max_Moraes2020_opt2_day_5_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/loam/sim_days_5-initial_-160-noise_0.9/label_Glycine_max_Moraes2020_opt2_day_5_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/loam/sim_days_5-initial_-160-noise_0.9/label_Glycine_max_Moraes2020_opt2_day_5_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max_Moraes2020_opt2/loam/sim_days_9-initial_-480-noise_0.6/Glycine_max_Moraes2020_opt2_day_9_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/loam/sim_days_9-initial_-480-noise_0.6/label_Glycine_max_Moraes2020_opt2_day_9_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/loam/sim_days_9-initial_-480-noise_0.6/label_Glycine_max_Moraes2020_opt2_day_9_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max_Moraes2020_opt2/loam/sim_days_5-initial_-100-noise_0.5/Glycine_max_Moraes2020_opt2_day_5_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/loam/sim_days_5-initial_-100-noise_0.5/label_Glycine_max_Moraes2020_opt2_day_5_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/loam/sim_days_5-initial_-100-noise_0.5/label_Glycine_max_Moraes2020_opt2_day_5_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max_Moraes2020_opt2/loam/sim_days_10-initial_-320-noise_0.6/Glycine_max_Moraes2020_opt2_day_10_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/loam/sim_days_10-initial_-320-noise_0.6/label_Glycine_max_Moraes2020_opt2_day_10_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/loam/sim_days_10-initial_-320-noise_0.6/label_Glycine_max_Moraes2020_opt2_day_10_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max_Moraes2020_opt2/sand/sim_days_10-initial_-10-noise_0.9/Glycine_max_Moraes2020_opt2_day_10_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/sand/sim_days_10-initial_-10-noise_0.9/label_Glycine_max_Moraes2020_opt2_day_10_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/sand/sim_days_10-initial_-10-noise_0.9/label_Glycine_max_Moraes2020_opt2_day_10_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max_Moraes2020_opt2/sand/sim_days_6-initial_-10-noise_0.7/Glycine_max_Moraes2020_opt2_day_6_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/sand/sim_days_6-initial_-10-noise_0.7/label_Glycine_max_Moraes2020_opt2_day_6_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/sand/sim_days_6-initial_-10-noise_0.7/label_Glycine_max_Moraes2020_opt2_day_6_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max_Moraes2020_opt2/sand/sim_days_5-initial_-30-noise_0.5/Glycine_max_Moraes2020_opt2_day_5_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/sand/sim_days_5-initial_-30-noise_0.5/label_Glycine_max_Moraes2020_opt2_day_5_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/sand/sim_days_5-initial_-30-noise_0.5/label_Glycine_max_Moraes2020_opt2_day_5_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max_Moraes2020_opt2/sand/sim_days_7-initial_-25-noise_0.8/Glycine_max_Moraes2020_opt2_day_7_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/sand/sim_days_7-initial_-25-noise_0.8/label_Glycine_max_Moraes2020_opt2_day_7_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/sand/sim_days_7-initial_-25-noise_0.8/label_Glycine_max_Moraes2020_opt2_day_7_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max_Moraes2020_opt2/sand/sim_days_5-initial_-15-noise_0.7/Glycine_max_Moraes2020_opt2_day_5_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/sand/sim_days_5-initial_-15-noise_0.7/label_Glycine_max_Moraes2020_opt2_day_5_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/sand/sim_days_5-initial_-15-noise_0.7/label_Glycine_max_Moraes2020_opt2_day_5_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max_Moraes2020_opt2/sand/sim_days_9-initial_-15-noise_0.5/Glycine_max_Moraes2020_opt2_day_9_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/sand/sim_days_9-initial_-15-noise_0.5/label_Glycine_max_Moraes2020_opt2_day_9_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/sand/sim_days_9-initial_-15-noise_0.5/label_Glycine_max_Moraes2020_opt2_day_9_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max_Moraes2020_opt2/sand/sim_days_9-initial_-20-noise_0.6/Glycine_max_Moraes2020_opt2_day_9_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/sand/sim_days_9-initial_-20-noise_0.6/label_Glycine_max_Moraes2020_opt2_day_9_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/sand/sim_days_9-initial_-20-noise_0.6/label_Glycine_max_Moraes2020_opt2_day_9_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max_Moraes2020_opt2/sand/sim_days_8-initial_-15-noise_0.5/Glycine_max_Moraes2020_opt2_day_8_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/sand/sim_days_8-initial_-15-noise_0.5/label_Glycine_max_Moraes2020_opt2_day_8_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/sand/sim_days_8-initial_-15-noise_0.5/label_Glycine_max_Moraes2020_opt2_day_8_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max_Moraes2020_opt2/sand/sim_days_6-initial_-30-noise_0.8/Glycine_max_Moraes2020_opt2_day_6_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/sand/sim_days_6-initial_-30-noise_0.8/label_Glycine_max_Moraes2020_opt2_day_6_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/sand/sim_days_6-initial_-30-noise_0.8/label_Glycine_max_Moraes2020_opt2_day_6_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max_Moraes2020_opt2/sand/sim_days_5-initial_-30-noise_0.6/Glycine_max_Moraes2020_opt2_day_5_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/sand/sim_days_5-initial_-30-noise_0.6/label_Glycine_max_Moraes2020_opt2_day_5_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/sand/sim_days_5-initial_-30-noise_0.6/label_Glycine_max_Moraes2020_opt2_day_5_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max_Moraes2020_opt2/sand/sim_days_6-initial_-25-noise_0.6/Glycine_max_Moraes2020_opt2_day_6_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/sand/sim_days_6-initial_-25-noise_0.6/label_Glycine_max_Moraes2020_opt2_day_6_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/sand/sim_days_6-initial_-25-noise_0.6/label_Glycine_max_Moraes2020_opt2_day_6_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max_Moraes2020_opt2/clay/sim_days_9-initial_-600-noise_0.8/Glycine_max_Moraes2020_opt2_day_9_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/clay/sim_days_9-initial_-600-noise_0.8/label_Glycine_max_Moraes2020_opt2_day_9_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/clay/sim_days_9-initial_-600-noise_0.8/label_Glycine_max_Moraes2020_opt2_day_9_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max_Moraes2020_opt2/clay/sim_days_9-initial_-300-noise_0.6/Glycine_max_Moraes2020_opt2_day_9_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/clay/sim_days_9-initial_-300-noise_0.6/label_Glycine_max_Moraes2020_opt2_day_9_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/clay/sim_days_9-initial_-300-noise_0.6/label_Glycine_max_Moraes2020_opt2_day_9_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max_Moraes2020_opt2/clay/sim_days_7-initial_-600-noise_0.5/Glycine_max_Moraes2020_opt2_day_7_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/clay/sim_days_7-initial_-600-noise_0.5/label_Glycine_max_Moraes2020_opt2_day_7_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/clay/sim_days_7-initial_-600-noise_0.5/label_Glycine_max_Moraes2020_opt2_day_7_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max_Moraes2020_opt2/clay/sim_days_6-initial_-800-noise_0.9/Glycine_max_Moraes2020_opt2_day_6_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/clay/sim_days_6-initial_-800-noise_0.9/label_Glycine_max_Moraes2020_opt2_day_6_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/clay/sim_days_6-initial_-800-noise_0.9/label_Glycine_max_Moraes2020_opt2_day_6_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max_Moraes2020_opt2/clay/sim_days_6-initial_-1000-noise_0.7/Glycine_max_Moraes2020_opt2_day_6_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/clay/sim_days_6-initial_-1000-noise_0.7/label_Glycine_max_Moraes2020_opt2_day_6_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/clay/sim_days_6-initial_-1000-noise_0.7/label_Glycine_max_Moraes2020_opt2_day_6_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max_Moraes2020_opt2/clay/sim_days_9-initial_-800-noise_0.6/Glycine_max_Moraes2020_opt2_day_9_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/clay/sim_days_9-initial_-800-noise_0.6/label_Glycine_max_Moraes2020_opt2_day_9_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/clay/sim_days_9-initial_-800-noise_0.6/label_Glycine_max_Moraes2020_opt2_day_9_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max_Moraes2020_opt2/clay/sim_days_7-initial_-600-noise_0.8/Glycine_max_Moraes2020_opt2_day_7_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/clay/sim_days_7-initial_-600-noise_0.8/label_Glycine_max_Moraes2020_opt2_day_7_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/clay/sim_days_7-initial_-600-noise_0.8/label_Glycine_max_Moraes2020_opt2_day_7_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max_Moraes2020_opt2/clay/sim_days_7-initial_-800-noise_0.5/Glycine_max_Moraes2020_opt2_day_7_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/clay/sim_days_7-initial_-800-noise_0.5/label_Glycine_max_Moraes2020_opt2_day_7_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/clay/sim_days_7-initial_-800-noise_0.5/label_Glycine_max_Moraes2020_opt2_day_7_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max_Moraes2020_opt2/clay/sim_days_5-initial_-600-noise_0.9/Glycine_max_Moraes2020_opt2_day_5_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/clay/sim_days_5-initial_-600-noise_0.9/label_Glycine_max_Moraes2020_opt2_day_5_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/clay/sim_days_5-initial_-600-noise_0.9/label_Glycine_max_Moraes2020_opt2_day_5_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max_Moraes2020_opt2/clay/sim_days_9-initial_-900-noise_0.5/Glycine_max_Moraes2020_opt2_day_9_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/clay/sim_days_9-initial_-900-noise_0.5/label_Glycine_max_Moraes2020_opt2_day_9_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/clay/sim_days_9-initial_-900-noise_0.5/label_Glycine_max_Moraes2020_opt2_day_9_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/training/Glycine_max_Moraes2020_opt2/clay/sim_days_6-initial_-700-noise_0.9/Glycine_max_Moraes2020_opt2_day_6_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/clay/sim_days_6-initial_-700-noise_0.9/label_Glycine_max_Moraes2020_opt2_day_6_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/training/Glycine_max_Moraes2020_opt2/clay/sim_days_6-initial_-700-noise_0.9/label_Glycine_max_Moraes2020_opt2_day_6_SNR_3_res_458x458x402.nii.gz"
         }
     ],
     "validation": [
         {
             "image": "../../data/generated/validation/Moraesetal_2020/loam/sim_days_6-initial_-200-noise_0.9/Moraesetal_2020_day_6_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/validation/Moraesetal_2020/loam/sim_days_6-initial_-200-noise_0.9/label_Moraesetal_2020_day_6_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/validation/Moraesetal_2020/loam/sim_days_6-initial_-200-noise_0.9/label_Moraesetal_2020_day_6_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/validation/Moraesetal_2020/loam/sim_days_7-initial_-140-noise_0.5/Moraesetal_2020_day_7_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/validation/Moraesetal_2020/loam/sim_days_7-initial_-140-noise_0.5/label_Moraesetal_2020_day_7_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/validation/Moraesetal_2020/loam/sim_days_7-initial_-140-noise_0.5/label_Moraesetal_2020_day_7_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/validation/Moraesetal_2020/sand/sim_days_9-initial_-15-noise_0.8/Moraesetal_2020_day_9_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/validation/Moraesetal_2020/sand/sim_days_9-initial_-15-noise_0.8/label_Moraesetal_2020_day_9_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/validation/Moraesetal_2020/sand/sim_days_9-initial_-15-noise_0.8/label_Moraesetal_2020_day_9_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/validation/Moraesetal_2020/sand/sim_days_8-initial_-10-noise_0.9/Moraesetal_2020_day_8_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/validation/Moraesetal_2020/sand/sim_days_8-initial_-10-noise_0.9/label_Moraesetal_2020_day_8_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/validation/Moraesetal_2020/sand/sim_days_8-initial_-10-noise_0.9/label_Moraesetal_2020_day_8_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/validation/Moraesetal_2020/clay/sim_days_10-initial_-1000-noise_0.6/Moraesetal_2020_day_10_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/validation/Moraesetal_2020/clay/sim_days_10-initial_-1000-noise_0.6/label_Moraesetal_2020_day_10_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/validation/Moraesetal_2020/clay/sim_days_10-initial_-1000-noise_0.6/label_Moraesetal_2020_day_10_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/validation/Moraesetal_2020/clay/sim_days_8-initial_-800-noise_0.5/Moraesetal_2020_day_8_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/validation/Moraesetal_2020/clay/sim_days_8-initial_-800-noise_0.5/label_Moraesetal_2020_day_8_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/validation/Moraesetal_2020/clay/sim_days_8-initial_-800-noise_0.5/label_Moraesetal_2020_day_8_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/validation/Crypsis_aculeata_Clausnitzer_1994/loam/sim_days_9-initial_-80-noise_0.9/Crypsis_aculeata_Clausnitzer_1994_day_9_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/validation/Crypsis_aculeata_Clausnitzer_1994/loam/sim_days_9-initial_-80-noise_0.9/label_Crypsis_aculeata_Clausnitzer_1994_day_9_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/validation/Crypsis_aculeata_Clausnitzer_1994/loam/sim_days_9-initial_-80-noise_0.9/label_Crypsis_aculeata_Clausnitzer_1994_day_9_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/validation/Crypsis_aculeata_Clausnitzer_1994/loam/sim_days_5-initial_-100-noise_0.7/Crypsis_aculeata_Clausnitzer_1994_day_5_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/validation/Crypsis_aculeata_Clausnitzer_1994/loam/sim_days_5-initial_-100-noise_0.7/label_Crypsis_aculeata_Clausnitzer_1994_day_5_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/validation/Crypsis_aculeata_Clausnitzer_1994/loam/sim_days_5-initial_-100-noise_0.7/label_Crypsis_aculeata_Clausnitzer_1994_day_5_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/validation/Crypsis_aculeata_Clausnitzer_1994/sand/sim_days_7-initial_-10-noise_0.5/Crypsis_aculeata_Clausnitzer_1994_day_7_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/validation/Crypsis_aculeata_Clausnitzer_1994/sand/sim_days_7-initial_-10-noise_0.5/label_Crypsis_aculeata_Clausnitzer_1994_day_7_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/validation/Crypsis_aculeata_Clausnitzer_1994/sand/sim_days_7-initial_-10-noise_0.5/label_Crypsis_aculeata_Clausnitzer_1994_day_7_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/validation/Crypsis_aculeata_Clausnitzer_1994/sand/sim_days_9-initial_-30-noise_0.5/Crypsis_aculeata_Clausnitzer_1994_day_9_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/validation/Crypsis_aculeata_Clausnitzer_1994/sand/sim_days_9-initial_-30-noise_0.5/label_Crypsis_aculeata_Clausnitzer_1994_day_9_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/validation/Crypsis_aculeata_Clausnitzer_1994/sand/sim_days_9-initial_-30-noise_0.5/label_Crypsis_aculeata_Clausnitzer_1994_day_9_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/validation/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_9-initial_-300-noise_0.5/Crypsis_aculeata_Clausnitzer_1994_day_9_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/validation/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_9-initial_-300-noise_0.5/label_Crypsis_aculeata_Clausnitzer_1994_day_9_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/validation/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_9-initial_-300-noise_0.5/label_Crypsis_aculeata_Clausnitzer_1994_day_9_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/validation/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_9-initial_-600-noise_0.9/Crypsis_aculeata_Clausnitzer_1994_day_9_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/validation/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_9-initial_-600-noise_0.9/label_Crypsis_aculeata_Clausnitzer_1994_day_9_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/validation/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_9-initial_-600-noise_0.9/label_Crypsis_aculeata_Clausnitzer_1994_day_9_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/validation/Bench_lupin/loam/sim_days_6-initial_-170-noise_0.8/Bench_lupin_day_6_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/validation/Bench_lupin/loam/sim_days_6-initial_-170-noise_0.8/label_Bench_lupin_day_6_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/validation/Bench_lupin/loam/sim_days_6-initial_-170-noise_0.8/label_Bench_lupin_day_6_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/validation/Bench_lupin/loam/sim_days_5-initial_-210-noise_0.5/Bench_lupin_day_5_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/validation/Bench_lupin/loam/sim_days_5-initial_-210-noise_0.5/label_Bench_lupin_day_5_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/validation/Bench_lupin/loam/sim_days_5-initial_-210-noise_0.5/label_Bench_lupin_day_5_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/validation/Bench_lupin/sand/sim_days_8-initial_-15-noise_0.7/Bench_lupin_day_8_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/validation/Bench_lupin/sand/sim_days_8-initial_-15-noise_0.7/label_Bench_lupin_day_8_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/validation/Bench_lupin/sand/sim_days_8-initial_-15-noise_0.7/label_Bench_lupin_day_8_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/validation/Bench_lupin/sand/sim_days_6-initial_-30-noise_0.6/Bench_lupin_day_6_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/validation/Bench_lupin/sand/sim_days_6-initial_-30-noise_0.6/label_Bench_lupin_day_6_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/validation/Bench_lupin/sand/sim_days_6-initial_-30-noise_0.6/label_Bench_lupin_day_6_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/validation/Bench_lupin/clay/sim_days_7-initial_-400-noise_0.7/Bench_lupin_day_7_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/validation/Bench_lupin/clay/sim_days_7-initial_-400-noise_0.7/label_Bench_lupin_day_7_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/validation/Bench_lupin/clay/sim_days_7-initial_-400-noise_0.7/label_Bench_lupin_day_7_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/validation/Bench_lupin/clay/sim_days_8-initial_-300-noise_0.6/Bench_lupin_day_8_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/validation/Bench_lupin/clay/sim_days_8-initial_-300-noise_0.6/label_Bench_lupin_day_8_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/validation/Bench_lupin/clay/sim_days_8-initial_-300-noise_0.6/label_Bench_lupin_day_8_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/validation/Glycine_max/loam/sim_days_7-initial_-270-noise_0.5/Glycine_max_day_7_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/validation/Glycine_max/loam/sim_days_7-initial_-270-noise_0.5/label_Glycine_max_day_7_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/validation/Glycine_max/loam/sim_days_7-initial_-270-noise_0.5/label_Glycine_max_day_7_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/validation/Glycine_max/loam/sim_days_9-initial_-80-noise_0.8/Glycine_max_day_9_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/validation/Glycine_max/loam/sim_days_9-initial_-80-noise_0.8/label_Glycine_max_day_9_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/validation/Glycine_max/loam/sim_days_9-initial_-80-noise_0.8/label_Glycine_max_day_9_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/validation/Glycine_max/sand/sim_days_5-initial_-30-noise_0.8/Glycine_max_day_5_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/validation/Glycine_max/sand/sim_days_5-initial_-30-noise_0.8/label_Glycine_max_day_5_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/validation/Glycine_max/sand/sim_days_5-initial_-30-noise_0.8/label_Glycine_max_day_5_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/validation/Glycine_max/sand/sim_days_9-initial_-15-noise_0.6/Glycine_max_day_9_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/validation/Glycine_max/sand/sim_days_9-initial_-15-noise_0.6/label_Glycine_max_day_9_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/validation/Glycine_max/sand/sim_days_9-initial_-15-noise_0.6/label_Glycine_max_day_9_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/validation/Glycine_max/clay/sim_days_5-initial_-400-noise_0.8/Glycine_max_day_5_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/validation/Glycine_max/clay/sim_days_5-initial_-400-noise_0.8/label_Glycine_max_day_5_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/validation/Glycine_max/clay/sim_days_5-initial_-400-noise_0.8/label_Glycine_max_day_5_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/validation/Glycine_max/clay/sim_days_9-initial_-400-noise_0.9/Glycine_max_day_9_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/validation/Glycine_max/clay/sim_days_9-initial_-400-noise_0.9/label_Glycine_max_day_9_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/validation/Glycine_max/clay/sim_days_9-initial_-400-noise_0.9/label_Glycine_max_day_9_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/validation/Glycine_max_Moraes2020_opt2/loam/sim_days_10-initial_-380-noise_0.9/Glycine_max_Moraes2020_opt2_day_10_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/validation/Glycine_max_Moraes2020_opt2/loam/sim_days_10-initial_-380-noise_0.9/label_Glycine_max_Moraes2020_opt2_day_10_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/validation/Glycine_max_Moraes2020_opt2/loam/sim_days_10-initial_-380-noise_0.9/label_Glycine_max_Moraes2020_opt2_day_10_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/validation/Glycine_max_Moraes2020_opt2/loam/sim_days_7-initial_-410-noise_0.9/Glycine_max_Moraes2020_opt2_day_7_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/validation/Glycine_max_Moraes2020_opt2/loam/sim_days_7-initial_-410-noise_0.9/label_Glycine_max_Moraes2020_opt2_day_7_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/validation/Glycine_max_Moraes2020_opt2/loam/sim_days_7-initial_-410-noise_0.9/label_Glycine_max_Moraes2020_opt2_day_7_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/validation/Glycine_max_Moraes2020_opt2/sand/sim_days_7-initial_-30-noise_0.9/Glycine_max_Moraes2020_opt2_day_7_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/validation/Glycine_max_Moraes2020_opt2/sand/sim_days_7-initial_-30-noise_0.9/label_Glycine_max_Moraes2020_opt2_day_7_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/validation/Glycine_max_Moraes2020_opt2/sand/sim_days_7-initial_-30-noise_0.9/label_Glycine_max_Moraes2020_opt2_day_7_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/validation/Glycine_max_Moraes2020_opt2/sand/sim_days_8-initial_-30-noise_0.9/Glycine_max_Moraes2020_opt2_day_8_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/validation/Glycine_max_Moraes2020_opt2/sand/sim_days_8-initial_-30-noise_0.9/label_Glycine_max_Moraes2020_opt2_day_8_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/validation/Glycine_max_Moraes2020_opt2/sand/sim_days_8-initial_-30-noise_0.9/label_Glycine_max_Moraes2020_opt2_day_8_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/validation/Glycine_max_Moraes2020_opt2/clay/sim_days_5-initial_-600-noise_0.7/Glycine_max_Moraes2020_opt2_day_5_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/validation/Glycine_max_Moraes2020_opt2/clay/sim_days_5-initial_-600-noise_0.7/label_Glycine_max_Moraes2020_opt2_day_5_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/validation/Glycine_max_Moraes2020_opt2/clay/sim_days_5-initial_-600-noise_0.7/label_Glycine_max_Moraes2020_opt2_day_5_SNR_3_res_458x458x402.nii.gz"
         },
         {
             "image": "../../data/generated/validation/Glycine_max_Moraes2020_opt2/clay/sim_days_9-initial_-500-noise_0.8/Glycine_max_Moraes2020_opt2_day_9_SNR_3_res_229x229x201.nii.gz",
-            "label": "../../data/generated/validation/Glycine_max_Moraes2020_opt2/clay/sim_days_9-initial_-500-noise_0.8/label_Glycine_max_Moraes2020_opt2_day_9_SNR_3_res_459x459x403.nii.gz"
+            "label": "../../data/generated/validation/Glycine_max_Moraes2020_opt2/clay/sim_days_9-initial_-500-noise_0.8/label_Glycine_max_Moraes2020_opt2_day_9_SNR_3_res_458x458x402.nii.gz"
         }
     ],
-    "test": [],
+    "test": [
+        {
+            "image": "../../data/generated/test/Moraesetal_2020/loam/sim_days_9-initial_-90-noise_0.7/Moraesetal_2020_day_9_SNR_3_res_229x229x201.nii.gz",
+            "label": "../../data/generated/test/Moraesetal_2020/loam/sim_days_9-initial_-90-noise_0.7/label_Moraesetal_2020_day_9_SNR_3_res_458x458x402.nii.gz"
+        },
+        {
+            "image": "../../data/generated/test/Moraesetal_2020/loam/sim_days_7-initial_-460-noise_0.8/Moraesetal_2020_day_7_SNR_3_res_229x229x201.nii.gz",
+            "label": "../../data/generated/test/Moraesetal_2020/loam/sim_days_7-initial_-460-noise_0.8/label_Moraesetal_2020_day_7_SNR_3_res_458x458x402.nii.gz"
+        },
+        {
+            "image": "../../data/generated/test/Moraesetal_2020/sand/sim_days_9-initial_-30-noise_0.7/Moraesetal_2020_day_9_SNR_3_res_229x229x201.nii.gz",
+            "label": "../../data/generated/test/Moraesetal_2020/sand/sim_days_9-initial_-30-noise_0.7/label_Moraesetal_2020_day_9_SNR_3_res_458x458x402.nii.gz"
+        },
+        {
+            "image": "../../data/generated/test/Moraesetal_2020/sand/sim_days_5-initial_-15-noise_0.5/Moraesetal_2020_day_5_SNR_3_res_229x229x201.nii.gz",
+            "label": "../../data/generated/test/Moraesetal_2020/sand/sim_days_5-initial_-15-noise_0.5/label_Moraesetal_2020_day_5_SNR_3_res_458x458x402.nii.gz"
+        },
+        {
+            "image": "../../data/generated/test/Moraesetal_2020/clay/sim_days_6-initial_-700-noise_0.6/Moraesetal_2020_day_6_SNR_3_res_229x229x201.nii.gz",
+            "label": "../../data/generated/test/Moraesetal_2020/clay/sim_days_6-initial_-700-noise_0.6/label_Moraesetal_2020_day_6_SNR_3_res_458x458x402.nii.gz"
+        },
+        {
+            "image": "../../data/generated/test/Moraesetal_2020/clay/sim_days_9-initial_-900-noise_0.6/Moraesetal_2020_day_9_SNR_3_res_229x229x201.nii.gz",
+            "label": "../../data/generated/test/Moraesetal_2020/clay/sim_days_9-initial_-900-noise_0.6/label_Moraesetal_2020_day_9_SNR_3_res_458x458x402.nii.gz"
+        },
+        {
+            "image": "../../data/generated/test/Crypsis_aculeata_Clausnitzer_1994/loam/sim_days_8-initial_-380-noise_0.9/Crypsis_aculeata_Clausnitzer_1994_day_8_SNR_3_res_229x229x201.nii.gz",
+            "label": "../../data/generated/test/Crypsis_aculeata_Clausnitzer_1994/loam/sim_days_8-initial_-380-noise_0.9/label_Crypsis_aculeata_Clausnitzer_1994_day_8_SNR_3_res_458x458x402.nii.gz"
+        },
+        {
+            "image": "../../data/generated/test/Crypsis_aculeata_Clausnitzer_1994/loam/sim_days_9-initial_-160-noise_0.9/Crypsis_aculeata_Clausnitzer_1994_day_9_SNR_3_res_229x229x201.nii.gz",
+            "label": "../../data/generated/test/Crypsis_aculeata_Clausnitzer_1994/loam/sim_days_9-initial_-160-noise_0.9/label_Crypsis_aculeata_Clausnitzer_1994_day_9_SNR_3_res_458x458x402.nii.gz"
+        },
+        {
+            "image": "../../data/generated/test/Crypsis_aculeata_Clausnitzer_1994/sand/sim_days_9-initial_-10-noise_0.6/Crypsis_aculeata_Clausnitzer_1994_day_9_SNR_3_res_229x229x201.nii.gz",
+            "label": "../../data/generated/test/Crypsis_aculeata_Clausnitzer_1994/sand/sim_days_9-initial_-10-noise_0.6/label_Crypsis_aculeata_Clausnitzer_1994_day_9_SNR_3_res_458x458x402.nii.gz"
+        },
+        {
+            "image": "../../data/generated/test/Crypsis_aculeata_Clausnitzer_1994/sand/sim_days_8-initial_-20-noise_0.9/Crypsis_aculeata_Clausnitzer_1994_day_8_SNR_3_res_229x229x201.nii.gz",
+            "label": "../../data/generated/test/Crypsis_aculeata_Clausnitzer_1994/sand/sim_days_8-initial_-20-noise_0.9/label_Crypsis_aculeata_Clausnitzer_1994_day_8_SNR_3_res_458x458x402.nii.gz"
+        },
+        {
+            "image": "../../data/generated/test/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_7-initial_-400-noise_0.7/Crypsis_aculeata_Clausnitzer_1994_day_7_SNR_3_res_229x229x201.nii.gz",
+            "label": "../../data/generated/test/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_7-initial_-400-noise_0.7/label_Crypsis_aculeata_Clausnitzer_1994_day_7_SNR_3_res_458x458x402.nii.gz"
+        },
+        {
+            "image": "../../data/generated/test/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_9-initial_-400-noise_0.7/Crypsis_aculeata_Clausnitzer_1994_day_9_SNR_3_res_229x229x201.nii.gz",
+            "label": "../../data/generated/test/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_9-initial_-400-noise_0.7/label_Crypsis_aculeata_Clausnitzer_1994_day_9_SNR_3_res_458x458x402.nii.gz"
+        },
+        {
+            "image": "../../data/generated/test/Bench_lupin/loam/sim_days_6-initial_-240-noise_0.9/Bench_lupin_day_6_SNR_3_res_229x229x201.nii.gz",
+            "label": "../../data/generated/test/Bench_lupin/loam/sim_days_6-initial_-240-noise_0.9/label_Bench_lupin_day_6_SNR_3_res_458x458x402.nii.gz"
+        },
+        {
+            "image": "../../data/generated/test/Bench_lupin/loam/sim_days_7-initial_-160-noise_0.6/Bench_lupin_day_7_SNR_3_res_229x229x201.nii.gz",
+            "label": "../../data/generated/test/Bench_lupin/loam/sim_days_7-initial_-160-noise_0.6/label_Bench_lupin_day_7_SNR_3_res_458x458x402.nii.gz"
+        },
+        {
+            "image": "../../data/generated/test/Bench_lupin/sand/sim_days_6-initial_-30-noise_0.9/Bench_lupin_day_6_SNR_3_res_229x229x201.nii.gz",
+            "label": "../../data/generated/test/Bench_lupin/sand/sim_days_6-initial_-30-noise_0.9/label_Bench_lupin_day_6_SNR_3_res_458x458x402.nii.gz"
+        },
+        {
+            "image": "../../data/generated/test/Bench_lupin/sand/sim_days_6-initial_-15-noise_0.6/Bench_lupin_day_6_SNR_3_res_229x229x201.nii.gz",
+            "label": "../../data/generated/test/Bench_lupin/sand/sim_days_6-initial_-15-noise_0.6/label_Bench_lupin_day_6_SNR_3_res_458x458x402.nii.gz"
+        },
+        {
+            "image": "../../data/generated/test/Bench_lupin/clay/sim_days_7-initial_-800-noise_0.7/Bench_lupin_day_7_SNR_3_res_229x229x201.nii.gz",
+            "label": "../../data/generated/test/Bench_lupin/clay/sim_days_7-initial_-800-noise_0.7/label_Bench_lupin_day_7_SNR_3_res_458x458x402.nii.gz"
+        },
+        {
+            "image": "../../data/generated/test/Bench_lupin/clay/sim_days_10-initial_-400-noise_0.8/Bench_lupin_day_10_SNR_3_res_229x229x201.nii.gz",
+            "label": "../../data/generated/test/Bench_lupin/clay/sim_days_10-initial_-400-noise_0.8/label_Bench_lupin_day_10_SNR_3_res_458x458x402.nii.gz"
+        },
+        {
+            "image": "../../data/generated/test/Glycine_max/loam/sim_days_10-initial_-160-noise_0.8/Glycine_max_day_10_SNR_3_res_229x229x201.nii.gz",
+            "label": "../../data/generated/test/Glycine_max/loam/sim_days_10-initial_-160-noise_0.8/label_Glycine_max_day_10_SNR_3_res_458x458x402.nii.gz"
+        },
+        {
+            "image": "../../data/generated/test/Glycine_max/loam/sim_days_6-initial_-30-noise_0.8/Glycine_max_day_6_SNR_3_res_229x229x201.nii.gz",
+            "label": "../../data/generated/test/Glycine_max/loam/sim_days_6-initial_-30-noise_0.8/label_Glycine_max_day_6_SNR_3_res_458x458x402.nii.gz"
+        },
+        {
+            "image": "../../data/generated/test/Glycine_max/sand/sim_days_6-initial_-25-noise_0.6/Glycine_max_day_6_SNR_3_res_229x229x201.nii.gz",
+            "label": "../../data/generated/test/Glycine_max/sand/sim_days_6-initial_-25-noise_0.6/label_Glycine_max_day_6_SNR_3_res_458x458x402.nii.gz"
+        },
+        {
+            "image": "../../data/generated/test/Glycine_max/sand/sim_days_9-initial_-25-noise_0.9/Glycine_max_day_9_SNR_3_res_229x229x201.nii.gz",
+            "label": "../../data/generated/test/Glycine_max/sand/sim_days_9-initial_-25-noise_0.9/label_Glycine_max_day_9_SNR_3_res_458x458x402.nii.gz"
+        },
+        {
+            "image": "../../data/generated/test/Glycine_max/clay/sim_days_6-initial_-400-noise_0.5/Glycine_max_day_6_SNR_3_res_229x229x201.nii.gz",
+            "label": "../../data/generated/test/Glycine_max/clay/sim_days_6-initial_-400-noise_0.5/label_Glycine_max_day_6_SNR_3_res_458x458x402.nii.gz"
+        },
+        {
+            "image": "../../data/generated/test/Glycine_max/clay/sim_days_6-initial_-900-noise_0.9/Glycine_max_day_6_SNR_3_res_229x229x201.nii.gz",
+            "label": "../../data/generated/test/Glycine_max/clay/sim_days_6-initial_-900-noise_0.9/label_Glycine_max_day_6_SNR_3_res_458x458x402.nii.gz"
+        },
+        {
+            "image": "../../data/generated/test/Glycine_max_Moraes2020_opt2/loam/sim_days_9-initial_-380-noise_0.9/Glycine_max_Moraes2020_opt2_day_9_SNR_3_res_229x229x201.nii.gz",
+            "label": "../../data/generated/test/Glycine_max_Moraes2020_opt2/loam/sim_days_9-initial_-380-noise_0.9/label_Glycine_max_Moraes2020_opt2_day_9_SNR_3_res_458x458x402.nii.gz"
+        },
+        {
+            "image": "../../data/generated/test/Glycine_max_Moraes2020_opt2/loam/sim_days_6-initial_-270-noise_0.6/Glycine_max_Moraes2020_opt2_day_6_SNR_3_res_229x229x201.nii.gz",
+            "label": "../../data/generated/test/Glycine_max_Moraes2020_opt2/loam/sim_days_6-initial_-270-noise_0.6/label_Glycine_max_Moraes2020_opt2_day_6_SNR_3_res_458x458x402.nii.gz"
+        },
+        {
+            "image": "../../data/generated/test/Glycine_max_Moraes2020_opt2/sand/sim_days_5-initial_-30-noise_0.8/Glycine_max_Moraes2020_opt2_day_5_SNR_3_res_229x229x201.nii.gz",
+            "label": "../../data/generated/test/Glycine_max_Moraes2020_opt2/sand/sim_days_5-initial_-30-noise_0.8/label_Glycine_max_Moraes2020_opt2_day_5_SNR_3_res_458x458x402.nii.gz"
+        },
+        {
+            "image": "../../data/generated/test/Glycine_max_Moraes2020_opt2/clay/sim_days_5-initial_-900-noise_0.5/Glycine_max_Moraes2020_opt2_day_5_SNR_3_res_229x229x201.nii.gz",
+            "label": "../../data/generated/test/Glycine_max_Moraes2020_opt2/clay/sim_days_5-initial_-900-noise_0.5/label_Glycine_max_Moraes2020_opt2_day_5_SNR_3_res_458x458x402.nii.gz"
+        },
+        {
+            "image": "../../data/generated/test/Glycine_max_Moraes2020_opt2/clay/sim_days_5-initial_-600-noise_0.8/Glycine_max_Moraes2020_opt2_day_5_SNR_3_res_229x229x201.nii.gz",
+            "label": "../../data/generated/test/Glycine_max_Moraes2020_opt2/clay/sim_days_5-initial_-600-noise_0.8/label_Glycine_max_Moraes2020_opt2_day_5_SNR_3_res_458x458x402.nii.gz"
+        }
+    ],
     "numTraining": 166,
-    "numTest": 0
+    "numTest": 29
 }

@@ -50,7 +50,7 @@ class RandCropByPosNegLabeldWithResAdjust(Randomizable):
         # Determine start and end coordinates based on the center voxel and spatial_size
         spatial_tensor = torch.tensor(self.spatial_size, dtype=torch.int64)
         start_coord = torch.clamp(
-            center_coord - spatial_tensor // 2,
+            center_coord - torch.div(spatial_tensor, 2, rounding_mode='floor'),
             torch.tensor([0, 0, 0]),
             torch.tensor([depth, height, width]),
         )

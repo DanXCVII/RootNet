@@ -1,3 +1,6 @@
 **/.DS_Store
 nn_venv/
-unetr_monai.py
+unetr_monai_network.py
+tb_logs/
+example_model_predictions/
+lightning_logs/
