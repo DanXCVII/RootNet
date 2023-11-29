@@ -3,6 +3,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import math
+import matplotlib.pyplot as plt
+import numpy as np
 
 
 class SingleDeconv3DBlock(nn.Module):
@@ -322,8 +324,10 @@ class MyUNETR(nn.Module):
             Conv3DBlock(feature_size * 2, feature_size),
             Conv3DBlock(feature_size, feature_size),
             SingleConv3DBlock(feature_size, out_channels, 1),
-            nn.Sigmoid()
+            
         )
+
+        self.sigmoid = nn.Sigmoid()
 
         # self.decoder0_header = \
         #     nn.Sequential(
@@ -354,7 +358,6 @@ class MyUNETR(nn.Module):
         print("--------------------------------------")
 
     def forward(self, x):
-        print("UNETR input shape", x.shape)
         z = self.transformer(x)
         z0, z3, z6, z9, z12 = x, *z
         z3 = z3.transpose(-1, -2).view(-1, self.embed_dim, *self.patch_dim)
@@ -386,7 +389,27 @@ class MyUNETR(nn.Module):
         # print the mean of z0d
         # print("zu zeros:", torch.sum(zu.eq(0)), torch.sum(zu == 0) / zu.numel())
         # print("z0d zeros:", torch.sum(z0d.eq(0)), torch.sum(z0d == 0) / z0d.numel())
-        output = self.decoder0_header(torch.cat([zu, z0d], dim=1))
+        logits = self.decoder0_header(torch.cat([zu, z0d], dim=1))
+
+        # TODO: remove
+        # all_logits_np = logits.cpu().detach().numpy()
+        # # Flatten the array if it's multi-dimensional
+        # all_logits_np = all_logits_np.flatten()
+
+        # # Plotting the distribution of logits
+        # plt.hist(all_logits_np, bins=50)  # You can adjust the number of bins
+        # plt.xlabel('Logit value')
+        # plt.ylabel('Frequency')
+        # plt.title('Distribution of Logits')
+        # # random number between 1 and 100
+        # rand_num = np.random.randint(1, 20)
+        # plt.savefig(f"logits_distribution{rand_num}.png")
+
+        output = self.sigmoid(logits)
+        
+        # if torch.isnan(logits).any():
+        #     # print 10 random values of logits
+        #     print("logits", logits[torch.randperm(logits.size()[0])[:10]])
 
         # print("output zeros:", torch.sum(output.eq(0)), torch.sum(output == 0) / output.numel())
         # torch.cuda.empty_cache()

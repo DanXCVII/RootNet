@@ -299,6 +299,15 @@ class MyUNETRWrapper(pl.LightningModule):
 
         loss = self.loss_function(output, labels)
 
+        # if torch.isnan(loss).any():
+        #     nan_count = torch.isnan(output).sum().item()
+        #     zero_count = (output == 0).sum().item()
+        #     non_zero_count = (output != 0).sum().item()
+
+        #     print(f"nan count: {nan_count}")
+        #     print(f"zero count: {zero_count}")
+        #     print(f"non zero count: {non_zero_count}")
+
         loss_dict = {"loss": loss}
 
         self.training_step_outputs.append(loss_dict)
@@ -306,7 +315,6 @@ class MyUNETRWrapper(pl.LightningModule):
         return loss_dict
     
     def on_train_epoch_end(self, unused=None, outputs=None): # on_train_epoch_end in newest pytorch version
-
         if self.training_step_outputs:
             avg_loss = torch.stack([x["loss"] for x in self.training_step_outputs]).mean()
 
@@ -534,11 +542,11 @@ class MyUNETRSetup:
             save_top_k=1,
             monitor="Validation/avg_val_loss",
             mode="min",
-            every_n_epochs=5,
+            every_n_epochs=1,
         )
 
     def _setup_logger(self):
-        self.tb_logger = TensorBoardLogger("tb_logs", name="my_model")
+        self.tb_logger = TensorBoardLogger("tb_logs", name="My_UNETR"), #name="my_model")
 
     def _get_trainer(self, checkpoint_path=None):
         nnodes = os.getenv("SLURM_NNODES", 1)
@@ -569,9 +577,14 @@ class MyUNETRSetup:
     #         use_cuda=True,
     #     )
 
-    def train(self, model_checkpoint=None):
+    def train(self, model_checkpoint=None, save_model_path=None):
         trainer = self._get_trainer(checkpoint_path=model_checkpoint)
-        trainer.fit(self.model, ckpt_path=model_checkpoint)
+
+        if model_checkpoint is None:
+            trainer.fit(self.model)
+        else:
+            trainer.fit(self.model, ckpt_path=model_checkpoint)
+        trainer.save_checkpoint(save_model_path)
 
     def test(self, ckpt_path=None):
         trainer = self._get_trainer(checkpoint_path=ckpt_path)
@@ -588,19 +601,41 @@ class MyUNETRSetup:
         # print(f"flops: {flops}")
         # print(f"params: {params}")
 
-# Example Usage:
-model_params = {
-    'in_channels': 1,
-    'out_channels': 1,
-    'img_shape': (128, 128, 128),
-    'feature_size': 16,
-    'batch_size': 1,
-    'max_epochs': 200,
-    'check_val': 10
-}
+# # Example Usage:
+# model_params = {
+#     'in_channels': 1,
+#     'out_channels': 1,
+#     'img_shape': (128, 128, 128),
+#     'feature_size': 16,
+#     'batch_size': 1,
+#     'max_epochs': 181,
+#     'check_val': 10
+# }
+# checkpoint_path = "../../runs/best_metric_model.ckpt"
 
-training_pipeline = MyUNETRSetup(model_params)
-training_pipeline.train(model_checkpoint="../../runs/best_metric_model-v6.ckpt")
+# training_pipeline = MyUNETRSetup(model_params)
 
-# training_pipeline.test("../../runs/best_metric_model-v2.ckpt")
-# training_pipeline.print_model_stats()
+# checkpoint = torch.load(checkpoint_path, map_location=torch.device('cpu'))
+# current_epoch = checkpoint['epoch']
+# continue_training_epoch = current_epoch + 1
+
+# for i in range(0, model_params["max_epochs"], 30):
+#     print("continue epoch", continue_training_epoch)
+#     print("current epoch", i)
+#     print("iteration", i)
+
+#     if i > continue_training_epoch:
+#         print(i)
+#         model_params_adjusted = model_params
+#         model_params_adjusted["max_epochs"] = i
+        
+#         training_pipeline.__init__(model_params_adjusted)
+#         save_model_path = "../../runs/best_metric_model.ckpt"
+#         if i <= 30:
+#             training_pipeline.train(save_model_path=save_model_path)
+#         else:
+#             training_pipeline.train(model_checkpoint=save_model_path, save_model_path=save_model_path)
+
+
+# # training_pipeline.test("../../runs/best_metric_model-v2.ckpt")
+# # training_pipeline.print_model_stats()
