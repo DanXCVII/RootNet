@@ -5,6 +5,7 @@ import torch.nn.functional as F
 import math
 import matplotlib.pyplot as plt
 import numpy as np
+from monai.networks.blocks.upsample import UpSample
 
 
 class SingleDeconv3DBlock(nn.Module):
@@ -239,9 +240,9 @@ class MyUNETR(nn.Module):
     def __init__(
         self,
         feature_size=16,
-        img_shape=(128, 128, 128),
+        img_shape=(96, 96, 96),
         in_channels=1,
-        out_channels=3,
+        out_channels=1,
         embed_dim=768,
         patch_size=16,
         num_heads=12,
@@ -272,7 +273,14 @@ class MyUNETR(nn.Module):
             self.ext_layers,
         )
 
-        self.upsampler = SingleDeconv3DBlock(1, feature_size)
+        self.upsampler = SingleDeconv3DBlock(1, feature_size) # TODO: readd for original MyUNETR
+
+        # self.upsampler = UpSample(
+        #     spatial_dims=3,
+        #     in_channels=1,
+        #     out_channels=feature_size,
+        #     scale_factor=2,
+        # )
 
         # U-Net Decoder
         self.decoder0 = nn.Sequential(
@@ -298,7 +306,7 @@ class MyUNETR(nn.Module):
         self.decoder9_upsampler = nn.Sequential(
             Conv3DBlock(feature_size * 32, feature_size * 16),
             Conv3DBlock(feature_size * 16, feature_size * 16),
-            Conv3DBlock(feature_size * 16, feature_size * 16),
+            # Conv3DBlock(feature_size * 16, feature_size * 16), # TODO: Readd for currently best performing MyUNETR
             SingleDeconv3DBlock(feature_size * 16, feature_size * 8),
         )
 
@@ -324,7 +332,6 @@ class MyUNETR(nn.Module):
             Conv3DBlock(feature_size * 2, feature_size),
             Conv3DBlock(feature_size, feature_size),
             SingleConv3DBlock(feature_size, out_channels, 1),
-            
         )
 
         self.sigmoid = nn.Sigmoid()
@@ -357,6 +364,30 @@ class MyUNETR(nn.Module):
         print(f"Free VRAM: {free_memory_gb:.2f} GB")
         print("--------------------------------------")
 
+    def _plot_distribution(self, grid, grid_name):
+        """
+        For debugging purposes, plots the distribution of the given grid if e.g. the output of the
+        model is not as expected (e.g. all zeros, nan, etc.)
+        """
+        # Flatten the array if it's multi-dimensional
+        grid = grid.detach().cpu().numpy()
+        grid = grid.flatten()
+
+        # save grid as numpy array file
+        np.save(f"{grid_name}_distribution.npy", grid)
+
+        # Plotting the distribution of logits
+        plt.hist(grid, bins=20)
+        plt.xlabel('Logit value')
+        plt.ylabel('Frequency')
+        plt.title(f'Distribution of {grid_name}')
+        # random number between 1 and 100
+        rand_num = np.random.randint(1, 20)
+        print("rand_num", rand_num)
+        print(np.unique(grid)[:20])
+        plt.savefig(f"{grid_name}_distribution_{rand_num}.png")
+
+
     def forward(self, x):
         z = self.transformer(x)
         z0, z3, z6, z9, z12 = x, *z
@@ -365,14 +396,7 @@ class MyUNETR(nn.Module):
         z9 = z9.transpose(-1, -2).view(-1, self.embed_dim, *self.patch_dim)
         z12 = z12.transpose(-1, -2).view(-1, self.embed_dim, *self.patch_dim)
 
-        # print("input z0 zeros:", torch.sum(z0.eq(0)), torch.sum(z0 == 0) / z0.numel())
-        # print("z3 zeros:", torch.sum(z3.eq(0)), torch.sum(z3 == 0) / z3.numel())
-        # print("z6 zeros:", torch.sum(z6.eq(0)), torch.sum(z6 == 0) / z6.numel())
-        # print("z9 zeros:", torch.sum(z9.eq(0)), torch.sum(z9 == 0) / z9.numel())
-        # print("z12 zeros:", torch.sum(z12.eq(0)), torch.sum(z12 == 0) / z12.numel())
-
-
-        zu = self.upsampler(z0)  # added
+        zu = self.upsampler(z0)
         z12 = self.decoder12_upsampler(z12)
         z9 = self.decoder9(z9)
         z9 = self.decoder9_upsampler(torch.cat([z9, z12], dim=1))
@@ -381,52 +405,21 @@ class MyUNETR(nn.Module):
         z3 = self.decoder3(z3)
         z3 = self.decoder3_upsampler(torch.cat([z3, z6], dim=1))
         z0 = self.decoder0(z0)
-        # print("z0 zeros:", torch.sum(z0.eq(0)), torch.sum(z0 == 0) / z0.numel())
         z0d = self.decoder0_upsampler(torch.cat([z0, z3], dim=1))
 
-        # Set the device to the desired CUDA device
-
-        # print the mean of z0d
-        # print("zu zeros:", torch.sum(zu.eq(0)), torch.sum(zu == 0) / zu.numel())
-        # print("z0d zeros:", torch.sum(z0d.eq(0)), torch.sum(z0d == 0) / z0d.numel())
         logits = self.decoder0_header(torch.cat([zu, z0d], dim=1))
 
-        # TODO: remove
-        # all_logits_np = logits.cpu().detach().numpy()
-        # # Flatten the array if it's multi-dimensional
-        # all_logits_np = all_logits_np.flatten()
-
-        # # Plotting the distribution of logits
-        # plt.hist(all_logits_np, bins=50)  # You can adjust the number of bins
-        # plt.xlabel('Logit value')
-        # plt.ylabel('Frequency')
-        # plt.title('Distribution of Logits')
-        # # random number between 1 and 100
-        # rand_num = np.random.randint(1, 20)
-        # plt.savefig(f"logits_distribution{rand_num}.png")
-
-        output = self.sigmoid(logits)
+        # output = self.sigmoid(logits)
         
-        # if torch.isnan(logits).any():
-        #     # print 10 random values of logits
-        #     print("logits", logits[torch.randperm(logits.size()[0])[:10]])
+        # if torch.isnan(output).any():
+        #     self._plot_distribution(zu, "zu")
+        #     self._plot_distribution(z12, "z12")
+        #     self._plot_distribution(z9, "z9")
+        #     self._plot_distribution(z6, "z6")
+        #     self._plot_distribution(z3, "z3")
+        #     self._plot_distribution(z0, "z0")
+        #     self._plot_distribution(z9, "z9")
+        #     self._plot_distribution(z0d, "z0d")
+        #     self._plot_distribution(zu, "zu")
 
-        # print("output zeros:", torch.sum(output.eq(0)), torch.sum(output == 0) / output.numel())
-        # torch.cuda.empty_cache()
-
-        return output
-
-
-# net = MyUNETR(input_dim=1, output_dim=1)
-
-# # Create a sample input tensor with shape [batch_size, channels, depth, height, width]
-# sample_input = torch.randn(1, 1, 128, 128, 128)
-
-# # Pass the sample input through the UNETR model
-# output = net(sample_input)
-
-# # Print the shape of the output to see the result
-# print("output", output.shape)
-# torch.save(net.state_dict(), "model_weights.pth")
-# print("net_state_dict", net.state_dict())
-# net.load_state_dict(torch.load("model_weights.pth"))
+        return logits

@@ -129,3 +129,6 @@ class CreateJsonFileConfig:
 
         return config_dict
 
+# Example execution
+config = CreateJsonFileConfig()
+config.create_config()
