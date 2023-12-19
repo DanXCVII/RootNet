@@ -208,8 +208,11 @@ class DataGenerator:
         data_dir = self.get_dirs_without_subdir(data_path)
 
         for dir in data_dir:
-            num_files = sum(1 for item in os.scandir(dir) if item.is_file())
-
+            num_files = sum(
+                1
+                for item in os.scandir(dir)
+                if item.is_file() and item.name != ".DS_Store"
+            )
             if num_files < 7:
                 shutil.rmtree(dir)
 
@@ -283,6 +286,7 @@ class DataGenerator:
         else:
             self.soil_water_sim.__init__(**soil_water_sim_params)
         water_sim_file = self.soil_water_sim.run()
+        water_sim_file = "water_sim.vtu"
 
         # Generate a virtual MRI scan
         seganalyzer = analist[0]
@@ -323,20 +327,20 @@ class DataGenerator:
 
 generator = DataGenerator("../../data_assets")
 generator.remove_incomplete_samples("../../data/generated")
-# # Generate training data
-# generator.generate_samples_grid(
-#     data_path="../../data/generated/training",
-#     num_samples_per_config=12,
-# )
-# # Generate validation data
-# generator.generate_samples_grid(
-#     data_path="../../data/generated/validation",
-#     num_samples_per_config=2,
-# )
-# # Generate test data
-# generator.generate_samples_grid(
-#     data_path="../../data/generated/test",
-#     num_samples_per_config=2,
-# )
+# Generate training data
+generator.generate_samples_grid(
+    data_path="../../data/generated/training",
+    num_samples_per_config=18,
+)
+# Generate validation data
+generator.generate_samples_grid(
+    data_path="../../data/generated/validation",
+    num_samples_per_config=2,
+)
+# Generate test data
+generator.generate_samples_grid(
+    data_path="../../data/generated/test",
+    num_samples_per_config=2,
+)
 
 # generator.modify_nifti_values("../../data/generated")

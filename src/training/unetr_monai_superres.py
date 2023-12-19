@@ -116,7 +116,7 @@ class MyUNETRWrapper(pl.LightningModule):
         self.loss_function = DiceCELoss(
             sigmoid=True,
             include_background=False,
-            # to_onehot_y=True # for sigmoid loss use False
+            to_onehot_y=True # set true for softmax loss
         )
         self.dice_metric = DiceMetric(
             include_background=False,
@@ -416,9 +416,9 @@ class MyUNETRWrapper(pl.LightningModule):
 
         loss = self.loss_function(outputs, labels)
 
-        # Sigmoid loss
-        out = torch.sigmoid(outputs)
-        binary_prediction = (out >= 0.5).int()
+        # for Sigmoid loss
+        # out = torch.sigmoid(outputs)
+        # binary_prediction = (out >= 0.5).int()
 
         # # Convert to NumPy array
         # if trainer.is_global_zero and batch_idx % 3 == 0:
@@ -435,17 +435,11 @@ class MyUNETRWrapper(pl.LightningModule):
         #         f"example_model_predictions/binary_output-{batch_idx}.nii.gz",
         #     )
 
-        # # for softmax loss
-        # decollated_outputs = [self.post_pred(i) for i in decollate_batch(outputs)]
-        # decollated_labels = [self.post_label(i) for i in decollate_batch(labels)]
+        # for softmax loss
+        decollated_outputs = [self.post_pred(i) for i in decollate_batch(outputs)]
+        decollated_labels = [self.post_label(i) for i in decollate_batch(labels)]
 
-        # print("decollated_outputs shape", decollated_outputs[0].shape)
-        # print("decollated_labels shape", decollated_labels[0].shape)
-
-        dice = self.dice_metric(y_pred=binary_prediction, y=labels).mean()
-
-        # self.log("Validation/val_loss", loss, on_step=False, on_epoch=True, prog_bar=False) # , sync_dist=True)
-        # self.log("Validation/val_dice", dice, on_step=False, on_epoch=True, prog_bar=False) # , sync_dist=True)
+        dice = self.dice_metric(y_pred=decollated_outputs, y=decollated_labels)
 
         if self.trainer.is_global_zero:
             print("\ndice shape", dice.shape)
@@ -527,14 +521,21 @@ class MyUNETRWrapper(pl.LightningModule):
 
         loss = self.loss_function(outputs, labels)
 
-        binary_prediction = (outputs >= 0.5).int()
+        # for softmax
+        decollated_outputs = [self.post_pred(i) for i in decollate_batch(outputs)]
+        decollated_labels = [self.post_label(i) for i in decollate_batch(labels)]
 
-        dice = self.dice_metric(y_pred=binary_prediction, y=labels)
+        dice = self.dice_metric(y_pred=decollated_outputs, y=decollated_labels)
+
+        # for sigmoid
+        # binary_prediction = (outputs >= 0.5).int()
+
+        # dice = self.dice_metric(y_pred=binary_prediction, y=labels)
 
         self.log("Test/test_loss", loss, on_step=False, on_epoch=True, prog_bar=False)
         self.log("Test/test_dice", dice, on_step=False, on_epoch=True, prog_bar=False)
 
-        test_dict = {"test_loss": loss, "test_number": binary_prediction.shape[0]}
+        test_dict = {"test_loss": loss, "test_number": decollated_outputs.shape[0]}
 
         self.test_step_outputs.append(test_dict)
 
@@ -706,37 +707,38 @@ class MyUNETRSetup:
 
 
 # Example Usage:
-# model = UNet()
 img_shape = (96, 96, 96)
 
-model = MySwinUNETR(img_shape=img_shape, in_channels=1, out_channels=1)
+# model = UNet()
 
-# model = MyUNETR(
-#     in_channels=1,
-#     out_channels=1,
-#     feature_size=16,
-#     img_shape=(96, 96, 96),
-# )
+# model = MySwinUNETR(img_shape=img_shape, in_channels=1, out_channels=2)
+
+model = MyUNETR(
+    in_channels=1,
+    out_channels=2,
+    feature_size=16,
+    img_shape=(96, 96, 96),
+)
 
 # model = UNETR()
 
 train_params = {
     "batch_size": 3,
     "upscale": True,
-    "learning_rate": 0.0008,
+    "learning_rate": 0.0001,
     "model": model,
     "samples_per_volume": 2,
     "img_shape": img_shape,
 }
 
-model_name = "MySwinUNETR_simple_up_lr_8e-4_3_sigmoid"
+model_name = f"MyUNETR_lr_{train_params['learning_rate']}_simpleUp_softmax"
 checkpoint_path = f"../../runs/{model_name}"
 checkpoint_file = "latest_model"
 best_checkpoint_file = "best_metric_model"
 
 max_epochs = 550
 check_val = 10
-store_model_epoch = 30
+store_model_epoch = 100
 
 training_pipeline = MyUNETRSetup(
     train_params,

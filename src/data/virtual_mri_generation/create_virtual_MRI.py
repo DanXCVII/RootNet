@@ -6,6 +6,7 @@ sys.path.append(
     "/Users/daniel/Desktop/FZJ/CPlantBox/DUMUX/CPlantBox/experimental/parametrisation/"
 )
 sys.path.append("/Users/daniel/Desktop/FZJ/CPlantBox/DUMUX/CPlantBox/src")
+sys.path.append("..")
 
 import plantbox as pb
 import rsml.rsml_reader as rsml_reader
@@ -32,10 +33,13 @@ import os
 from typing import Tuple
 import time
 
+from utils import FourierSynthesis
+from utils import expand_volume_with_blending
+
 
 def get_min_max_numpy(array):
     """
-    since the min max function of numpy does
+    returns the min and max value of a numpy array
     """
     non_nan_indices = np.argwhere(~np.isnan(array.flat))
     first_non_nan_value = array.flat[non_nan_indices[0][0]]
@@ -63,8 +67,6 @@ class Virtual_MRI:
     ):
         """
         creates a virtual MRI for the given root system with simulating noise based on the water content of the soil.
-
-        Parameters:
         - rootsystem: root system object (pb.RootSystem)
         - rsml_path: path to the rsml file of the root system # currently not used but if it is possible to read the
                      rsml file and get the seganalyser from it, it would be better
@@ -96,59 +98,60 @@ class Virtual_MRI:
         self.ny = int(self.width * 2 / self.resy)
         self.nz = int(self.depth / self.resz)
 
-        self.max_signal_intensity = 30000
-        self.max_root_signal_intensity = 30000
+        self.max_root_signal_intensity = 13000
 
-    def _add_gaussian_noise(self, image, sigma, water_intensity_grid) -> np.array:
-        """
-        adds gaussian noise to the image with the given mean and variance
+    # TODO: Currently not used, maybe remove if not further needed
+    # def _add_gaussian_noise(self, image, sigma, water_intensity_grid) -> np.array:
+    #     """
+    #     adds gaussian noise to the image with the given mean and variance
 
-        Args:
-        image (numpy array): image to which the noise is added
-        mean (float): mean of the gaussian distribution
-        sigma (float): variance of the gaussian distribution
+    #     Args:
+    #     image (numpy array): image to which the noise is added
+    #     mean (float): mean of the gaussian distribution
+    #     sigma (float): variance of the gaussian distribution
 
-        Returns:
-        noisy_image (numpy array): 3d image with added gaussian noise
-        """
-        row, col, ch = image.shape
-        gauss = np.random.normal(0, sigma, (row, col, ch))
+    #     Returns:
+    #     noisy_image (numpy array): 3d image with added gaussian noise
+    #     """
+    #     row, col, ch = image.shape
+    #     gauss = np.random.normal(0, sigma, (row, col, ch))
 
-        gauss_water_scaled = np.multiply(gauss, water_intensity_grid)
+    #     gauss_water_scaled = np.multiply(gauss, water_intensity_grid)
 
-        noisy_plus_image = image + gauss_water_scaled
+    #     noisy_plus_image = image + gauss_water_scaled
 
-        return noisy_plus_image
+    #     return noisy_plus_image
 
-    def _add_perlin_noise(self, image, water_intensity_grid) -> np.array:
-        """
-        Add Perlin noise to a 3D image.
+    # TODO: Currently not used, maybe remove if not further needed
+    # def _add_perlin_noise(self, image, water_intensity_grid) -> np.array:
+    #     """
+    #     Add Perlin noise to a 3D image.
 
-        Parameters:
-        - image: Input 3D image (numpy array).
-        - intensity: Intensity of the noise (multiplier for noise values).
+    #     Parameters:
+    #     - image: Input 3D image (numpy array).
+    #     - intensity: Intensity of the noise (multiplier for noise values).
 
-        Returns:
-        - noisy_image: 3D image with added Perlin noise.
-        """
-        noise_array = self._generate_perlin_noise_3d(image.shape, 5, 5, 15)
+    #     Returns:
+    #     - noisy_image: 3D image with added Perlin noise.
+    #     """
+    #     noise_array = self._generate_perlin_noise_3d(image.shape, 5, 5, 15)
 
-        # Scale noise to fit the desired intensity
-        noise_array_scaled = (
-            self.perlin_noise_intensity
-            * water_intensity_grid
-            * ((self.max_signal_intensity * 2 * noise_array))
-        )
+    #     # Scale noise to fit the desired intensity
+    #     noise_array_scaled = (
+    #         self.perlin_noise_intensity
+    #         * water_intensity_grid
+    #         * ((self.max_signal_intensity * 2 * noise_array))
+    #     )
 
-        # Add noise to the image
-        image_plus_noise = image + noise_array_scaled
+    #     # Add noise to the image
+    #     image_plus_noise = image + noise_array_scaled
 
-        # Clip values to ensure they remain in the valid range [0, self.max_signal_strength]
-        noisy_image = np.clip(image_plus_noise, 0, self.max_signal_intensity).astype(
-            np.int16
-        )
+    #     # Clip values to ensure they remain in the valid range [0, self.max_signal_strength]
+    #     noisy_image = np.clip(image_plus_noise, 0, self.max_signal_intensity).astype(
+    #         np.int16
+    #     )
 
-        return noisy_image
+    #     return noisy_image
 
     def _generate_perlin_noise_3d(self, shape, scale_x, scale_y, scale_z) -> np.array:
         """
@@ -185,32 +188,6 @@ class Virtual_MRI:
 
         return noise
 
-    def _isConsecutive(self, A) -> bool:
-        """
-        checks if the array only contains consecutive values like [1,2,3,4,5], nothing else is accepted
-
-        Args:
-        - A: array to be checked
-
-        Returns:
-        - bool: True if the array only contains consecutive values, False otherwise
-        """
-        if len(A) <= 1:
-            return True
-
-        minimum = min(A)
-        maximum = max(A)
-
-        if maximum - minimum != len(A) - 1:
-            return False
-
-        visited = set()
-        for i in A:
-            if i in visited:
-                return False
-            visited.add(i)
-        return True
-
     def _get_root_data_from_rsml(self, rsml_path) -> pb.SegmentAnalyser:
         """
         Gets the pb.SegmentAnalyser for the given rsml file
@@ -235,8 +212,8 @@ class Virtual_MRI:
 
     def _get_dimensions_container_array(self, nx, ny, nz) -> Tuple[int, int, int]:
         """
-        creates the dimensions of the container array, which must consist of consecutive values for each pixel
-        representing a gray intensity value for the MRI
+        creates the dimensions of the container array consiting of consecutive values representing the coordinates of 
+        the MRI when scaled with the resolution
 
         Args:
         - nx, ny, nz: number of pixels in x, y and z direction
@@ -309,7 +286,7 @@ class Virtual_MRI:
         """
         Create a 3D ellipsoidal structuring element.
 
-        Parameters:
+        Args:
         - radius_x, radius_y, radius_z: Radii along the x, y, and z axes.
         - dtype: Desired data type of the output (default is np.int16).
 
@@ -327,28 +304,109 @@ class Virtual_MRI:
 
         return ellipsoid.astype(dtype)
 
-    def _get_binary_delation_root_segment_idx(self, grid, radius, res) -> np.array:
+    def ellipsoid_gaussian(self, radius_x, radius_z, sigma) -> np.array:
+        """
+        Create a 3D ellipsoidal Gaussian structuring element.
+
+        Args:
+        - radius_x: radius along the x and y axes of the ellipsoid.
+        - radius_z: radius along the z axis of the ellipsoid.
+        - sigma: Standard deviation for the Gaussian distribution.
+        """
+        width = radius_x * 2
+        height = radius_z * 2
+        # Create a grid of coordinates
+        x, y, z = np.indices((width, width, height))
+        center_x, center_y, center_z = width // 2, width // 2, height // 2
+
+        # Calculate the Gaussian distribution
+        gaussian = np.exp(
+            -((x - center_x) ** 2 + (y - center_y) ** 2 + (z - center_z) ** 2)
+            / (2 * sigma**2)
+        )
+
+        # Apply ellipsoidal condition
+        ellipsoidal_mask = ((x - center_x) / radius_x) ** 2 + (
+            (y - center_y) / radius_x
+        ) ** 2 + ((z - center_z) / radius_z) ** 2 <= 1
+
+        gaussian = gaussian * ellipsoidal_mask
+
+        return gaussian
+
+    def _get_binary_dilation_root_segment_idx(
+        self,
+        grid,
+        radius,
+        res,
+        binary,
+    ) -> np.array:
         """
         Expands the coordinates where the root segment is located by its radius and returns the indexes of the
         expanded coordinates
 
         Args:
-        - array: 3d array of the root container with dimensions (nx, ny, nz)
+        - grid: 3d array of the root container with dimensions (nx, ny, nz)
         - radius: radius of the root segment
+        - res: resolution of the MRI
+        - binary: boolean, if True, the root segment is expanded by a binary dilation (for the label). If False, the root segment
+                    is expanded by a gaussian dilation (for more realism)
         """
         # if radius < 0.1: # TODO: Check if required
         #     radius = 0.1
-        width = int(np.around(radius / res["x"]))
-        height = int(np.around(radius / res["z"]))
-        height = height if height > 0 else 1
+        radius_x = int(np.around(radius / res["x"]))
+        radius_z = int(np.around(radius / res["z"]))
+        radius_z = radius_z if radius_z > 0 else 1
 
-        selem = self.ellipsoid(width, width, height)
+        if binary:
+            selem = self.ellipsoid(radius_x, radius_x, radius_z)
 
-        grid = ndimage.binary_dilation(grid, structure=selem).astype(grid.dtype)
-        # grid = np.reshape(grid, (dims['x']*dims['y']*dims['z']))
-        idx = np.argwhere(grid == 1)
+            grid = ndimage.binary_dilation(grid, structure=selem).astype(grid.dtype)
+        else:
+            selem = self.ellipsoid_gaussian(radius_x, radius_z, radius_x * 0.75)
 
-        return idx
+            grid = ndimage.grey_dilation(grid, structure=selem)
+
+            grid = grid - 1
+
+        idx = np.nonzero(grid)
+        non_zero_values = grid[idx]
+
+        return idx, non_zero_values
+
+    def get_noise_volume(self) -> np.array:
+        """
+        reads a noise volume from the data assets
+        """
+        noise_filename = (
+            "../../data_assets/noise/noise_153x111x74.raw"  # previous ../../../
+        )
+        with open(noise_filename, "rb") as f:
+            parts = noise_filename.split("_")[-1].split("x")
+            noise_shape = [int(num) for num in parts[:-1]] + [
+                int(parts[-1].split(".")[0])
+            ]
+
+            noise_volume = np.fromfile(f, dtype=np.int16).reshape(
+                noise_shape[2], noise_shape[1], noise_shape[0]
+            )
+            noise_volume = np.swapaxes(noise_volume, 0, 2)
+
+            return noise_volume
+
+    def _get_fourier_noise(self, shape) -> np.array:
+        """
+        generates a fourier noise volume with the given shape
+        """
+        original_noise = self.get_noise_volume()
+        noise_gen = FourierSynthesis(original_noise)
+
+        noise_volumes = noise_gen.generate_new_texture(original_noise, 50)
+
+        target_shape = shape
+        blended_output = expand_volume_with_blending(noise_volumes, target_shape, 20)
+
+        return blended_output
 
     def _add_noise_to_grid(self, grid, water_intensity_grid) -> np.array:
         """
@@ -361,23 +419,46 @@ class Virtual_MRI:
         Returns:
         - grid_noise: 3d (numpy) array of the root container with added noise
         """
-        ##### Gaussian Noise #####
-        # calculation of the power signal but since all MRIs are very similar, calculating it, doesn't
-        # really add value and just makes it more complicated, so the Power noise (pn) is just set to
-        # a fixed value
-        # ps = np.sum((grid - np.mean(grid)) ** 2) / (grid).size
-        pn = 8 * 100000000
-        sigma = np.sqrt(pn)
+        # generate the two noises being applied
+        perlin_noise = self._generate_perlin_noise_3d(grid.shape, 10, 15, 15)
+        fourier_noise = self._get_fourier_noise(grid.shape)
 
-        # gaussian noise is added to the grid and then the grid cut off at min and max grey value intensity
-        grid_noise = self._add_gaussian_noise(grid, sigma, water_intensity_grid)
-        grid_noise = np.clip(grid_noise, 0, self.max_signal_intensity).astype(np.int16)
+        # rescale the perlin noise to the same range as the fourier noise
+        perlin_noise_rescaled = self._rescale_image(
+            perlin_noise, fourier_noise.min(), fourier_noise.max()
+        )
 
-        ##### Perlin Noise #####
-        grid_noise = self._add_perlin_noise(grid_noise, water_intensity_grid)
-        grid_noise = np.clip(grid_noise, 0, self.max_signal_intensity).astype(np.int16)
+        # combine the two noises but with a random fraction of the fourier noise higher than the perlin noise
+        fraction_fourier = random.uniform(0.5, 1)
+        combined_noise = (
+            fraction_fourier * fourier_noise
+            + (1 - fraction_fourier) * perlin_noise_rescaled
+        )
+        combined_noise = water_intensity_grid * combined_noise
 
-        return grid_noise
+        # use perlin noise for the root signal intensity
+        root_noise = self._rescale_image(
+            perlin_noise,
+            water_intensity_grid.min(),
+            water_intensity_grid.max(),
+        )
+
+        # create the noisy root signal, which only contains the root with some noise
+        root_noise[grid == 0] = 0
+
+        root_noise_inv = 1 - root_noise
+        root_noise_inv[grid == 0] = 0
+
+        # apply perlin noise to the root signal intensity
+        noisy_root = root_noise_inv * grid + root_noise * combined_noise
+
+        combined_noise[grid > 0] = 0
+        noisy_root = combined_noise + noisy_root
+
+        # save noisy_root as raw file
+        # save combined_noise as raw file
+
+        return noisy_root
 
     def _get_grid_water_content(self, X, Y, Z) -> np.array:
         """
@@ -396,7 +477,9 @@ class Virtual_MRI:
             self.vtu_path, resolution=[self.resx, self.resy, self.resz]
         )
 
-        _, grid_data = interpolator.process(interpolating_coords=[X[:-1], Y[:-1], Z[:-1]])
+        _, grid_data = interpolator.process(
+            interpolating_coords=[X[:-1], Y[:-1], Z[:-1]]
+        )
 
         water_intensity_grid = np.nan_to_num(grid_data, nan=0)
         water_intensity_grid = water_intensity_grid.reshape(self.nx, self.ny, self.nz)
@@ -424,7 +507,7 @@ class Virtual_MRI:
         sys.stdout.write(f"\rProgress: [{arrow + spaces}] {int(progress*100)}% {info}")
         sys.stdout.flush()  # This is important to ensure the progress is updated
 
-    def _add_root_to_v_mri(self, mri_grid, xx, yy, zz, root_signal_intensity, res):
+    def _add_root_to_v_mri(self, mri_grid, xx, yy, zz, res, binary):
         """
         adds the root to the MRI grid by adding a white color, where the root is located and a light
         grey depending on how much of a root segment is present in a cell.
@@ -432,7 +515,6 @@ class Virtual_MRI:
         Args:
         - mri_grid: 3d (numpy) array of the root container with dimensions (nx, ny, nz)
         - xx, yy, zz: respective coordinate in the root container
-        - root_signal_intensity: intensity of the root signal
         - res: resolution of the MRI
         """
 
@@ -450,6 +532,8 @@ class Virtual_MRI:
             # The list allidx will eventually contain the discretized 3D indices in the grid for all the points
             # along the segment. This part of simulation/visualization is discretizing the root system into a 3D grid,
             # and allidx_ is helping you keep track of which grid cells are occupied by the segment.
+            root_signal_intensity = random.uniform(0.9, 1)
+
             allidx = self._get_root_segment_idx(segs[idxrad[k]], nodes, xx, yy, zz, res)
 
             if len(allidx) < 1:
@@ -493,13 +577,17 @@ class Virtual_MRI:
                         min_z : max_z + 1,
                     ]
 
-                    idx = self._get_binary_delation_root_segment_idx(
+                    indices, values = self._get_binary_dilation_root_segment_idx(
                         expanded_sub_volume,
                         radius[idxrad[k]],
                         res,
+                        binary,
                     )
-                    for x, y, z in idx:
-                        expanded_sub_volume[x, y, z] = root_signal_intensity
+                    for idx, value in zip(zip(*indices), values):
+                        expanded_sub_volume[idx[0], idx[1], idx[2]] = (
+                            max(expanded_sub_volume[idx[0], idx[1], idx[2]], value)
+                            * root_signal_intensity
+                        )
 
                     mri_grid_zero[
                         min_x : max_x + 1,
@@ -507,10 +595,13 @@ class Virtual_MRI:
                         min_z : max_z + 1,
                     ] = expanded_sub_volume
 
-                    idx = np.argwhere(mri_grid_zero == root_signal_intensity)
+                    indices = np.nonzero(mri_grid_zero)
+                    values = mri_grid_zero[indices]
 
-                    for x, y, z in idx:
-                        mri_grid[x, y, z] = root_signal_intensity
+                    for idx, value in zip(zip(*indices), values):
+                        mri_grid[idx[0], idx[1], idx[2]] = max(
+                            mri_grid[idx[0], idx[1], idx[2]], value
+                        )
 
             else:
                 estlen = res[
@@ -524,38 +615,32 @@ class Virtual_MRI:
                     frac = 1
                 # sets
                 if len(allidx) > 0:
-                    mri_grid_zero[allidx[:, 0], allidx[:, 1], allidx[:, 2]] = 1
+                    mri_grid_zero[allidx[:, 0], allidx[:, 1], allidx[:, 2]] = (
+                        1 * root_signal_intensity
+                    )
 
                 # set root voxels to the appropriate value
                 idx = np.argwhere(mri_grid_zero == 1)
                 for x, y, z in idx:
-                    mri_grid[x, y, z] = int(np.floor(frac * root_signal_intensity))
+                    mri_grid[x, y, z] = frac * 1 * root_signal_intensity
 
             iteration += 1
+
+        mri_grid[mri_grid > 1] = 1
+
+        mri_grid = mri_grid * self.max_root_signal_intensity
+        mri_grid = np.floor(mri_grid).astype(int)
 
         print(
             "\n"
             + "\033[33m"
             + "===================================================="  # Green text
-            + "\n"
-            + "||        Adding root segments: COMPLETE!         ||"
-            + "\n"
+            + "\n||        Adding root segments: COMPLETE!         ||\n"
             + "===================================================="
             + "\033[0m"
         )  # Reset text color
 
-    def _get_avg_numpy_array_non_zero(self, array) -> float:
-        """
-        calculates the average of the non zero values of a numpy array
-
-        Args:
-        - array: numpy array
-        """
-        non_zero = array[array != 0]
-        if non_zero.size == 0:
-            return 0
-        else:
-            return np.mean(non_zero)
+        return mri_grid
 
     def _save_as_nifti(self, mri_grid, filename):
         """
@@ -578,6 +663,38 @@ class Virtual_MRI:
         img = nib.Nifti1Image(mri_grid, affine_transformation)
         # save the nifti file
         nib.save(img, filename)
+
+    def _rescale_image(self, image, new_min, new_max):
+        """
+        Rescale the image to have a new minimum and maximum.
+
+        Args:
+        - image: numpy array representing the image.
+        - new_min: New minimum value for the rescaled image.
+        - new_max: New maximum value for the rescaled image.
+        """
+        # Find the original minimum and maximum values of the image
+        orig_min = np.min(image)
+        orig_max = np.max(image)
+
+        # Rescale the image
+        rescaled_image = (image - orig_min) / (orig_max - orig_min)  # Scale to 0-1
+        rescaled_image = (
+            rescaled_image * (new_max - new_min) + new_min
+        )  # Scale to new_min-new_max
+
+        return rescaled_image
+
+    # TODO: remove
+    def generate_random_array(self, shape, value_range):
+        """
+        Generate a numpy array with a given shape and random values in a specified range.
+
+        - Tuple representing the shape of the array.
+        - Tuple (min, max) representing the range of values.
+        """
+        min_val, max_val = value_range
+        return np.random.uniform(min_val, max_val, shape)
 
     def create_virtual_root_mri(
         self,
@@ -607,13 +724,14 @@ class Virtual_MRI:
 
         # set dictionaries with the resolution and pass them to the function, which adds the root to the MRI
         dict_res = {"x": self.resx, "y": self.resy, "z": self.resz}
-        self._add_root_to_v_mri(
+
+        mri_grid = self._add_root_to_v_mri(
             mri_grid,
             xx,
             yy,
             zz,
-            self.max_signal_intensity,
             dict_res,
+            binary=label,
         )
 
         # create a grid of the actual coordinates, represented by each voxel of the MRI
@@ -633,21 +751,14 @@ class Virtual_MRI:
             self.nz + 1,
         )
 
-        # calculate the water content of the grid
-        if not label:
-            water_grid = self._get_grid_water_content(X, Y, Z)
-            # scale the root signal intensity slightly by the water content (max intensity influence is a
-            # reduction by 30%)
-            min_scale_root = 0.7
-            max_scale_root = 1
-            scaled_array_root = (
-                water_grid * (max_scale_root - min_scale_root) + min_scale_root
-            )
-            mri_grid = mri_grid * scaled_array_root
-
         # add noise scaled by the water content in the soil to make it more realistic (more noise where more
         # water is present)
         if add_noise and not label:
+            # calculate the water content of the grid
+            # for debugging something not related to the water content uncomment the following line and comment the next one
+            # for faster execution
+            # water_grid = self.generate_random_array(mri_grid.shape, (0.8, 0.9))
+            water_grid = self._get_grid_water_content(X, Y, Z)
             # add noise to the MRI scaled by the water content
             mri_grid = self._add_noise_to_grid(mri_grid, water_grid)
 

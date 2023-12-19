@@ -124,7 +124,7 @@ class UNet(nn.Module):
         feature_size=16,
         img_shape=(60, 60, 60),
         in_channels=1,
-        out_channels=3,
+        out_channels=1,
         embed_dim=768,
         patch_size=16,
         num_heads=12,
@@ -168,8 +168,7 @@ class UNet(nn.Module):
         self.decoder0header = nn.Sequential(
             Conv3DBlock(feature_size * 3, feature_size * 2, 3),
             Conv3DBlock(feature_size * 2, feature_size, 3),
-            Conv3DBlock(feature_size, 1, 3),
-            nn.Sigmoid(),
+            Conv3DBlock(feature_size, out_channels, 3),
         )
 
 
