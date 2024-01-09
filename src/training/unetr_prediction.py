@@ -5,6 +5,7 @@ import os
 import nibabel as nib
 import numpy as np
 import re
+import json
 
 sys.path.append("../")
 
@@ -19,13 +20,22 @@ from monai.transforms import (
     LoadImaged,
     ScaleIntensityRanged,
 )
-from unetr_monai_superres import MyUNETRWrapper
+from pl_setup import MyUNETRWrapper
 
 import torch
 
+"""
+Description:    This script contains the pipeline for the prediction of MySwinUNETR etc.
+                It loads the model from a checkpoint and applies it to the given data which
+                is stored under prediction_data. It then plots the image, label, output and
+                binary output for a given horizontal slice.
+Usage:  Simply execute the script
+Example: python unetr_prediction.py
+"""
 
 class ImagePredictionPipeline:
-    def __init__(self, checkpoint_path):
+    def __init__(self, checkpoint_path, train_params):
+        self.train_params = train_params
         self.prediction_transform = Compose(
             [
                 LoadImaged(keys=["image", "label"], allow_missing_keys=True),
@@ -46,7 +56,9 @@ class ImagePredictionPipeline:
                 # ),
             ]
         )
-        self.net = MyUNETRWrapper.load_from_checkpoint(checkpoint_path)
+        self.net = MyUNETRWrapper.load_from_checkpoint(
+            checkpoint_path
+        )
         self.net.eval()
         self.net.to(torch.device("cuda"))
 
@@ -59,7 +71,7 @@ class ImagePredictionPipeline:
         """
         return self.prediction_transform(prediction_data)
 
-    def _get_output(self, img, window_shape):
+    def _get_output(self, img, img_shape):
         """
         applies the model to the given image and returns the predictions
 
@@ -69,7 +81,7 @@ class ImagePredictionPipeline:
         with torch.no_grad():
             test_input = img.cuda()
             val_outputs = sliding_window_inference(
-                test_input, window_shape, 1, self.net, overlap=0.2
+                test_input, img_shape, 1, self.net, overlap=0.2
             )
             return val_outputs
 
@@ -191,7 +203,7 @@ class ImagePredictionPipeline:
 
         return prediction_data
 
-    def predict_and_plot(self, prediction_data, slice_nums, plot_path, window_shape):
+    def predict_and_plot(self, prediction_data, slice_nums, plot_path, img_shape):
         """
         for given prediction data, does the necessary transformations, applys the model to do the prediction
         and plots the image, label, output and binary output for a given horizontal slice
@@ -216,7 +228,7 @@ class ImagePredictionPipeline:
             else:
                 test_labels = None
 
-            val_outputs = self._get_output(test_input, window_shape)
+            val_outputs = self._get_output(test_input, img_shape)
             binary_prediction = (val_outputs.detach().cpu() >= 0.5).int()
 
             # self.save_as_nifti(val_outputs, "example_predictions/prediction.nii.gz")
@@ -242,15 +254,15 @@ class ImagePredictionPipeline:
 # Example usage:
 prediction_data = [
     {
-        "image": "../../data/generated/training/Bench_lupin/loam/sim_days_8-initial_-50-noise_0.6/Bench_lupin_day_8_SNR_3_res_229x229x201.nii.gz",
-        "label": "../../data/generated/training/Bench_lupin/loam/sim_days_8-initial_-50-noise_0.6/label_Bench_lupin_day_8_SNR_3_res_458x458x402.nii.gz",
+        "image": "../../data/generated/validation/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_5-initial_-900-noise_0.9/Crypsis_aculeata_Clausnitzer_1994_day_5_SNR_3_res_229x229x201.nii.gz",
+        "label": "../../data/generated/validation/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_5-initial_-900-noise_0.9/label_Crypsis_aculeata_Clausnitzer_1994_day_5_SNR_3_res_459x459x403.nii.gz",
     },
     {
-        "image": "../../data/generated/training/Bench_lupin/sand/sim_days_10-initial_-25-noise_0.9/Bench_lupin_day_10_SNR_3_res_229x229x201.nii.gz",
-        "label": "../../data/generated/training/Bench_lupin/sand/sim_days_10-initial_-25-noise_0.9/label_Bench_lupin_day_10_SNR_3_res_458x458x402.nii.gz",
+        "image": "../../data/generated/validation/Glycine_max/sand/sim_days_5-initial_-25-noise_0.8/Glycine_max_day_5_SNR_3_res_229x229x201.nii.gz",
+        "label": "../../data/generated/validation/Glycine_max/sand/sim_days_5-initial_-25-noise_0.8/label_Glycine_max_day_5_SNR_3_res_459x459x403.nii.gz",
     },
-    {"image": "../../data/real/III_Sand_1W_DAP14_256x256x131.nii.gz"},
-    {"image": "../../data/real/III_Soil_1W_DAP14_256x256x186.nii.gz"},
+    {"image": "../../data_old/real/III_Sand_1W_DAP14_256x256x131.nii.gz"},
+    {"image": "../../data_old/real/III_Soil_1W_DAP14_256x256x186.nii.gz"},
     # {
     #     "image": "../../data/generated/test/Glycine_max_Moraes2020_opt2/clay/sim_days_5-initial_-600-noise_0.8/Glycine_max_Moraes2020_opt2_day_5_SNR_3_res_229x229x201.nii.gz",
     #     "label": "../../data/generated/test/Glycine_max_Moraes2020_opt2/clay/sim_days_5-initial_-600-noise_0.8/label_Glycine_max_Moraes2020_opt2_day_5_SNR_3_res_458x458x402.nii.gz",
@@ -258,11 +270,17 @@ prediction_data = [
 ]
 # TODO: remove *2 for the plot input and the Resized
 
-model_name = "MySwinUNETR_up_block_lr_8e-4_3_softmax_Dice"
-pipeline = ImagePredictionPipeline(f"../../runs/{model_name}/best_metric_model.ckpt")
+model_name = "SWINUNETR-patch_size_96-feat_24-upscale_True-out_channels_2"
+checkpoint_dir = f"../../runs/{model_name}/"
+# load the model params from the checkpoint dir (../../{model_name}/train_params.json) and store them in a dictionary
+with open(f"{checkpoint_dir}train_params.json") as f:
+    train_params = json.load(f)
 
-window_shape = (96, 96, 96)
+pipeline = ImagePredictionPipeline(f"{checkpoint_dir}best_metric_model.ckpt", train_params)
+
+
+img_shape = train_params["img_shape"]
 plot_path = f"example_predictions/{model_name}"
 pipeline.predict_and_plot(
-    prediction_data, [100, 80, 75, 50, 125, 200], plot_path, window_shape
+    prediction_data, [100, 80, 75, 50, 125, 200], plot_path, img_shape
 )

@@ -286,7 +286,6 @@ class DataGenerator:
         else:
             self.soil_water_sim.__init__(**soil_water_sim_params)
         water_sim_file = self.soil_water_sim.run()
-        water_sim_file = "water_sim.vtu"
 
         # Generate a virtual MRI scan
         seganalyzer = analist[0]
@@ -326,11 +325,11 @@ class DataGenerator:
 
 
 generator = DataGenerator("../../data_assets")
-generator.remove_incomplete_samples("../../data/generated")
+# generator.remove_incomplete_samples("../../data/generated")
 # Generate training data
 generator.generate_samples_grid(
     data_path="../../data/generated/training",
-    num_samples_per_config=18,
+    num_samples_per_config=11,
 )
 # Generate validation data
 generator.generate_samples_grid(

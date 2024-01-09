@@ -4,5 +4,4 @@ unetr_monai_network.py
 tb_logs/
 example_model_predictions/
 lightning_logs/
-my_swin_unetr.py
 swin_unetr.py

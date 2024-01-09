@@ -212,8 +212,8 @@ class Virtual_MRI:
 
     def _get_dimensions_container_array(self, nx, ny, nz) -> Tuple[int, int, int]:
         """
-        creates the dimensions of the container array consiting of consecutive values representing the coordinates of 
-        the MRI when scaled with the resolution
+        creates the dimensions of the container array, which must consist of consecutive values for each pixel
+        representing a gray intensity value for the MRI
 
         Args:
         - nx, ny, nz: number of pixels in x, y and z direction
@@ -286,7 +286,7 @@ class Virtual_MRI:
         """
         Create a 3D ellipsoidal structuring element.
 
-        Args:
+        Parameters:
         - radius_x, radius_y, radius_z: Radii along the x, y, and z axes.
         - dtype: Desired data type of the output (default is np.int16).
 
@@ -308,7 +308,6 @@ class Virtual_MRI:
         """
         Create a 3D ellipsoidal Gaussian structuring element.
 
-        Args:
         - radius_x: radius along the x and y axes of the ellipsoid.
         - radius_z: radius along the z axis of the ellipsoid.
         - sigma: Standard deviation for the Gaussian distribution.
@@ -532,7 +531,7 @@ class Virtual_MRI:
             # The list allidx will eventually contain the discretized 3D indices in the grid for all the points
             # along the segment. This part of simulation/visualization is discretizing the root system into a 3D grid,
             # and allidx_ is helping you keep track of which grid cells are occupied by the segment.
-            root_signal_intensity = random.uniform(0.9, 1)
+            root_signal_intensity = 1 if binary else random.uniform(0.9, 1)
 
             allidx = self._get_root_segment_idx(segs[idxrad[k]], nodes, xx, yy, zz, res)
 
@@ -628,14 +627,19 @@ class Virtual_MRI:
 
         mri_grid[mri_grid > 1] = 1
 
-        mri_grid = mri_grid * self.max_root_signal_intensity
+        if not binary:
+            # scale the root signal intensity to the maximum signal intensity
+            mri_grid = mri_grid * self.max_root_signal_intensity
+
         mri_grid = np.floor(mri_grid).astype(int)
 
         print(
             "\n"
             + "\033[33m"
             + "===================================================="  # Green text
-            + "\n||        Adding root segments: COMPLETE!         ||\n"
+            + "\n"
+            + "||        Adding root segments: COMPLETE!         ||"
+            + "\n"
             + "===================================================="
             + "\033[0m"
         )  # Reset text color
@@ -659,6 +663,8 @@ class Virtual_MRI:
                 [0.0, 0.0, 0.0, 1.0],
             ]
         )
+        # convert mir_grid to int16
+        mri_grid = mri_grid.astype("int16")
         # create a nifti file
         img = nib.Nifti1Image(mri_grid, affine_transformation)
         # save the nifti file
@@ -668,7 +674,6 @@ class Virtual_MRI:
         """
         Rescale the image to have a new minimum and maximum.
 
-        Args:
         - image: numpy array representing the image.
         - new_min: New minimum value for the rescaled image.
         - new_max: New maximum value for the rescaled image.
@@ -774,8 +779,9 @@ class Virtual_MRI:
         filename = f"{mri_output_path}/{'label_' if label else ''}{root_system_name}_SNR_{self.snr}_res_{self.nx}x{self.ny}x{self.nz}"
 
         # for the labeling save it compressed as a h5 file
+        mri_final_grid = mri_final_grid.astype("int16")
         if not label:
-            mri_final_grid.astype("int16").tofile(filename + ".raw")
+            mri_final_grid.tofile(filename + ".raw")
         else:
             # replace the values in mri_final_grid with 0 and 1, where 1 indicates the presence of a root
             mri_final_grid[mri_final_grid > 0] = 1
