@@ -1,4 +1,5 @@
 """simulates a root system, which is rasterized to a given resolution. To mimic an MRI image, Gaussian noise is additionally added"""
+
 import sys
 
 sys.path.append("/Users/daniel/Desktop/FZJ/CPlantBox/DUMUX/CPlantBox")
@@ -27,7 +28,6 @@ import skimage
 from skimage.morphology import ball
 import math
 from scipy.ndimage import distance_transform_edt
-import nibabel as nib
 import random
 import os
 from typing import Tuple
@@ -35,6 +35,7 @@ import time
 
 from utils import FourierSynthesis
 from utils import expand_volume_with_blending
+from utils import MRIoperations
 
 
 def get_min_max_numpy(array):
@@ -56,14 +57,13 @@ class Virtual_MRI:
     def __init__(
         self,
         rsml_path,
-        vtu_path,
-        perlin_noise_intensity,
+        vtu_path=None,
         seganalyzer=None,
         width=3,
         depth=20,
         res_mri=[0.027, 0.027, 0.1],
-        snr=3,
         scale_factor=1,
+        offset=(0, 0, 0),
     ):
         """
         creates a virtual MRI for the given root system with simulating noise based on the water content of the soil.
@@ -75,7 +75,6 @@ class Virtual_MRI:
         - width: width of the soil container
         - depth: depth of the soil container
         - resolution: resolution of the MRI
-        - snr: signal to noise ratio
         """
         self.resx = res_mri[0] / scale_factor
         self.resy = res_mri[1] / scale_factor
@@ -86,72 +85,23 @@ class Virtual_MRI:
         self.depth = depth
         self.rsml_path = rsml_path
         self.vtu_path = vtu_path
-        self.perlin_noise_intensity = perlin_noise_intensity
         if seganalyzer is None:
-            self.segana = self._get_root_data_from_rsml(rsml_path)
+            self.nodes, self.segs, self.seg_radii = self._get_root_data_from_rsml(
+                rsml_path
+            )
         else:
             self.segana = seganalyzer
-        self.snr = snr
+            self.nodes = self.segana.nodes
+            self.segs = self.segana.segments
+            self.seg_radii = self.segana.getParameter("radius")
         self.water_intensity_grid = None
+        self.offset = offset
 
-        self.nx = int(self.width * 2 / self.resx)
-        self.ny = int(self.width * 2 / self.resy)
-        self.nz = int(self.depth / self.resz)
+        self.nx = int(self.width * 2 / res_mri[0]) * self.scale_factor
+        self.ny = int(self.width * 2 / res_mri[1]) * self.scale_factor
+        self.nz = int(self.depth / res_mri[2]) * self.scale_factor
 
         self.max_root_signal_intensity = 13000
-
-    # TODO: Currently not used, maybe remove if not further needed
-    # def _add_gaussian_noise(self, image, sigma, water_intensity_grid) -> np.array:
-    #     """
-    #     adds gaussian noise to the image with the given mean and variance
-
-    #     Args:
-    #     image (numpy array): image to which the noise is added
-    #     mean (float): mean of the gaussian distribution
-    #     sigma (float): variance of the gaussian distribution
-
-    #     Returns:
-    #     noisy_image (numpy array): 3d image with added gaussian noise
-    #     """
-    #     row, col, ch = image.shape
-    #     gauss = np.random.normal(0, sigma, (row, col, ch))
-
-    #     gauss_water_scaled = np.multiply(gauss, water_intensity_grid)
-
-    #     noisy_plus_image = image + gauss_water_scaled
-
-    #     return noisy_plus_image
-
-    # TODO: Currently not used, maybe remove if not further needed
-    # def _add_perlin_noise(self, image, water_intensity_grid) -> np.array:
-    #     """
-    #     Add Perlin noise to a 3D image.
-
-    #     Parameters:
-    #     - image: Input 3D image (numpy array).
-    #     - intensity: Intensity of the noise (multiplier for noise values).
-
-    #     Returns:
-    #     - noisy_image: 3D image with added Perlin noise.
-    #     """
-    #     noise_array = self._generate_perlin_noise_3d(image.shape, 5, 5, 15)
-
-    #     # Scale noise to fit the desired intensity
-    #     noise_array_scaled = (
-    #         self.perlin_noise_intensity
-    #         * water_intensity_grid
-    #         * ((self.max_signal_intensity * 2 * noise_array))
-    #     )
-
-    #     # Add noise to the image
-    #     image_plus_noise = image + noise_array_scaled
-
-    #     # Clip values to ensure they remain in the valid range [0, self.max_signal_strength]
-    #     noisy_image = np.clip(image_plus_noise, 0, self.max_signal_intensity).astype(
-    #         np.int16
-    #     )
-
-    #     return noisy_image
 
     def _generate_perlin_noise_3d(self, shape, scale_x, scale_y, scale_z) -> np.array:
         """
@@ -166,6 +116,8 @@ class Virtual_MRI:
         """
         noise = np.zeros(shape)
 
+        base = np.random.randint(0, 2000)
+
         for i in range(shape[0]):
             for j in range(shape[1]):
                 for k in range(shape[2]):
@@ -179,7 +131,7 @@ class Virtual_MRI:
                         repeatx=256,
                         repeaty=256,
                         repeatz=200,
-                        base=0,
+                        base=base,
                     )
                     # Normalize to [0, 1]
                     # noise_value = (noise_value + 1) / 2
@@ -199,8 +151,11 @@ class Virtual_MRI:
         - segana: pb.SegmentAnalyser
         """
         polylines, properties, functions, _ = rsml_reader.read_rsml(rsml_path)
+        print()
 
         nodes, segs = rsml_reader.get_segments(polylines, properties)
+        seg_radii = rsml_reader.get_parameter(polylines, functions, properties)[0][:-1]
+
         segs_ = [pb.Vector2i(s[0], s[1]) for s in segs]  # convert to CPlantBox types
         nodes_ = [pb.Vector3d(n[0], n[1], n[2]) for n in nodes]
         segRadii = np.zeros((segs.shape[0], 1))  # convert to paramter per segment
@@ -208,7 +163,15 @@ class Virtual_MRI:
 
         segana = pb.SegmentAnalyser(nodes_, segs_, segCTs, segRadii)
 
-        return segana
+        print("nodes shape", len(segana.nodes))
+        print("segments shape", len(segana.segments))
+        print("radius shape", len(seg_radii))
+
+        return (
+            segana.nodes,
+            segana.segments,
+            seg_radii,
+        )
 
     def _get_dimensions_container_array(self, nx, ny, nz) -> Tuple[int, int, int]:
         """
@@ -249,15 +212,20 @@ class Virtual_MRI:
         - x_int, y_int, z_int: coordinates of the mri grid
         """
         n1, n2 = nodes[segment.x], nodes[segment.y]
+
+        voxel_offset_x = np.around(self.offset[0] / res["x"])
+        voxel_offset_y = np.around(self.offset[1] / res["y"])
+        voxel_offset_z = np.around(self.offset[2] / res["z"])
+
         (x1, y1, z1) = [
-            np.around(n1.x / res["x"]),
-            np.around(n1.y / res["y"]),
-            np.around(n1.z / res["z"]),
+            np.around(n1.x / res["x"]) - voxel_offset_x,
+            np.around(n1.y / res["y"]) - voxel_offset_y,
+            np.around(n1.z / res["z"]) - voxel_offset_z,
         ]
         (x2, y2, z2) = [
-            np.around(n2.x / res["x"]),
-            np.around(n2.y / res["y"]),
-            np.around(n2.z / res["z"]),
+            np.around(n2.x / res["x"]) - voxel_offset_x,
+            np.around(n2.y / res["y"]) - voxel_offset_y,
+            np.around(n2.z / res["z"]) - voxel_offset_z,
         ]
         # contains all points on the segment
         ListOfPoints = np.array(bres3D.Bresenham3D(x1, y1, z1, x2, y2, z2))
@@ -380,18 +348,12 @@ class Virtual_MRI:
         noise_filename = (
             "../../data_assets/noise/noise_153x111x74.raw"  # previous ../../../
         )
-        with open(noise_filename, "rb") as f:
-            parts = noise_filename.split("_")[-1].split("x")
-            noise_shape = [int(num) for num in parts[:-1]] + [
-                int(parts[-1].split(".")[0])
-            ]
 
-            noise_volume = np.fromfile(f, dtype=np.int16).reshape(
-                noise_shape[2], noise_shape[1], noise_shape[0]
-            )
-            noise_volume = np.swapaxes(noise_volume, 0, 2)
+        _, noise_volume = MRIoperations().load_mri(noise_filename)
 
-            return noise_volume
+        noise_volume = np.swapaxes(noise_volume, 0, 2)
+
+        return noise_volume
 
     def _get_fourier_noise(self, shape) -> np.array:
         """
@@ -438,6 +400,52 @@ class Virtual_MRI:
         # use perlin noise for the root signal intensity
         root_noise = self._rescale_image(
             perlin_noise,
+            water_intensity_grid.min(),
+            water_intensity_grid.max(),
+        )
+
+        # create the noisy root signal, which only contains the root with some noise
+        root_noise[grid == 0] = 0
+
+        root_noise_inv = 1 - root_noise
+        root_noise_inv[grid == 0] = 0
+
+        # apply perlin noise to the root signal intensity
+        noisy_root = root_noise_inv * grid + root_noise * combined_noise
+
+        combined_noise[grid > 0] = 0
+        noisy_root = combined_noise + noisy_root
+
+        # save noisy_root as raw file
+        # save combined_noise as raw file
+
+        return noisy_root
+
+    def _add_noise_to_grid_v2(self, grid, water_intensity_grid) -> np.array:
+        """
+        Adds gaussian and perlin noise to the MRI and scales it according to the water saturation of the soil
+
+        Args:
+        - grid: 3d (numpy) array of the root container with dimensions (nx, ny, nz)
+        - water_intensity_grid: 3d (numpy) array of the water intensity (nx, ny, nz)
+
+        Returns:
+        - grid_noise: 3d (numpy) array of the root container with added noise
+        """
+        # generate the two noises being applied
+        perlin_noise_coarse = self._generate_perlin_noise_3d(grid.shape, 150, 555, 555)
+        fourier_noise = self._get_fourier_noise(grid.shape)
+
+        # rescale the perlin noise in the range of 0 to 1
+        perlin_noise_rescaled = self._rescale_image(perlin_noise_coarse, 0, 1)
+
+        # combine the noises
+        combined_noise = water_intensity_grid * (fourier_noise * perlin_noise_rescaled)
+
+        # use perlin noise for the root signal intensity
+        perlin_noise_fine = self._generate_perlin_noise_3d(grid.shape, 10, 15, 15)
+        root_noise = self._rescale_image(
+            perlin_noise_fine,
             water_intensity_grid.min(),
             water_intensity_grid.max(),
         )
@@ -517,36 +525,34 @@ class Virtual_MRI:
         - res: resolution of the MRI
         """
 
-        nodes = self.segana.nodes
-        segs = self.segana.segments
-        radius = self.segana.getParameter("radius")
-
-        idxrad = np.argsort(radius)
+        idxrad = np.argsort(self.seg_radii)
 
         cellvol = res["x"] * res["y"] * res["z"]
 
         iteration = 1
-        total_segs = len(segs)
-        for k, _ in enumerate(segs):
+        total_segs = len(self.segs)
+        for k, _ in enumerate(self.segs):
             # The list allidx will eventually contain the discretized 3D indices in the grid for all the points
             # along the segment. This part of simulation/visualization is discretizing the root system into a 3D grid,
             # and allidx_ is helping you keep track of which grid cells are occupied by the segment.
             root_signal_intensity = 1 if binary else random.uniform(0.9, 1)
 
-            allidx = self._get_root_segment_idx(segs[idxrad[k]], nodes, xx, yy, zz, res)
+            allidx = self._get_root_segment_idx(
+                self.segs[idxrad[k]], self.nodes, xx, yy, zz, res
+            )
 
             if len(allidx) < 1:
                 print("warning: root segment out of scope")
 
             self._print_progress_bar(
                 iteration,
-                len(segs),
+                len(self.segs),
                 info="Adding root segment {} of {}".format(iteration, total_segs),
             )
 
             mri_grid_zero = np.zeros(mri_grid.shape)
             # checks if the diameter is greater than the resolution
-            if np.round(radius[idxrad[k]] * 2 / res["x"]) > 1:
+            if np.round(self.seg_radii[idxrad[k]] * 2 / res["x"]) > 1:
                 if len(allidx) > 0:
                     # set the element of the root to 1, indicating that it is present
                     mri_grid_zero[allidx[:, 0], allidx[:, 1], allidx[:, 2]] = 1
@@ -558,7 +564,7 @@ class Virtual_MRI:
                     max_x, max_y, max_z = np.max(allidx, axis=0)
 
                     # Define the extension of the sub-volume which is by the radius lager
-                    n = int(radius[idxrad[k]] / res["x"] + 1)
+                    n = int(self.seg_radii[idxrad[k]] / res["x"] + 1)
 
                     # Adjusting the min and max values, while ensuring they remain within the valid range of the array
                     min_x = max(0, min_x - n)
@@ -578,7 +584,7 @@ class Virtual_MRI:
 
                     indices, values = self._get_binary_dilation_root_segment_idx(
                         expanded_sub_volume,
-                        radius[idxrad[k]],
+                        self.seg_radii[idxrad[k]],
                         res,
                         binary,
                     )
@@ -606,7 +612,7 @@ class Virtual_MRI:
                 estlen = res[
                     "x"
                 ]  # estimated segment length within voxel: very rough estimation
-                rootvol = radius[idxrad[k]] ** 2 * math.pi * estlen
+                rootvol = self.seg_radii[idxrad[k]] ** 2 * math.pi * estlen
 
                 # set how the intensity of the root signal should be
                 frac = rootvol / cellvol
@@ -645,30 +651,6 @@ class Virtual_MRI:
         )  # Reset text color
 
         return mri_grid
-
-    def _save_as_nifti(self, mri_grid, filename):
-        """
-        saves the mri grid as a nifti file
-
-        Args:
-        - mri_grid: 3d (numpy) array of the root container with dimensions (nx, ny, nz)
-        - filename: path to the nifti file
-        """
-        # since all the mris have swapped z and x coordinate, the dimensions have to be swapped as well
-        affine_transformation = np.array(
-            [
-                [self.resz, 0.0, 0.0, 0.0],
-                [0.0, self.resy, 0.0, 0.0],
-                [0.0, 0.0, self.resx, 0.0],
-                [0.0, 0.0, 0.0, 1.0],
-            ]
-        )
-        # convert mir_grid to int16
-        mri_grid = mri_grid.astype("int16")
-        # create a nifti file
-        img = nib.Nifti1Image(mri_grid, affine_transformation)
-        # save the nifti file
-        nib.save(img, filename)
 
     def _rescale_image(self, image, new_min, new_max):
         """
@@ -767,16 +749,10 @@ class Virtual_MRI:
             # add noise to the MRI scaled by the water content
             mri_grid = self._add_noise_to_grid(mri_grid, water_grid)
 
-        # do the necessary tranformations to the grid, such that it has the same format as an original MRI
-        nx = int(self.width * 2 / self.resx) * self.scale_factor
-        ny = int(self.width * 2 / self.resy) * self.scale_factor
-        nz = int(self.depth / self.resz) * self.scale_factor
-
-        mri_final_grid = mri_grid[:nx, :ny, :nz]
         mri_final_grid = np.swapaxes(mri_grid, 0, 2)
         mri_final_grid = mri_final_grid[::-1]
         root_system_name = self.rsml_path.split("/")[-1].split(".")[0]
-        filename = f"{mri_output_path}/{'label_' if label else ''}{root_system_name}_SNR_{self.snr}_res_{self.nx}x{self.ny}x{self.nz}"
+        filename = f"{mri_output_path}/{'label_' if label else ''}{root_system_name}_res_{self.nx}x{self.ny}x{self.nz}"
 
         # for the labeling save it compressed as a h5 file
         mri_final_grid = mri_final_grid.astype("int16")
@@ -786,8 +762,13 @@ class Virtual_MRI:
             # replace the values in mri_final_grid with 0 and 1, where 1 indicates the presence of a root
             mri_final_grid[mri_final_grid > 0] = 1
 
+        print("mri_final_grid min", mri_final_grid.min())
+        print("mri_final_grid max", mri_final_grid.max())
         # save as a nifti file
-        self._save_as_nifti(mri_final_grid, filename + ".nii.gz")
+        # TODO: remove save as raw file
+        mri_ops = MRIoperations()
+        mri_ops.save_mri(filename + ".nii.gz", mri_final_grid)
+        mri_ops.save_mri(filename + ".raw", mri_final_grid)
 
         print(filename)
 
@@ -797,9 +778,13 @@ class Virtual_MRI:
 
 
 # Example usage:
-# rssim = RSSim("Anagallis_femina_Leitner_2010", "../../../../data/generated/root_systems", 3, 20)
-# anas, filenames = rssim.run_simulation([10, 11])
-
-# for i in range(len(anas)):
-#     my_vi = Virtual_MRI(anas[i], "../../../data/generated/{}".format(filenames[i]), "../../../../soil_simulation_data/generated_20_-90.8_7.1.vtu", 0.5)
-#     my_vi.create_virtual_root_mri()
+# offset = (4.1599, -8.2821, -0.4581)
+# 
+# my_root = Virtual_MRI(
+#     rsml_path="./roots_vr_18.rsml",
+#     res_mri=(0.027, 0.027, 0.1),
+#     width=3.46,  # TODO: adjust
+#     depth=13.1,  # TODO: adjust
+#     offset=offset,
+# )
+# my_root.create_virtual_root_mri(".", label=True)

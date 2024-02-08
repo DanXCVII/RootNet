@@ -33,7 +33,7 @@ from monai.utils.deprecate_utils import deprecated_arg
 rearrange, _ = optional_import("einops", name="rearrange")
 
 __all__ = [
-    "MySwinUNETR",
+    "MyUpscaleSwinUNETR",
     "window_partition",
     "window_reverse",
     "WindowAttention",
@@ -102,7 +102,7 @@ class SingleConv3DBlock(nn.Module):
     def forward(self, x):
         return self.block(x)
     
-class MySwinUNETR(nn.Module):
+class MyUpscaleSwinUNETR(nn.Module):
     """
     Swin UNETR based on: "Hatamizadeh et al.,
     Swin UNETR: Swin Transformers for Semantic Segmentation of Brain Tumors in MRI Images
