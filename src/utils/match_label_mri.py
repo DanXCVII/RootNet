@@ -416,3 +416,4 @@ if __name__ == "__main__":
     match_mri = MatchMRI(mri_path, label_path)  # args.rsml_path, args.mri_path)
     match_mri.match_images()
 
+# python3 match-label-mri.py -m /Users/daniel/Desktop/FZJ/CPlantBox/DUMUX/CPlantBox/tutorial/examples_segmentation/RootNet/src/data/virtual_mri_generation/test_data/convert/III_Sand_1W_DAP14_res_256x256x131.nii.gz -l "/Users/daniel/Desktop/FZJ/CPlantBox/DUMUX/CPlantBox/tutorial/examples_segmentation/RootNet/src/utils/label_roots_vr_18_res_512x512x262.raw"

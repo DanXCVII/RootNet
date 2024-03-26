@@ -7,7 +7,7 @@ sys.path.append("../")
 import matplotlib.pyplot as plt
 
 from monai.inferers import sliding_window_inference
-from pl_setup import MyUNETRWrapper
+from pl_setup import MyPlSetup
 from mri_dataloader import MRIDataLoader
 from utils import Visualizations
 from utils import MRIoperations
@@ -33,7 +33,7 @@ class ImagePredictionPipeline:
         )
         self.prediction_transform = my_dl.cache_transforms
 
-        self.net = MyUNETRWrapper.load_from_checkpoint(checkpoint_path)
+        self.net = MyPlSetup.load_from_checkpoint(checkpoint_path)
         self.net.eval()
         self.net.to(torch.device("cuda"))
 
@@ -46,69 +46,20 @@ class ImagePredictionPipeline:
         """
         return self.prediction_transform(prediction_data)
 
-    def _get_output(self, img, img_shape):
+    def _get_output(self, img, patch_size):
         """
         applies the model to the given image and returns the predictions
 
         Args:
         - img: image tensor
-        - img_shape: patch size for the sliding window inference
+        - patch_size: patch size for the sliding window inference
         """
         with torch.no_grad():
             test_input = img.cuda()
-            val_outputs = sliding_window_inference(
-                test_input, img_shape, 1, self.net, overlap=0.2
+            logits = sliding_window_inference(
+                test_input, patch_size, 1, self.net, overlap=0.2
             )
-            return val_outputs
-
-    def _plot_prediction(self, img, val_outputs, slice_frac, filename, label=None):
-        """
-        plots the image, label, output and binary output for a given horizontal slice
-
-        Args:
-        - img: image tensor
-        - label: label tensor
-        - val_outputs: output tensor
-        - slice_frac: fraction of the image, where the slice should be taken
-        - filename: filename to save the plot
-        """
-        total_imges = 0
-        if label is None:
-            total_imges = 3
-        else:
-            total_imges = 4
-        plt.figure("check", (18, 6))
-
-        img_shape = img.shape
-        slice_num = int(img_shape[-1] * slice_frac)
-
-        # plot data image
-        plt.subplot(1, total_imges, 1)
-        plt.title("image")
-        plt.imshow(img.cpu().numpy()[0, 0, :, :, slice_num], cmap="gray")
-
-        # plot prediction of NN
-        plt.subplot(1, total_imges, 2)
-        plt.title("output")
-        plt.imshow(val_outputs.detach().cpu()[0, 0, :, :, slice_num * 2])
-
-        # for softmax output
-        binary_prediction = torch.argmax(val_outputs.detach().cpu(), dim=1)
-        # for sigmoid output
-        # binary_prediction = (val_outputs.detach().cpu() >= 0.5).int()
-
-        # plot binary prediction of NN
-        plt.subplot(1, total_imges, 3)
-        plt.title("binary output")
-        plt.imshow(binary_prediction[0, :, :, slice_num * 2])
-
-        # plot the ground truth if existent
-        if label is not None:
-            plt.subplot(1, total_imges, 4)
-            plt.title("label")
-            plt.imshow(label.cpu().numpy()[0, 0, :, :, slice_num * 2])
-
-        plt.savefig(f"./{filename}.png")
+            return logits
 
     def _convert_images_to_nifti(self, prediction_data):
         """
@@ -129,7 +80,7 @@ class ImagePredictionPipeline:
 
         return prediction_data
 
-    def predict_and_plot(self, prediction_data, slices, plot_path, img_shape):
+    def predict_and_plot(self, prediction_data, slices, plot_path, patch_size):
         """
         for given prediction data, does the necessary transformations, applys the model to do the prediction
         and plots the image, label, output and binary output for a given horizontal slice
@@ -138,7 +89,7 @@ class ImagePredictionPipeline:
         - prediction_data: list of dictionaries containing the image and label paths
         - slices: list of fractions of the image, for which slices should be plotted
         - plot_path: path to save the plots
-        - img_shape: patch size for the sliding window inference
+        - patch_size: patch size for the sliding window inference
         """
         prediction_data = self._convert_images_to_nifti(prediction_data)
 
@@ -156,42 +107,66 @@ class ImagePredictionPipeline:
             else:
                 test_labels = None
 
-            val_outputs = self._get_output(test_input, img_shape)
-            binary_prediction = (val_outputs.detach().cpu() >= 0.5).int()
+            logits = self._get_output(test_input, patch_size)
+
+            # apply sigmoid to the output to get the binary prediction
+
+            print("logits min", logits.min())
+            print("logits max", logits.max())
+            print("logits", logits.shape)
+
+            if logits.shape[1] == 2:
+                post_activation = torch.softmax(logits, dim=1)
+                binary_output = torch.argmax(post_activation.detach().cpu(), dim=1).unsqueeze(1)
+                print("binary_output after", binary_output.shape)
+                root_idx = 1
+            else:
+                post_activation = torch.sigmoid(logits)
+                binary_output = (post_activation.detach().cpu() >= 0.5).int()
+                root_idx = 0
+
 
             # save the images as nifti files (multiplying with 30000 to get integer values which can
             # be displayed in ImageJ, also roughly the range of an original MRI)
+
             ops = MRIoperations()
             numpy_input = test_input[0, 0, :, :, :].cpu().numpy() * 30000
-            numpy_outputs = val_outputs[0, 0, :, :, :].cpu().numpy() * 30000
-            numpy_binary_prediction = (
-                binary_prediction[0, :, :, :].cpu().numpy() * 30000
+            numpy_outputs = (
+                post_activation[0, root_idx, :, :, :].cpu().numpy() * 30000
             )
+            numpy_binary_prediction = binary_output[0, 0, :, :, :].cpu().numpy()
+            print("numpy_binary_prediction", numpy_binary_prediction.dtype)
+
+            # Depending on the activation function (softmax or sigmoid) tht probability of the root
+            # being present is either the first or the second channel
 
             if "label" in transformed_data[i]:
                 numpy_labels = test_labels[0, 0, :, :, :].cpu().numpy() * 30000
                 ops.save_mri(f"{plot_path}/{filename}/label.nii.gz", numpy_labels)
 
+            numpy_binary_prediction = numpy_binary_prediction.astype("float32")
+
             ops.save_mri(f"{plot_path}/{filename}/input.nii.gz", numpy_input)
             ops.save_mri(f"{plot_path}/{filename}/prediction.nii.gz", numpy_outputs)
+            ops.save_mri(
+                f"{plot_path}/{filename}/prediction_scaled_res_{numpy_binary_prediction.shape[2]}x{numpy_binary_prediction.shape[1]}x{numpy_binary_prediction.shape[0]}.raw",
+                numpy_outputs,
+            )
             ops.save_mri(
                 f"{plot_path}/{filename}/binary_prediction.nii.gz",
                 numpy_binary_prediction,
             )
-
-            # Depending on the activation function (softmax or sigmoid) tht probability of the root
-            # being present is either the first or the second channel
-            if val_outputs.shape[1] == 2:
-                binary_output = torch.argmax(val_outputs.detach().cpu(), dim=1)
-            else:
-                binary_output = (val_outputs.detach().cpu() >= 0.5).int()
+            ops.save_mri(
+                f"{plot_path}/{filename}/binary_prediction_res_{numpy_binary_prediction.shape[2]}x{numpy_binary_prediction.shape[1]}x{numpy_binary_prediction.shape[0]}.raw",
+                numpy_binary_prediction,
+            )
 
             # plot different slices of the image
             for slice_frac in slices:
                 Visualizations().plot_row(
                     test_input[0, 0, :, :, :],
-                    val_outputs[0, 0, :, :, :],
-                    binary_output=binary_output[0, :, :, :],
+                    post_activation[0, root_idx, :, :, :],
+                    binary_output=binary_output[0, 0, :, :, :],
                     slice_frac=slice_frac,
                     label=(
                         test_labels[0, 0, :, :, :] if test_labels is not None else None
@@ -220,7 +195,7 @@ prediction_data = [
 ]
 # TODO: remove *2 for the plot input and the Resized
 
-model_name = "weight_1_0.6_Data_DICE_softmax_UPSCALESWINUNETR-img_shape_96-feat_36-upscale_True-out_channels_2-lr_0.0008-upsample_end_False"
+model_name = "weight_1.0-1.0_DICE_SOFTMAX_UPSCALESWINUNETR-patch_size_96-feat_36-upscale_True-out_channels_2-lr_0.0008-upsample_end_False"
 checkpoint_dir = f"../../runs/{model_name}/"
 
 # load the model params from the checkpoint dir (../../{model_name}/train_params.json) and store them in a dictionary
@@ -232,11 +207,11 @@ pipeline = ImagePredictionPipeline(
 )
 
 
-img_shape = train_params["img_shape"]
+patch_size = train_params["patch_size"]
 plot_path = f"example_predictions/{model_name}"
 pipeline.predict_and_plot(
     prediction_data,
     [0.1, 0.3, 0.5, 0.6, 0.7],
     plot_path,
-    img_shape,
+    patch_size,
 )

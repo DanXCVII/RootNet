@@ -122,11 +122,10 @@ class UNet(nn.Module):
     def __init__(
         self,
         feature_size=16,
-        img_shape=(60, 60, 60),
+        patch_size=(60, 60, 60),
         in_channels=1,
         out_channels=1,
         embed_dim=768,
-        patch_size=16,
         num_heads=12,
         dropout=0.1,
     ):

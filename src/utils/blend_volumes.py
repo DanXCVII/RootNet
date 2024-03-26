@@ -29,7 +29,19 @@ def linear_blend(volume1, volume2, overlap, axis) -> np.ndarray:
 
 
 def blend_volumes_to_target_size(volumes, target_size, axis, overlap) -> np.ndarray:
-    """Blend a list of volumes to reach a target size along a specified axis."""
+    """
+    Blend a list of volumes to reach a target size along a specified axis.
+
+    Args:
+    - volumes: List of volumes to blend together.
+    - target_size: Size of the final volume along the specified axis.
+    - axis: Axis along which to blend the volumes.
+    - overlap: Amount of overlap between the volumes.
+
+    Returns:
+    - np.ndarray: Blended volume
+    - list: List of volumes that were not used in the blending
+    """
     # Initialize the output volume
     output_shape = list(volumes[0].shape)
     output_shape[axis] = target_size
@@ -50,6 +62,7 @@ def blend_volumes_to_target_size(volumes, target_size, axis, overlap) -> np.ndar
         else:
             # Blend with the previous volume
             blend_region = linear_blend(volumes[i - 1], volume, overlap, axis)
+
             blend_start = current_position - overlap
             blend_end = current_position
             blend_slices = [slice(None)] * 3
@@ -66,9 +79,11 @@ def blend_volumes_to_target_size(volumes, target_size, axis, overlap) -> np.ndar
             blended_volume[tuple(non_overlap_slices)] = (
                 volume[overlap:cut_size]
                 if axis == 0
-                else volume[:, overlap:cut_size]
-                if axis == 1
-                else volume[:, :, overlap:cut_size]
+                else (
+                    volume[:, overlap:cut_size]
+                    if axis == 1
+                    else volume[:, :, overlap:cut_size]
+                )
             )
 
         current_position += volume_size - overlap

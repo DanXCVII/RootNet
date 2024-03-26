@@ -98,13 +98,14 @@ class OutputActivation(Enum):
     SOFTMAX = 2
 
 
-class MyUNETRWrapper(pl.LightningModule):
+class MyPlSetup(pl.LightningModule):
     def __init__(
         self,
         model: str,
         model_params: dict,
         learning_rate: float = 0.0001,
-        img_shape: Tuple[int, int, int] = (96, 96, 96),
+        patch_size: Tuple[int, int, int] = (96, 96, 96),
+        class_weight=[1, 1],
         output_activation="SIGMOID",
     ) -> None:
         """
@@ -118,24 +119,23 @@ class MyUNETRWrapper(pl.LightningModule):
         super().__init__()
         self.save_hyperparameters()
 
-        patch_shape = img_shape
-
         if model is None:
             raise ValueError("model cannot be None")
         elif model == ModelType.MYUNETR.name:
-            self.model = MyUNETR(**model_params, img_shape=patch_shape)
+            self.model = MyUNETR(**model_params, patch_size=patch_size)
         elif model == ModelType.UNETR.name:
-            self.model = UNETR(**model_params, img_shape=patch_shape)
+            self.model = UNETR(**model_params, patch_size=patch_size)
         elif model == ModelType.UNET.name:
-            self.model = UNet(**model_params, img_shape=patch_shape)
+            self.model = UNet(**model_params, patch_size=patch_size)
         elif model == ModelType.UPSCALESWINUNETR.name:
-            self.model = MyUpscaleSwinUNETR(**model_params, img_shape=patch_shape)
+            self.model = MyUpscaleSwinUNETR(**model_params, patch_size=patch_size)
         elif model == ModelType.SWINUNETR.name:
-            self.model = SwinUNETR(**model_params, img_shape=patch_shape)
+            self.model = SwinUNETR(**model_params, patch_size=patch_size)
         else:
             raise ValueError("Model must be of type ModelType.")
 
         # Loss function and metrics
+        include_background = False
         self.loss_function = DiceLoss(
             sigmoid=(
                 True if output_activation == OutputActivation.SIGMOID.name else False
@@ -143,28 +143,28 @@ class MyUNETRWrapper(pl.LightningModule):
             softmax=(
                 True if output_activation == OutputActivation.SOFTMAX.name else False
             ),
-            include_background=True,
+            include_background=include_background,
             to_onehot_y=True,  # set true for softmax loss
-            weight=torch.tensor([1, 1.1]).cuda(),
+            weight=torch.tensor(class_weight).cuda(),
         )
         self.root_confusion_matrix_metrics = ConfusionMatrixMetric(
-            include_background=True,
+            include_background=include_background,
             metric_name=("precision", "recall", "f1 score"),
             reduction="mean",
             get_not_nans=False,
         )
         self.background_confusion_matrix_metrics = ConfusionMatrixMetric(
-            include_background=True,
+            include_background=include_background,
             metric_name=("precision", "recall", "f1 score"),
             reduction="mean",
             get_not_nans=False,
         )
         self.dice_metric = DiceMetric(
-            include_background=True,
+            include_background=include_background,
             reduction="mean",
             get_not_nans=False,
         )  # TODO: include_background default is False
-        self.patch_shape = patch_shape
+        self.patch_size = patch_size
 
         # Training parameters
         self.learning_rate = learning_rate
@@ -273,47 +273,72 @@ class MyUNETRWrapper(pl.LightningModule):
     #                 sync_dist=True,  # TODO: maybe set to false if it causes an issue
     #             )
 
+    def _get_root_probability_binary(
+        self,
+        logits,
+        labels,
+    ):
+        if self.output_activation == OutputActivation.SIGMOID.name:
+            post_pred = torch.sigmoid(logits)
+            binary_output = (post_pred >= 0.5).int()
+
+            final_label = torch.stack(
+                [self.post_label(i) for i in decollate_batch(labels)]
+            )
+            root_idx = 0
+
+            # the bakcground probability is the inverse of the root probability
+            background_pred = 1 - binary_output[:, 0, :, :, :].unsqueeze(1)
+
+        elif self.output_activation == OutputActivation.SOFTMAX.name:
+            post_pred = torch.softmax(logits, dim=1)
+            binary_output = torch.stack(
+                [self.post_pred(i) for i in decollate_batch(post_pred)]
+            )
+            final_label = torch.stack(
+                [self.post_label(i) for i in decollate_batch(labels)]
+            )
+
+            # the background probability lies in the first channel for Softmax
+            background_pred = binary_output[:, 0, :, :, :].unsqueeze(1)
+
+            root_idx = 1
+
+        else:
+            raise ValueError("Output activation must be of type OutputActivation.")
+
+        return post_pred, binary_output, final_label, background_pred, root_idx
+
     def validation_step(self, batch, batch_idx):
         images, labels = batch["image"], batch["label"]
-        roi_size = self.patch_shape
         sw_batch_size = 4
 
         labels = labels[
             :, :, : images.shape[2] * 2, : images.shape[3] * 2, : images.shape[4] * 2
         ]
 
-        outputs = sliding_window_inference(
+        logits = sliding_window_inference(
             images,
-            roi_size,
+            self.patch_size,
             sw_batch_size,
             self.forward,
         )
 
-        loss = self.loss_function(outputs, labels)
+        loss = self.loss_function(logits, labels)
 
-        # for Sigmoid loss
-        if self.output_activation == OutputActivation.SIGMOID.name:
-            out = torch.sigmoid(outputs)
-            binary_output = (out >= 0.5).int()
-
-            final_label = torch.stack(
-                [self.post_label(i) for i in decollate_batch(labels)]
-            )
-
-        elif self.output_activation == OutputActivation.SOFTMAX.name:
-            binary_output = [self.post_pred(i) for i in decollate_batch(outputs)]
-            final_label = [self.post_label(i) for i in decollate_batch(labels)]
-
-        else:
-            raise ValueError("Output activation must be of type OutputActivation.")
+        _, binary_output, final_label, background_pred, root_idx = (
+            self._get_root_probability_binary(logits, labels)
+        )
 
         dice = self.dice_metric(y_pred=binary_output, y=final_label)
+
         root_cmm = self.root_confusion_matrix_metrics(
-            y_pred=binary_output[:, 1, :, :, :].unsqueeze(1),
-            y=final_label[:, 1, :, :, :].unsqueeze(1),
+            y_pred=binary_output[:, root_idx, :, :, :].unsqueeze(1),
+            y=final_label[:, root_idx, :, :, :].unsqueeze(1),
         )
+
         background_cmm = self.background_confusion_matrix_metrics(
-            y_pred=binary_output[:, 0, :, :, :].unsqueeze(1),
+            y_pred=background_pred,
             y=final_label[:, 0, :, :, :].unsqueeze(1),
         )
 
@@ -339,7 +364,7 @@ class MyUNETRWrapper(pl.LightningModule):
 
         val_output = {
             "val_loss": loss,
-            "val_number": outputs.shape[0],
+            "val_number": logits.shape[0],
             "confusion_matrix_metrics": root_cmm,
             "background_confusion_matrix_metrics": background_cmm,
         }
@@ -405,59 +430,40 @@ class MyUNETRWrapper(pl.LightningModule):
 
     def test_step(self, batch, batch_idx):
         images, labels = batch["image"], batch["label"]
-        roi_size = self.patch_shape
         sw_batch_size = 4
 
         labels = labels[
-            :, :, : images.shape[2] * 2, : images.shape[3] * 2, : images.shape[4] * 2
+            :,
+            :,
+            : images.shape[2] * 2,
+            : images.shape[3] * 2,
+            : images.shape[4] * 2,
         ]
 
-        outputs = sliding_window_inference(
+        logits = sliding_window_inference(
             images,
-            roi_size,
+            self.patch_size,
             sw_batch_size,
             self.forward,
         )
 
-        loss = self.loss_function(outputs, labels)
+        loss = self.loss_function(logits, labels)
 
-        # for Sigmoid loss
-        if self.output_activation == OutputActivation.SIGMOID.name:
-            out = torch.sigmoid(outputs)
-            binary_output = (out >= 0.5).int()
-
-            final_label = torch.stack(
-                [self.post_label(i) for i in decollate_batch(labels)]
-            )
-
-        elif self.output_activation == OutputActivation.SOFTMAX.name:
-            binary_output = torch.stack(
-                [self.post_pred(i) for i in decollate_batch(outputs)]
-            )
-            final_label = torch.stack(
-                [self.post_label(i) for i in decollate_batch(labels)]
-            )
-
-        else:
-            raise ValueError("Output activation must be of type OutputActivation.")
-
-        print("outputs datatype", type(outputs))
+        _, binary_output, final_label, background_pred, root_idx = (
+            self._get_root_probability_binary(logits, labels)
+        )
 
         dice = self.dice_metric(y_pred=binary_output, y=final_label)
-        test = binary_output[:, 1, :, :, :].unsqueeze(1)
 
         root_cmm = self.root_confusion_matrix_metrics(
-            y_pred=binary_output[:, 1, :, :, :].unsqueeze(1),
-            y=final_label[:, 1, :, :, :].unsqueeze(1),
-        )
-        background_cmm = self.background_confusion_matrix_metrics(
-            y_pred=binary_output[:, 0, :, :, :].unsqueeze(1),
-            y=final_label[:, 0, :, :, :].unsqueeze(1),
+            y_pred=binary_output[:, root_idx, :, :, :].unsqueeze(1),
+            y=final_label[:, root_idx, :, :, :].unsqueeze(1),
         )
 
-        # if the ouput has 2 channels, which means that the Softmax activation function was used,
-        # then the last channel is the probability of the root
-        label_idx = outputs.shape[1] - 1
+        background_cmm = self.background_confusion_matrix_metrics(
+            y_pred=background_pred,
+            y=final_label[:, 0, :, :, :].unsqueeze(1),
+        )
 
         model_dir = os.path.dirname(f"./test_model_output/{batch_idx}/")
         if not os.path.exists(model_dir):
@@ -467,31 +473,28 @@ class MyUNETRWrapper(pl.LightningModule):
         for slice in [0.3, 0.5, 0.6, 0.7]:
             visualizer.plot_row(
                 batch["image"][0, 0, :, :, :].cpu(),
-                outputs[0, label_idx, :, :, :].cpu(),
-                binary_output[0, label_idx, :, :, :].cpu(),
+                logits[0, root_idx, :, :, :].cpu(),
+                binary_output[0, root_idx, :, :, :].cpu(),
                 slice_frac=slice,
                 filename=f"test_model_output/{batch_idx}/prediction_{slice}",
-                label=final_label[0, label_idx, :, :, :].cpu(),
+                label=final_label[0, 1, :, :, :].cpu(),
             )
 
         # For inspection: save the predictions as nifti files
         # Convert to NumPy array
         mri_ops = MRIoperations()
-        mri_ops.save_mri(
-            f"test_model_output/{batch_idx}/label.nii.gz",
-            batch["label"][0][0].cpu().numpy(),
-        )
-        mri_ops.save_mri(
-            f"test_model_output/{batch_idx}/output.nii.gz", outputs[0][0].cpu().numpy()
-        )
-        mri_ops.save_mri(
-            f"test_model_output/{batch_idx}/binary_output.nii.gz",
-            binary_output[0][0].cpu().numpy(),
-        )
+
+        label_path = f"test_model_output/{batch_idx}/label.nii.gz"
+        output_path = f"test_model_output/{batch_idx}/output.nii.gz"
+        binary_output_path = f"test_model_output/{batch_idx}/binary_output.nii.gz"
+
+        mri_ops.save_mri(label_path, batch["label"][0][0].cpu().numpy())
+        mri_ops.save_mri(output_path)
+        mri_ops.save_mri(binary_output_path, binary_output[0][root_idx].cpu().numpy())
 
         test_output = {
             "test_loss": loss,
-            "test_number": outputs.shape[0],
+            "test_number": logits.shape[0],
             "confusion_matrix_metrics": root_cmm,
             "background_confusion_matrix_metrics": background_cmm,
         }
@@ -731,7 +734,6 @@ class DiceLoss(_Loss):
                 raise ValueError(
                     "the value/values of the `weight` should be no less than 0."
                 )
-            # apply class_weight to loss
 
             self.class_weight = self.class_weight.to(f)
 

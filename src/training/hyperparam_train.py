@@ -8,7 +8,7 @@ from ray.train.lightning import (
     RayTrainReportCallback,
     prepare_trainer,
 )
-from pl_setup import MyUNETRWrapper
+from pl_setup import MyPlSetup
 from mri_dataloader import MRIDataLoader
 import pytorch_lightning as pl
 from ray.tune.schedulers import ASHAScheduler
@@ -29,7 +29,7 @@ class MyUNETray:
                 "feature_size": tune.choice([24]),
             },
             "samples_per_volume": 3,
-            "img_shape": tune.choice([(96, 96, 96)]),
+            "patch_size": tune.choice([(96, 96, 96)]),
         }
 
         scaling_config = ScalingConfig(
@@ -61,14 +61,14 @@ class MyUNETray:
             batch_size=config["batch_size"],
             upscale=config["upscale"],
             samples_per_volume=config["samples_per_volume"],
-            img_shape=config["img_shape"],
+            patch_size=config["patch_size"],
         )
 
-        self.model = MyUNETRWrapper(
+        self.model = MyPlSetup(
             learning_rate=config["learning_rate"],
             model=config["model"],
             model_params=config["model_params"],
-            img_shape=config["img_shape"],
+            patch_size=config["patch_size"],
         )
 
         trainer = pl.Trainer(

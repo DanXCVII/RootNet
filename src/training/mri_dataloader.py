@@ -48,13 +48,13 @@ Usage:  Can be used as a DataLoader for a PyTorch Lightning Trainer.
 """
 
 class MRIDataLoader(pl.LightningDataModule):
-    def __init__(self, relative_data_path, batch_size, upscale, samples_per_volume, img_shape, allow_missing_keys=False):
+    def __init__(self, relative_data_path, batch_size, upscale, samples_per_volume, patch_size, allow_missing_keys=False):
         super().__init__()
 
         self.batch_size = batch_size
         self.upscale = upscale
         self.samples_per_volume = samples_per_volume
-        self.img_shape = img_shape
+        self.patch_size = patch_size
 
         print("creating data_config.json")
         myCreateJsonFileConfig = CreateJsonFileConfig(relative_data_path)
@@ -78,7 +78,7 @@ class MRIDataLoader(pl.LightningDataModule):
             self.cache_transform_list.append(
                 Resized(
                     keys=["image"],
-                    spatial_size=self.img_shape,
+                    spatial_size=self.patch_size,
                     mode="trilinear",
                 )
             )
@@ -96,9 +96,9 @@ class MRIDataLoader(pl.LightningDataModule):
                         RandCropByPosNegLabeldWithResAdjust(
                         image_key="image",
                         label_key="label",
-                        spatial_size=self.img_shape
+                        spatial_size=self.patch_size
                         if self.upscale
-                        else tuple(x // 2 for x in self.img_shape),
+                        else tuple(x // 2 for x in self.patch_size),
                         pos=1,
                         neg=1,
                         num_samples=self.samples_per_volume,

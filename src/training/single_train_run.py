@@ -1,8 +1,11 @@
 from enum import Enum
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
-from pl_setup import ModelType
-from pl_setup import MyUNETRWrapper
+from pl_setup import (
+    ModelType,
+    OutputActivation,
+    MyPlSetup,
+)
 from mri_dataloader import MRIDataLoader
 from pytorch_lightning.loggers import TensorBoardLogger
 import os
@@ -22,7 +25,7 @@ Example: python single_train_run.py
 """
 
 
-class MyUNETRSetup:
+class MyTrainingSetup:
     def __init__(
         self,
         train_params,
@@ -32,12 +35,13 @@ class MyUNETRSetup:
         max_epochs=500,
         check_val=10,
         store_model_epoch=30,
+        output_activation=OutputActivation.SIGMOID.name,
     ):
         """
         Pipeline for training the UNETR (with superresolution) for the data provided in RootNet/data
 
         Args:
-        - model_params: dictionary containing the parameters for the MyUNETRWrapper class
+        - model_params: dictionary containing the parameters for the MyPlSetup class
         - model_name: name of the model for creating the checkpoint dir and tensorboard logs
         - checkpoint_path: path to the checkpoint dir
         - best_model_checkpoint: name of the best model checkpoint
@@ -51,6 +55,7 @@ class MyUNETRSetup:
         self.checkpoint_path = checkpoint_path
         self.best_model_checkpoint = best_model_checkpoint
         self.train_params = train_params
+        self.output_activation = output_activation
 
         self.model_name = model_name
         self._setup_checkpointing()
@@ -129,18 +134,20 @@ class MyUNETRSetup:
 
                 trainer = self._get_trainer(max_epochs=max_epochs_adjusted)
 
-                model = MyUNETRWrapper(
+                model = MyPlSetup(
                     learning_rate=self.train_params["learning_rate"],
                     model=self.train_params["model"],
-                    img_shape=self.train_params["img_shape"],
+                    patch_size=self.train_params["patch_size"],
                     model_params=self.train_params["model_params"],
+                    class_weight=self.train_params["class_weight"],
+                    output_activation=self.train_params["output_activation"],
                 )
                 dm = MRIDataLoader(
                     relative_data_path=self.train_params["relative_data_path"],
                     batch_size=self.train_params["batch_size"],
                     upscale=self.train_params["upscale"],
                     samples_per_volume=self.train_params["samples_per_volume"],
-                    img_shape=self.train_params["img_shape"],
+                    patch_size=self.train_params["patch_size"],
                 )
                 if i <= self.store_model_epoch:
                     trainer.fit(model, datamodule=dm)
@@ -149,10 +156,10 @@ class MyUNETRSetup:
                 trainer.save_checkpoint(model_checkpoint)
 
     def test(self, ckpt_path=None):
-        model = MyUNETRWrapper(
+        model = MyPlSetup(
             learning_rate=self.train_params["learning_rate"],
             model=self.train_params["model"],
-            img_shape=self.train_params["img_shape"],
+            patch_size=self.train_params["patch_size"],
             model_params=self.train_params["model_params"],
         )
         dm = MRIDataLoader(
@@ -160,7 +167,7 @@ class MyUNETRSetup:
             batch_size=self.train_params["batch_size"],
             upscale=self.train_params["upscale"],
             samples_per_volume=self.train_params["samples_per_volume"],
-            img_shape=self.train_params["img_shape"],
+            patch_size=self.train_params["patch_size"],
         )
 
         trainer = self._get_trainer(checkpoint_path=ckpt_path)
@@ -172,13 +179,13 @@ class MyUNETRSetup:
 
 # model = UNet()
 
-# model = MyUpscaleSwinUNETR(img_shape=img_shape, in_channels=1, out_channels=2)
+# model = MyUpscaleSwinUNETR(patch_size=patch_size, in_channels=1, out_channels=2)
 
 # model = MyUNETR(
 #     in_channels=1,
 #     out_channels=2,
 #     feature_size=16,
-#     img_shape=(96, 96, 96),
+#     patch_size=(96, 96, 96),
 # )
 
 # model = UNETR()
@@ -193,8 +200,15 @@ def main(
     model,
     model_params,
     max_epochs,
-    img_shape,
+    patch_size,
+    class_weight,
 ):
+    # check if the model_params has a key called "out_channels"
+    if "out_channels" in model_params and model_params["out_channels"] == 2:
+        activation = OutputActivation.SOFTMAX.name
+    else:
+        activation = OutputActivation.SIGMOID.name
+
     train_params = {
         "relative_data_path": relative_data_path,
         "batch_size": batch_size,
@@ -203,10 +217,18 @@ def main(
         "model": model,
         "model_params": model_params,
         "samples_per_volume": samples_per_volume,
-        "img_shape": img_shape,
+        "patch_size": patch_size,
+        "class_weight": class_weight,
+        "output_activation": activation,
     }
 
-    model_name = f"weight_1_1.1_Data_DICE_sigmoid_{model}-img_shape_{img_shape[0]}-feat_{model_params['feature_size']}-upscale_{upscale}-out_channels_{model_params['out_channels']}-lr_{learning_rate}-upsample_end_{model_params['upsample_end']}"
+    # check if the model_params has a key called "out_channels"
+    if "out_channels" in model_params and model_params["out_channels"] == 2:
+        activation = OutputActivation.SOFTMAX.name
+    else:
+        activation = OutputActivation.SIGMOID.name
+
+    model_name = f"weight_{class_weight[0]}-{class_weight[1]}_DICE_{activation}_{model}-patch_size_{patch_size[0]}-feat_{model_params['feature_size']}-upscale_{upscale}-out_channels_{model_params['out_channels']}-lr_{learning_rate}-upsample_end_{model_params['upsample_end']}"
     checkpoint_path = f"../../runs/{model_name}"
     checkpoint_file = "latest_model"
     best_checkpoint_file = "best_metric_model"
@@ -221,7 +243,7 @@ def main(
         60  # 30 seems to work safely with batch size 4 and 3 samples per volume
     )
 
-    training_pipeline = MyUNETRSetup(
+    training_pipeline = MyTrainingSetup(
         train_params,
         model_name,
         checkpoint_path,
@@ -229,6 +251,7 @@ def main(
         max_epochs=max_epochs,
         check_val=check_val,
         store_model_epoch=store_model_epoch,
+        output_activation=activation,
     )
 
     training_pipeline.train(
@@ -251,6 +274,7 @@ if __name__ == "__main__":
     parser.add_argument("--samples_per_volume", "-spv", type=int, help="An integer parameter")
     parser.add_argument("--upscale", "-u", type=bool, help="A boolean parameter")
     parser.add_argument("--patch_size", "-p", nargs="+", type=int, help="A tuple of three integers")
+    parser.add_argument("--class_weight", "-cw", nargs="+", type=float, help="A tuple of two floats")
     parser.add_argument("--learning_rate", "-lr", type=float, help="A float parameter for the learning rate")
     parser.add_argument("--model", "-m", type=str, help="A string parameter for the model")
     parser.add_argument("--model_params", "-mp", type=str, help="JSON String for the model parameters")
@@ -274,4 +298,5 @@ if __name__ == "__main__":
         model_params,
         args.max_epochs,
         args.patch_size,
+        [args.class_weight[0], args.class_weight[1]],
     )

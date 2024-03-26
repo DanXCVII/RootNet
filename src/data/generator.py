@@ -25,6 +25,7 @@ class DataGenerator:
         Generates samples (synthetic MRIs) for each plant and soil combination and random params from the
         specidied ranges.
         """
+        self.data_assets_path = data_assets_path
         # parameters for the grid search
         self.param_grid = {
             "root_model_name": [
@@ -34,17 +35,16 @@ class DataGenerator:
                 "Glycine_max",
                 "Moraesetal_2020",
             ],
-            "soil_type": ["sand", "loam", "clay"],
+            "soil_type": ["sand", "loam"],
         }
         # fixed parameters and ranges from which a random value will be chosen
         self.params_range = {
             "root_growth_days": [
                 int(x) for x in np.around(np.arange(5, 11, 1), 1).tolist()
             ],
-            "initial_sand": list(range(-30, -5, 5)),
-            "initial_loam": list(range(-500, -20, 10)),
-            "initial_clay": list(range(-1000, -200, 100)),
-            "perlin_noise_intensity": np.around(np.arange(0.5, 1, 0.1), 1),
+            "initial_sand": list(range(-30, -5, 1)),
+            "initial_loam": list(range(-500, -20, 5)),
+            # "initial_clay": list(range(-1000, -200, 100)),
             "no_noise_probability": 0,
             "min_xy_seed_pos": -0.1,
             "max_xy_seed_pos": 0.1,
@@ -52,9 +52,9 @@ class DataGenerator:
         self.soil_type_mesh_path = {
             "sand": f"{data_assets_path}/meshes/cylinder_r_0.032_d_-0.22_res_0.005.msh",
             "loam": f"{data_assets_path}/meshes/cylinder_r_0.032_d_-0.22_res_0.005.msh",
-            "clay": f"{data_assets_path}/meshes/cylinder_r_0.032_d_-0.22_res_0.005.msh",
+            # "clay": f"{data_assets_path}/meshes/cylinder_r_0.032_d_-0.22_res_0.005.msh",
         }
-        self.root_model_path = "../../../../../../modelparameter/structural/rootsystem"
+        self.root_model_path = "/Users/daniel/Desktop/FZJ/CPlantBox/DUMUX/CPlantBox/modelparameter/structural/rootsystem"
         self.soil_water_sim = None
 
     def generate_samples_grid(self, data_path, num_samples_per_config):
@@ -106,13 +106,12 @@ class DataGenerator:
                         ],
                         "root_growth_days": root_growth_days,
                         "initial": initial,
-                        "sim_time": root_growth_days
-                        if root_growth_days < 4
-                        else random.choice(
-                            [x for x in np.around(np.arange(2, 4, 0.2), 2)]
-                        ),
-                        "perlin_noise_intensity": random.choice(
-                            self.params_range["perlin_noise_intensity"]
+                        "sim_time": (
+                            root_growth_days
+                            if root_growth_days < 4
+                            else random.choice(
+                                [x for x in np.around(np.arange(2, 4, 0.2), 2)]
+                            )
                         ),
                         "seed_pos": (
                             random.uniform(
@@ -128,7 +127,7 @@ class DataGenerator:
 
                     # if a sample with the same config was not already generated, generate it
                     if not os.path.exists(
-                        f"{data_path}/{config['root_model_name']}/{config['soil_type']}/sim_days_{config['root_growth_days']}-initial_{config['initial']}-noise_{config['perlin_noise_intensity']}"
+                        f"{data_path}/{config['root_model_name']}/{config['soil_type']}/sim_days_{config['root_growth_days']}-initial_{config['initial']}"
                     ):
                         self.generate_sample(data_path, config=config)
                         i += 1
@@ -159,9 +158,6 @@ class DataGenerator:
             if random_root_growth_days < 4
             else [x for x in np.around(np.arange(2, 4, 0.2), 2)]
         )
-        perlin_noise_intensity = random.choice(
-            self.params_range["perlin_noise_intensity"]
-        )
         mesh_path = self.soil_type_mesh_path[random_soil_type]
         initial = random.choice(self.params_range[f"initial_{random_soil_type}"])
 
@@ -170,7 +166,6 @@ class DataGenerator:
             "soil_type": random_soil_type,
             "root_growth_days": random_root_growth_days,
             "sim_time": random_water_sim_days,
-            "perlin_noise_intensity": perlin_noise_intensity,
             "mesh_path": mesh_path,
             "initial": initial,
             "seed_pos": random.uniform(
@@ -227,6 +222,17 @@ class DataGenerator:
         # Get random configuration if no config is given
         my_config = config if config else self.get_random_config()
 
+        # For debugging purposes, a specific configuration can be used
+        # my_config = {
+        #     "root_model_name": "Glycine_max",
+        #     "soil_type": "sand",
+        #     "root_growth_days": 3,
+        #     "sim_time": 1,
+        #     "mesh_path": f"{self.data_assets_path}/meshes/cylinder_r_0.032_d_-0.22_res_0.005.msh",
+        #     "initial": -5,
+        #     "seed_pos": (0, 0),
+        # }
+
         pprint.pprint(my_config, width=40, indent=4)
 
         # Check if the config contains all necessary entries for data generation
@@ -236,7 +242,6 @@ class DataGenerator:
             "soil_type",
             "root_growth_days",
             "sim_time",
-            "perlin_noise_intensity",
             "initial",
             "seed_pos",
         ]
@@ -248,7 +253,7 @@ class DataGenerator:
             raise ValueError(f"Params {missing_keys} are missing in the config.")
 
         # create the folder for the generated data
-        data_path = f"{data_path}/{my_config['root_model_name']}/{my_config['soil_type']}/sim_days_{my_config['root_growth_days']}-initial_{my_config['initial']}-noise_{my_config['perlin_noise_intensity']}"
+        data_path = f"{data_path}/{my_config['root_model_name']}/{my_config['soil_type']}/sim_days_{my_config['root_growth_days']}-initial_{my_config['initial']}"
         os.makedirs(data_path, exist_ok=True)
 
         # add the config for the simulated plant to the data folder
@@ -264,7 +269,7 @@ class DataGenerator:
             width,
             depth,
             seed_pos=(my_config["seed_pos"][0], my_config["seed_pos"][1], 0),
-            model_path="../../../../../../modelparameter/structural/rootsystem",
+            model_path="/Users/daniel/Desktop/FZJ/CPlantBox/DUMUX/CPlantBox/modelparameter/structural/rootsystem",
         )
         analist, filenames = root_sim.run_simulation(
             [my_config["root_growth_days"]]
@@ -291,25 +296,24 @@ class DataGenerator:
         seganalyzer = analist[0]
         rsml_path = data_path + "/{}".format(filenames[0])
         vtu_path = data_path + "/" + water_sim_file
-        perlin_noise_intensity = my_config["perlin_noise_intensity"]
 
         my_vi = Virtual_MRI(
             rsml_path,
-            vtu_path,
-            perlin_noise_intensity,
+            soil_type=my_config["soil_type"],
+            vtu_path=vtu_path,
             seganalyzer=seganalyzer,
             res_mri=[0.027, 0.027, 0.1],
             depth=depth + 0.2,
             width=width + 0.1,
         )
-        grid_values, filename = my_vi.create_virtual_root_mri(
+        _, _ = my_vi.create_virtual_root_mri(
             data_path,
             add_noise=True,
         )
         my_vi.__init__(
             rsml_path,
-            vtu_path,
-            perlin_noise_intensity,
+            vtu_path=vtu_path,
+            soil_type=my_config["soil_type"],
             seganalyzer=seganalyzer,
             res_mri=[0.027, 0.027, 0.1],
             depth=depth + 0.2,
@@ -317,7 +321,7 @@ class DataGenerator:
             scale_factor=2,
         )
 
-        label_grid_values, filename = my_vi.create_virtual_root_mri(
+        _, _ = my_vi.create_virtual_root_mri(
             data_path,
             add_noise=False,
             label=True,
@@ -325,7 +329,7 @@ class DataGenerator:
 
 
 generator = DataGenerator("../../data_assets")
-# generator.remove_incomplete_samples("../../data/generated")
+generator.remove_incomplete_samples("../../data/generated")
 # Generate training data
 generator.generate_samples_grid(
     data_path="../../data/generated/training",

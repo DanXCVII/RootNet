@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 class FourierSynthesis:
@@ -22,6 +23,28 @@ class FourierSynthesis:
         # Fourier transform of the original volume
         self.f_transform = np.fft.fftn(volume)
         self.f_shift = np.fft.fftshift(self.f_transform)
+
+    def visualize_spectrun(self, shift=None):
+        if shift is None:
+            print("shift is None")
+            my_shift = self.f_transform
+        else:
+            my_shift = shift
+
+        print("visualize shift:", my_shift[-1:])
+        # Compute the magnitude spectrum
+        print("my_shift mean:", np.mean(my_shift))
+        magnitude_spectrum = np.abs(my_shift)
+        log_magnitude = np.log(magnitude_spectrum + 1)  # +1 to avoid log(0)
+
+        print("log_m mean:", np.mean(log_magnitude))
+
+        # Visualize a central slice of the log magnitude spectrum
+        # For a 3D volume, you might choose a slice along one of the dimensions
+        plt.imshow(log_magnitude[log_magnitude.shape[0] // 2], cmap="gray")
+        plt.title("Log Magnitude Spectrum of a Central Slice")
+        plt.colorbar()
+        plt.show()
 
     def generate_new_texture(self, original_array, num_images) -> list:
         """
