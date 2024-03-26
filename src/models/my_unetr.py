@@ -240,11 +240,11 @@ class MyUNETR(nn.Module):
     def __init__(
         self,
         feature_size=16,
-        patch_size=(96, 96, 96),
+        img_shape=(96, 96, 96),
         in_channels=1,
         out_channels=1,
         embed_dim=768,
-        patch_size_transformer=16,
+        patch_size=16,
         num_heads=12,
         dropout=0.1,
     ):
@@ -252,21 +252,21 @@ class MyUNETR(nn.Module):
         self.input_dim = in_channels
         self.output_dim = out_channels
         self.embed_dim = embed_dim
+        self.img_shape = img_shape
         self.patch_size = patch_size
-        self.patch_size_transformer = patch_size_transformer
         self.num_heads = num_heads
         self.dropout = dropout
         self.num_layers = 12
         self.ext_layers = [3, 6, 9, 12]
 
-        self.patch_dim = [int(x / patch_size_transformer) for x in patch_size]
+        self.patch_dim = [int(x / patch_size) for x in img_shape]
 
         # Transformer Encoder
         self.transformer = Transformer(
             in_channels,
             embed_dim,
+            img_shape,
             patch_size,
-            patch_size_transformer,
             num_heads,
             self.num_layers,
             dropout,

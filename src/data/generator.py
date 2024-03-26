@@ -1,3 +1,6 @@
+with open("../../DUMUX_path.txt", "r") as file:
+    DUMUX_path = file.read()
+
 from virtual_mri_generation import (
     Virtual_MRI,
     RootSystemSimulation,
@@ -23,24 +26,24 @@ class DataGenerator:
     def __init__(self, data_assets_path):
         """
         Generates samples (synthetic MRIs) for each plant and soil combination and random params from the
-        specidied ranges.
+        specidied ranges. Add parameters should me modified, for whatever configuration is needed.
         """
         self.data_assets_path = data_assets_path
-        # parameters for the grid search
         self.param_grid = {
             "root_model_name": [
-                "Bench_lupin",
-                "Crypsis_aculeata_Clausnitzer_1994",
-                "Glycine_max_Moraes2020_opt2",
-                "Glycine_max",
-                "Moraesetal_2020",
+                "my_Bench_lupin",
+                "my_Crypsis_aculeata_Clausnitzer_1994",
+                "my_Glycine_max_Moraes2020_opt2",
+                "my_Glycine_max",
+                "my_Moraesetal_2020",
+                "wheat_synMRI",
             ],
             "soil_type": ["sand", "loam"],
         }
         # fixed parameters and ranges from which a random value will be chosen
         self.params_range = {
             "root_growth_days": [
-                int(x) for x in np.around(np.arange(5, 11, 1), 1).tolist()
+                int(x) for x in np.around(np.arange(5, 10, 1), 1).tolist()
             ],
             "initial_sand": list(range(-30, -5, 1)),
             "initial_loam": list(range(-500, -20, 5)),
@@ -54,7 +57,9 @@ class DataGenerator:
             "loam": f"{data_assets_path}/meshes/cylinder_r_0.032_d_-0.22_res_0.005.msh",
             # "clay": f"{data_assets_path}/meshes/cylinder_r_0.032_d_-0.22_res_0.005.msh",
         }
-        self.root_model_path = "/Users/daniel/Desktop/FZJ/CPlantBox/DUMUX/CPlantBox/modelparameter/structural/rootsystem"
+        self.root_model_path = (
+            f"{DUMUX_path}/CPlantBox/modelparameter/structural/rootsystem"
+        )
         self.soil_water_sim = None
 
     def generate_samples_grid(self, data_path, num_samples_per_config):
@@ -198,7 +203,10 @@ class DataGenerator:
 
     def remove_incomplete_samples(self, data_path):
         """
-        removes the samples, where not all files were generated.
+        removes the incomplete samples, where not all files were generated.
+
+        Args:
+        - data_path: path to the folder where the generated data is stored
         """
         data_dir = self.get_dirs_without_subdir(data_path)
 
@@ -224,10 +232,11 @@ class DataGenerator:
 
         # For debugging purposes, a specific configuration can be used
         # my_config = {
-        #     "root_model_name": "Glycine_max",
+        #     "root_model_name": "my_Bench_lupin",
         #     "soil_type": "sand",
-        #     "root_growth_days": 3,
-        #     "sim_time": 1,
+        #     "root_growth_days": 5,
+        #     "sim_time": 0.01,
+        #     "seed_pos": (0.09571840067568729, 0.07387917086355958),
         #     "mesh_path": f"{self.data_assets_path}/meshes/cylinder_r_0.032_d_-0.22_res_0.005.msh",
         #     "initial": -5,
         #     "seed_pos": (0, 0),
@@ -269,7 +278,7 @@ class DataGenerator:
             width,
             depth,
             seed_pos=(my_config["seed_pos"][0], my_config["seed_pos"][1], 0),
-            model_path="/Users/daniel/Desktop/FZJ/CPlantBox/DUMUX/CPlantBox/modelparameter/structural/rootsystem",
+            model_path=f"{DUMUX_path}/CPlantBox/modelparameter/structural/rootsystem",
         )
         analist, filenames = root_sim.run_simulation(
             [my_config["root_growth_days"]]
@@ -329,7 +338,7 @@ class DataGenerator:
 
 
 generator = DataGenerator("../../data_assets")
-generator.remove_incomplete_samples("../../data/generated")
+# generator.remove_incomplete_samples("../../data/generated")
 # Generate training data
 generator.generate_samples_grid(
     data_path="../../data/generated/training",

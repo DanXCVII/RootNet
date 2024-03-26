@@ -1,7 +1,10 @@
 import sys
 
-sys.path.append("../../../../../../../")
-sys.path.append("../../../../../../../src/")
+with open("../../DUMUX_path.txt", "r") as file:
+    DUMUX_path = file.read()
+
+sys.path.append(f"{DUMUX_path}/CPlantBox/")
+sys.path.append(f"{DUMUX_path}/CPlantBox/src/")
 
 import plantbox as pb
 import visualisation.vtk_plot as vp
@@ -20,7 +23,7 @@ class RootSystemSimulation:
         soil_width,
         soil_depth,
         seed_pos=(0, 0, 0),
-        model_path="../../../../../../../modelparameter/structural/rootsystem",
+        model_path=f"{DUMUX_path}/CPlantBox/modelparameter/structural/rootsystem",
         container_type="soilcore",
     ):
         """

@@ -3,15 +3,19 @@ Benchmark M1.2 static root system in soil (root hydrualics with Meunier and the 
 
 also works parallel with mpiexec (slower, due to overhead?)
 """
+
 import os
 import sys
 
-sys.path.append("../../../../../../..")
-sys.path.append("../../../../../../../src/")
+with open("../../DUMUX_path.txt", "r") as file:
+    DUMUX_path = file.read()
+
+sys.path.append("f{DUMUX_path}/CPlantBox/")
+sys.path.append(f"{DUMUX_path}/CPlantBox/src/")
 sys.path.append(
-    "../../../../../../../dumux-rosi/build-cmake/cpp/python_binding/"
+    f"{DUMUX_path}/dumux-rosi/build-cmake/cpp/python_binding/"
 )  # dumux python binding
-sys.path.append("../../../../../../../dumux-rosi/python/modules/")  # python wrappers
+sys.path.append(f"{DUMUX_path}/dumux-rosi/python/modules/")  # python wrappers
 
 import plantbox as pb
 from functional.xylem_flux import XylemFluxPython  # Python hybrid solver
@@ -29,6 +33,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import timeit
 from mpi4py import MPI
+import xml.etree.ElementTree as ET
 
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
@@ -49,7 +54,7 @@ class SoilWaterSimulation:
         trans=6.4,
         wilting_point=-15000,
         age_dependent=False,
-        sim_time=7.1,
+        sim_time=1,
     ):
         """
         Simulates the water movement in the soil for a given root system and soil properties.
@@ -146,6 +151,36 @@ class SoilWaterSimulation:
         sys.stdout.write(f"\rProgress: [{arrow + spaces}] {int(progress*100)}% {info}")
         sys.stdout.flush()  # This is important to ensure the progress is updated
 
+    def _add_water_content(self, vtu_path):
+        """
+        Adds the water content to the soil.
+        """
+        water_content = self.s.getWaterContent()
+
+        tree = ET.parse(vtu_path)
+        root = tree.getroot()
+
+        cell_data = root.find(".//CellData")
+
+        xml_elem = ET.SubElement(
+            cell_data,
+            "DataArray",
+            attrib={
+                "type": "Float32",
+                "Name": "water content",
+                "NumberOfComponents": "1",
+                "format": "ascii",
+            },
+        )
+
+        # Example water content data (as a string)
+        water_content_data = " ".join(str(num) for num in water_content.ravel())
+
+        # Add the water content data as text in the DataArray element
+        xml_elem.text = water_content_data
+
+        tree.write(vtu_path)
+
     def run(self) -> str:
         """
         Runs the soil water simulation for the given root system and soil properties.
@@ -226,12 +261,12 @@ class SoilWaterSimulation:
                 # z_.append(sum_flux)  # cm3/day (root system uptake)
                 z_.append(float(self.r.collar_flux(rs_age + t, rx, sx)))  # cm3/day
 
-                collar_flux = round(self.r.collar_flux(rs_age + t, rx, sx)[0], 3)
+                # collar_flux = round(self.r.collar_flux(rs_age + t, rx, sx)[0], 3)
                 prescribed = round(-self.trans * sinusoidal(t), 3)
                 self._print_progress_bar(
                     i + 1,
                     N,
-                    info=f"collar flux: {collar_flux} | {prescribed} :prescribed",
+                    # info=f"collar flux: {collar_flux} | {prescribed} :prescribed",
                 )
 
                 # n = round(float(i) / float(N) * 100.)
@@ -258,6 +293,14 @@ class SoilWaterSimulation:
         ]
         self.s.writeDumuxVTK(rsml_name)
 
+        # vp.write_soil(
+        #     rsml_name,
+        #     self.s,
+        #     (-5, -5, -5),
+        #     (5, 5, 5),
+        #     (20, 2, 21),
+        # )
+
         filename = (
             str(rsml_name)
             + "_soil_"
@@ -268,9 +311,9 @@ class SoilWaterSimulation:
             + str(self.sim_time)
             + ".vtu"
         )
-        os.system(
-            "mv " + str(rsml_name) + "-00000.vtu " + self.output_path + "/" + filename
-        )
+        new_filename = self.output_path + "/" + filename
+        os.system("mv " + str(rsml_name) + "-00000.vtu " + new_filename)
+        self._add_water_content(new_filename)
 
         print(f"{rsml_name}.pvd")
         os.remove(f"{rsml_name}.pvd")
@@ -278,6 +321,11 @@ class SoilWaterSimulation:
         return filename
 
 
-# Example usage:
-# my_soil_sim = SoilWaterSimulation("../../../data_assets/meshes/cylinder_r_0.03_d_-0.2_res_0.004_loam.msh", "../../../data/generated/root_systems/Anagallis_femina_Leitner_2010_day_12.rsml", "../../../data/generated/", "loam")
+# # Example usage:
+# my_soil_sim = SoilWaterSimulation(
+#     "cylinder_r_0.032_d_-0.22_res_0.01_testing_fast.msh",
+#     "Bench_lupin_day_10.rsml",
+#     "./",
+#     "loam",
+# )
 # my_soil_sim.run()

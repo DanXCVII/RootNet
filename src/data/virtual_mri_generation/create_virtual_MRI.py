@@ -1,12 +1,12 @@
-"""simulates a root system, which is rasterized to a given resolution. To mimic an MRI image, Gaussian noise is additionally added"""
-
 import sys
 
-sys.path.append("/Users/daniel/Desktop/FZJ/CPlantBox/DUMUX/CPlantBox")
-sys.path.append(
-    "/Users/daniel/Desktop/FZJ/CPlantBox/DUMUX/CPlantBox/experimental/parametrisation/"
-)
-sys.path.append("/Users/daniel/Desktop/FZJ/CPlantBox/DUMUX/CPlantBox/src")
+with open("../../DUMUX_path.txt", "r") as file:
+    DUMUX_path = file.read()
+    print(DUMUX_path)
+
+sys.path.append(f"{DUMUX_path}/CPlantBox")
+sys.path.append(f"{DUMUX_path}/CPlantBox/experimental/parametrisation/")
+sys.path.append(f"{DUMUX_path}/CPlantBox/src")
 sys.path.append("..")
 
 import plantbox as pb
@@ -100,7 +100,7 @@ class Virtual_MRI:
         self.nz = int(self.depth / res_mri[2]) * self.scale_factor
 
         if self.soil_type == "loam":
-            self.max_root_signal_intensity = 10000
+            self.max_root_signal_intensity = 15000
         elif self.soil_type == "sand":
             self.max_root_signal_intensity = 20000
 
@@ -476,7 +476,10 @@ class Virtual_MRI:
 
         # occasionally the root grid creates values extremely large for no obvious reason. This is
         # a workaround to prevent this from happening
-        root_grid[root_grid > 30000] = 0
+        if root_grid.max() > 30000:
+            print("root_grid max", root_grid.max())
+        if water_content_grid.max() > 0.5:
+            print("water_content_grid max", water_content_grid.max())
 
         # apply the fourier noise on the root signal (seperated from the soil noise just in case
         # we want to apply different noise to the root and the soil)

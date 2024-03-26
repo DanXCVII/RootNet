@@ -1,13 +1,6 @@
 import os
 import shutil
 
-"""
-Description:    This script was created to delete all checkpoints, for which no tensorboard exists. 
-                So when tiding up the logs, it simply deletes all corresponding checkpoints.
-Usage: Adjust the paths to the checkpoints and tensorboards and run the script.
-Example: python delete_checkpoints.py
-"""
-
 def delete_unmatched_directories(dir1, dir2):
     """
     Delete directories in dir2 that are not present in dir1.

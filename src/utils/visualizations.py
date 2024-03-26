@@ -1,14 +1,11 @@
 import matplotlib.pyplot as plt
 import torch
 
-
 class Visualizations:
     def __init__(self):
         pass
 
-    def plot_row(
-        self, img, val_outputs, binary_output, slice_frac, filename, label=None
-    ):
+    def plot_row(self, img, val_outputs, binary_output, slice_frac, filename, label=None):
         """
         plots the image, label, output and binary output for a given horizontal slice
 
@@ -22,7 +19,7 @@ class Visualizations:
         print("img shape: ", img.shape)
         print("val_outputs shape: ", val_outputs.shape)
         print("binary_output shape: ", binary_output.shape)
-
+        
         total_imges = 0
         if label is None:
             total_imges = 3

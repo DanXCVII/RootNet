@@ -6,14 +6,11 @@ from datetime import datetime
 
 
 class CreateJsonFileConfig:
-    def __init__(self, relative_data_path):
-        file_dir = os.path.dirname(__file__)  # Get the directory of the current script
-        self.data_dir = os.path.abspath(os.path.join(file_dir, relative_data_path))
-        self.training_dir = os.path.join(self.data_dir, "generated/training")
-        self.validation_dir = os.path.join(self.data_dir, "generated/validation")
-        self.test_dir = os.path.join(self.data_dir, "generated/test")
-        self.real_data = os.path.join(self.data_dir, "real")
-        print("initiated CreateJsonFileConfig")
+    def __init__(self):
+        self.data_dir = "../../data/"
+        self.training_dir = "generated/training"
+        self.validation_dir = "generated/validation"
+        self.test_dir = "generated/test"
 
     def _find_files(self, root_path, extension=".nii.gz") -> list:
         """
@@ -34,21 +31,18 @@ class CreateJsonFileConfig:
 
         return file_list
 
-    def _create_input_label_dict(self, file_list, key, input_label_dict=None) -> dict:
+    def _create_input_label_dict(self, file_list, key) -> dict:
         """
         Creates a dictionary with the input and label filename for the config file.
 
         Args:
         - file_list (list): List of filenames.
         - key (str): Key for the dictionary.
-        - input_label_dict (dict): Dictionary to add the entries to.
 
         Returns:
         - input_label_dict (dict): Dictionary with the input and label filenames.
         """
-        if input_label_dict is None:
-            input_label_dict = {key: []}
-
+        input_label_dict = {key: []}
         input_file_list = [s for s in file_list if "/label_" not in s]
 
         for file_path in input_file_list:
@@ -93,19 +87,15 @@ class CreateJsonFileConfig:
         - filename (str): Filename of the config file.
         """
         training_files = self._find_files(
-            self.training_dir,
+            self.data_dir + self.training_dir,
             extension=".nii.gz",
         )
         validation_files = self._find_files(
-            self.validation_dir,
+            self.data_dir + self.validation_dir,
             extension=".nii.gz",
         )
         test_files = self._find_files(
-            self.test_dir,
-            extension=".nii.gz",
-        )
-        test_files_real = self._find_files(
-            self.real_data,
+            self.data_dir + self.test_dir,
             extension=".nii.gz",
         )
 
@@ -125,7 +115,6 @@ class CreateJsonFileConfig:
         train_config = self._create_input_label_dict(training_files, "training")
         val_config = self._create_input_label_dict(validation_files, "validation")
         test_config = self._create_input_label_dict(test_files, "test")
-        test_real_config = self._create_input_label_dict(test_files_real, "test", input_label_dict=test_config)
 
         config_dict.update(train_config)
         config_dict.update(val_config)
@@ -141,5 +130,5 @@ class CreateJsonFileConfig:
         return config_dict
 
 # Example execution
-config = CreateJsonFileConfig("../../data")
-config.create_config()
+# config = CreateJsonFileConfig()
+# config.create_config()

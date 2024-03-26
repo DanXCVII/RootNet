@@ -1,0 +1,106 @@
+<plant>
+<seed name="Lupinus_Bench" subType="0">
+    <parameter name="seedPos.x" value="0.022947834730359218" />
+    <parameter name="seedPos.y" value="0.022947834730359218" />
+    <parameter name="seedPos.z" value="0.0" />
+    <parameter name="firstB" value="0" dev="0" />
+    <parameter name="delayB" value="0" dev="0" />
+    <parameter name="maxB" value="0" dev="0" />
+    <parameter name="maxTi" value="0" dev="0" />
+    <parameter name="nC" value="0" />
+    <parameter name="nz" value="0" />
+    <parameter name="firstSB" value="1000" dev="0" />
+    <parameter name="delaySB" value="1000" dev="0" />
+    <parameter name="delayRC" value="1000" dev="0" />
+    <parameter name="simulationTime" value="60" dev="0" />
+</seed>
+
+<root name="taproot" subType="1">
+    <parameter name="gf" value="1" />
+    
+    <parameter name="a" value="0.1223" dev="0.0149" />
+    
+    <parameter name="dx" value="0.2" />
+    
+    <parameter name="la" value="6.81" dev="1.9" />
+    
+    <parameter name="lb" value="1.27" dev="1.19" />
+    
+    <parameter name="lmax" value="150" dev="20" />
+    
+    <parameter name="ln" value="0.23" dev="0.13" />
+    
+    <parameter name="r" value="2.91" dev="0.291" />
+    
+    <parameter name="rlt" value="1e+09" />
+    
+    <parameter name="theta" value="0.2" dev="0.02" />
+    
+	<parameter name="tropismT" value="1" />
+    
+    <parameter name="tropismN" value="2" />
+    
+    <parameter name="tropismS" value="0.5" />
+    
+    <parameter name="successor" type="2" percentage="1" />
+ </root>
+
+<root name="lateral1" subType="2">
+    <parameter name="gf" value="1" />
+    
+    <parameter name="a" value="0.045" dev="0.005"/>
+    
+    <parameter name="dx" value="0.2" />
+    
+    <parameter name="la" value="17" dev="0.5" />
+    
+    <parameter name="lb" value="0" />
+    
+    <parameter name="lmax" value="10" dev="4" />
+    
+    <parameter name="ln" value="1" />
+    
+    <parameter name="r" value="2" dev="0.5" />
+    
+    <parameter name="rlt" value="1e+09" />
+    
+    <parameter name="theta" value="1" dev="0.1" />
+    
+	<parameter name="tropismT" value="1" />
+    
+    <parameter name="tropismN" value="5" />
+    
+    <parameter name="tropismS" value="0.5" />
+    
+	<parameter name="successor" type="3" percentage="1" />
+ </root>
+
+<root name="lateral2" subType="3">
+    <parameter name="gf" value="1" />
+    
+    <parameter name="a" value="0.024" dev="0.0034" />
+    
+    <parameter name="dx" value="0.2" />
+    
+    <parameter name="la" value="2.6" dev="0.2" />
+    
+    <parameter name="lb" value="0.1" />
+    
+    <parameter name="lmax" value="10" dev="4" />
+    
+    <parameter name="ln" value="0.5" />
+    
+    <parameter name="r" value="0.25" dev="0.025" />
+    
+    <parameter name="rlt" value="1e+09" />
+    
+    <parameter name="theta" value="1" dev="0.1" />
+    
+	<parameter name="tropismT" value="2" />
+    
+    <parameter name="tropismN" value="0" />
+    
+    <parameter name="tropismS" value="0.1" />
+    
+ </root>
+ </plant>

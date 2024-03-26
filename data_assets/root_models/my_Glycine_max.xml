@@ -1,0 +1,140 @@
+<plant>
+    <seed name="Glycine_max" subType="0">
+        <parameter name="maxTi" value="0" />
+        
+        <parameter name="a" value="0.1" />
+        
+        <parameter name="delayB" value="0" />
+        
+        <parameter name="delayRC" value="1000" />
+        
+        <parameter name="delaySB" value="1000" />
+        
+        <parameter name="firstB" value="0" />
+        
+        <parameter name="firstSB" value="1000" />
+        
+        <parameter name="maxB" value="0" />
+        
+        <parameter name="nC" value="0" />
+        
+        <parameter name="nz" value="0" />
+        
+        <parameter name="seedPos.x" value="0.016352039414497324" />
+        
+        <parameter name="seedPos.y" value="0.016352039414497324" />
+        
+        <parameter name="seedPos.z" value="0.0" />
+        
+        <parameter name="simulationTime" value="26" />
+        
+    </seed>
+    <root name="Taproot" subType="1">
+        <parameter name="gf" value="1" dev="1000000" />
+        
+        <parameter name="tropismT" value="1" />
+        
+        <parameter name="a" value="0.2" />
+        
+        <parameter name="colorB" value="0" />
+        
+        <parameter name="colorG" value="0" />
+        
+        <parameter name="colorR" value="0.5" />
+        
+        <parameter name="dx" value="0.25" />
+        
+        <parameter name="la" value="2" />
+        
+        <parameter name="lb" value="1" />
+        
+        <parameter name="lmax" value="197.35001" />
+        
+        <parameter name="ln" value="0.64999998" />
+        
+        <parameter name="r" value="5.5" />
+        
+        <parameter name="rlt" value="9.9999998e+10" dev="1000000" />
+        
+        <parameter name="theta" value="0" />
+        
+        <parameter name="tropismN" value="1.5" />
+        
+        <parameter name="tropismS" value="0.2" />
+        
+        <parameter name="successor" type="2" percentage="1" />
+        
+    </root>
+    <root name="1storderlateral" subType="2">
+        <parameter name="gf" value="1" dev="1000000" />
+        
+        <parameter name="tropismT" value="1" />
+        
+        <parameter name="a" value="0.045" dev="0.005" />
+        
+        <parameter name="colorB" value="0" />
+        
+        <parameter name="colorG" value="1" />
+        
+        <parameter name="colorR" value="0" />
+        
+        <parameter name="dx" value="0.25" />
+        
+        <parameter name="la" value="3" />
+        
+        <parameter name="lb" value="3" />
+        
+        <parameter name="lmax" value="40.299999" />
+        
+        <parameter name="ln" value="0.69999999" />
+        
+        <parameter name="r" value="2" />
+        
+        <parameter name="rlt" value="9.9999998e+10" dev="1000000" />
+        
+        <parameter name="theta" value="1.22173" />
+        
+        <parameter name="tropismN" value="0.1" />
+        
+        <parameter name="tropismS" value="0.30000001" />
+        
+        <parameter name="successor" type="3" percentage="1" />
+        
+    </root>
+    <root name="2ndorderlateral" subType="3">
+        <parameter name="gf" value="1" />
+        
+        <parameter name="tropismT" value="1" />
+        
+        <parameter name="a" value="0.03" />
+        
+        <parameter name="colorB" value="0" />
+        
+        <parameter name="colorG" value="0.5" />
+        
+        <parameter name="colorR" value="0.5" />
+        
+        <parameter name="dx" value="0.25" />
+        
+        <parameter name="la" value="5" />
+        
+        <parameter name="lb" value="0.1" />
+        
+        <parameter name="lmax" value="5" />
+        
+        <parameter name="ln" value="0.2" />
+        
+        <parameter name="r" value="2" />
+        
+        <parameter name="rlt" value="0" />
+        
+        <parameter name="theta" value="1.22173" />
+        
+        <parameter name="tropismN" value="0" />
+        
+        <parameter name="tropismS" value="0.40000001" />
+        
+        <parameter name="successor" type="6" percentage="1" />
+        
+    </root>
+</plant>

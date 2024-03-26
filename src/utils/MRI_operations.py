@@ -2,26 +2,12 @@ import numpy as np
 import nibabel as nib
 import re
 
-"""
-Description:    This class contains functions to load and save MRI data for common file formats.
-"""
 
 class MRIoperations:
     def __init__(self):
         pass
 
     def load_mri(self, mri_path):
-        """
-        Loads the MRI data from a given path which can be a .nii.gz or .raw file.
-
-        Args:
-        - mri_path (str): Path to the MRI file.
-
-        Returns:
-        - affine_matrix (np.ndarray): Affine matrix of the MRI if it is in format .nii.gz or .nii. Otherwise None.
-        - image_data (np.ndarray): MRI data.
-        """
-
         if mri_path.endswith(".nii.gz") or mri_path.endswith(".nii"):
             img = nib.load(mri_path)
             image_data = img.get_fdata()
@@ -53,14 +39,6 @@ class MRIoperations:
         return affine_matrix, image_data
 
     def save_mri(self, mri_path, mri_data):
-        """
-        Saves the MRI data to the given path as the given file format depending on the file extension.
-        Supported file formats are .nii.gz and .raw.
-
-        Args:
-        - mri_path (str): Path to the MRI file.
-        - mri_data (np.ndarray): MRI data.
-        """
         if mri_path.endswith(".nii.gz") or mri_path.endswith(".nii"):
             affine_transformation = np.array(
                 [
@@ -77,17 +55,6 @@ class MRIoperations:
             mri_data.astype("int16").tofile(mri_path)
 
     def load_section_mri(self, mri_path, point_one, point_two):
-        """
-        Loads a section of the MRI data between two points. (shape of it is a rectangle)
-
-        Args:
-        - mri_path (str): Path to the MRI file.
-        - point_one (tuple): First point of the rectangle.
-        - point_two (tuple): Second point of the rectangle.
-
-        Returns:
-        - section (np.ndarray): Section of the MRI data.
-        """
         _, mri = self.load_mri(mri_path)
 
         min_x, min_y, min_z = (
