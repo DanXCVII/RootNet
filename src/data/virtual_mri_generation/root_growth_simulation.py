@@ -20,7 +20,7 @@ class RootSystemSimulation:
         self,
         model_name,
         root_save_dir,
-        soil_width,
+        soil_radius,
         soil_depth,
         seed_pos=(0, 0, 0),
         model_path=f"{DUMUX_path}/CPlantBox/modelparameter/structural/rootsystem",
@@ -42,7 +42,7 @@ class RootSystemSimulation:
         self.root_save_dir = root_save_dir
         self.model_name = model_name
         self.container_type = container_type
-        self.soil_width = soil_width
+        self.soil_width = soil_radius
         self.soil_depth = soil_depth
         self.seed_pos = seed_pos
         self._set_geometry()

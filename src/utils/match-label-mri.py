@@ -184,7 +184,7 @@ class MatchMRI:
         target_pcd,
     ):
         """
-        Applys different degrees of rotations and then ICP for final adjustment. It returns the best
+        Applies different degrees of rotations and then ICP for final adjustment. It returns the best
         transformation matrix and the transformed point cloud with its corresponding RSME.
 
         Args:
@@ -389,7 +389,6 @@ class MatchMRI:
 
         # transformed_label = transformed_label.swapaxes(1, 2)
         MRIoperations().save_mri(label_filename + ".nii.gz", transformed_label)
-        MRIoperations().save_mri(label_filename + ".raw", transformed_label)
 
 
 if __name__ == "__main__":

@@ -230,9 +230,9 @@ class VTUInterpolatedGrid:
         points, cells, cell_data = self.extract_vtu_data(grid)
 
         if interpolating_coords is None:
-            coords_array = self.create_3d_coords_array(points)
+            interpolating_coords = self.create_3d_coords_array(points)
         else:
-            coords_array = self._set_3d_coords_array(interpolating_coords)
+            interpolating_coords = self._set_3d_coords_array(interpolating_coords)
 
         cell_centers = self._calculate_cell_centers(points, cells)
         mesh_surface_coords, mesh_surface_data = self._get_cylindar_surface_data(grid)
@@ -243,26 +243,18 @@ class VTUInterpolatedGrid:
         start_time = time.time()
         interpolator = LinearNDInterpolator(grid_coords, grid_data)
 
-        # self.visualize_3d_coords(grid_coords, grid_data, "vis/grid1.png")
+        self.visualize_3d_coords(grid_coords, grid_data, "./vis/original_grid.png")
 
         print("Start interpolation")
 
-        interpolated_data = interpolator(coords_array)
-        # np.save("./numpy_saved/interpolated_data_12.npy", self.new_grid_interpolated_data)
+        interpolated_data = interpolator(interpolating_coords)
 
         end_time = time.time()
         print("--- %s seconds ---" % (end_time - start_time))
 
         print("interpolated_data", interpolated_data.shape)
 
-        return coords_array, interpolated_data
-
-    def visualize(self, plot_path, coords, data):
-        self.visualize_3d_coords(
-            coords,
-            data,
-            "{}/interpolated_grid.png".format(plot_path),
-        )
+        return interpolating_coords, interpolated_data
 
 
 # # Example Usage

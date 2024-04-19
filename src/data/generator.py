@@ -1,11 +1,16 @@
 with open("../../DUMUX_path.txt", "r") as file:
     DUMUX_path = file.read()
 
+import sys
+
+sys.path.append("..")
+
 from virtual_mri_generation import (
     Virtual_MRI,
     RootSystemSimulation,
     SoilWaterSimulation,
 )
+from utils import MeshGenerator
 
 from multiprocessing.dummy import Pool as ThreadPool
 import xml.etree.ElementTree as ET
@@ -41,7 +46,7 @@ class DataGenerator:
             "soil_type": ["sand", "loam"],
         }
         # fixed parameters and ranges from which a random value will be chosen
-        self.params_range = {
+        self.params_random = {
             "root_growth_days": [
                 int(x) for x in np.around(np.arange(5, 10, 1), 1).tolist()
             ],
@@ -51,16 +56,27 @@ class DataGenerator:
             "no_noise_probability": 0,
             "min_xy_seed_pos": -0.1,
             "max_xy_seed_pos": 0.1,
-        }
-        self.soil_type_mesh_path = {
-            "sand": f"{data_assets_path}/meshes/cylinder_r_0.032_d_-0.22_res_0.005.msh",
-            "loam": f"{data_assets_path}/meshes/cylinder_r_0.032_d_-0.22_res_0.005.msh",
-            # "clay": f"{data_assets_path}/meshes/cylinder_r_0.032_d_-0.22_res_0.005.msh",
+            "depth_range": [15, 20],  # min depth, max depth in cm
+            "radius": [3, 3],  # min radius, max radius in cm
         }
         self.root_model_path = (
             f"{DUMUX_path}/CPlantBox/modelparameter/structural/rootsystem"
         )
         self.soil_water_sim = None
+
+    def _generate_values_float(min_value, max_value, step_size):
+        if min_value == max_value:
+            return [min_value]
+
+        values = []
+        current_value = min_value
+
+        while current_value <= max_value:
+            values.append(current_value)
+            current_value += step_size
+            # To handle floating point precision issues, round to a reasonable number of decimal places
+            current_value = round(current_value, 10)
+        return values
 
     def generate_samples_grid(self, data_path, num_samples_per_config):
         """
@@ -97,18 +113,37 @@ class DataGenerator:
                 while num_samples_per_config - num_files_plant_soil > 0:
                     # choose the parameters for the generated sample at random from the range of possible values
                     root_growth_days = random.choice(
-                        self.params_range["root_growth_days"]
+                        self.params_random["root_growth_days"]
                     )
                     initial = random.choice(
-                        self.params_range[f"initial_{param_combination['soil_type']}"]
+                        self.params_random[f"initial_{param_combination['soil_type']}"]
                     )
+
+                    radius = np.round(
+                        random.uniform(
+                            self.params_random["radius"][0],
+                            self.params_random["radius"][1],
+                        )
+                    )
+
+                    depth = np.round(
+                        random.uniform(
+                            self.params_random["depth_range"][0],
+                            self.params_random["depth_range"][1],
+                        )
+                    )
+
+                    meshGen = MeshGenerator(
+                        "../../data_assets/meshes/",
+                        mesh_size=0.005,
+                        depth=depth / 100,
+                        radius=radius / 100,
+                    )
+                    mesh_path = meshGen.create_mesh()
 
                     config = {
                         "root_model_name": param_combination["root_model_name"],
                         "soil_type": param_combination["soil_type"],
-                        "mesh_path": self.soil_type_mesh_path[
-                            param_combination["soil_type"]
-                        ],
                         "root_growth_days": root_growth_days,
                         "initial": initial,
                         "sim_time": (
@@ -120,14 +155,17 @@ class DataGenerator:
                         ),
                         "seed_pos": (
                             random.uniform(
-                                self.params_range["min_xy_seed_pos"],
-                                self.params_range["max_xy_seed_pos"],
+                                self.params_random["min_xy_seed_pos"],
+                                self.params_random["max_xy_seed_pos"],
                             ),
                             random.uniform(
-                                self.params_range["min_xy_seed_pos"],
-                                self.params_range["max_xy_seed_pos"],
+                                self.params_random["min_xy_seed_pos"],
+                                self.params_random["max_xy_seed_pos"],
                             ),
                         ),
+                        "depth": depth,
+                        "radius": radius,
+                        "mesh_path": mesh_path,
                     }
 
                     # if a sample with the same config was not already generated, generate it
@@ -157,14 +195,27 @@ class DataGenerator:
 
         random_root_model_name = random.choice(self.param_grid["root_model_name"])
         random_soil_type = random.choice(self.param_grid["soil_type"])
-        random_root_growth_days = random.choice(self.params_range["root_growth_days"])
+        random_root_growth_days = random.choice(self.params_random["root_growth_days"])
         random_water_sim_days = random.choice(
             random_root_growth_days
             if random_root_growth_days < 4
             else [x for x in np.around(np.arange(2, 4, 0.2), 2)]
         )
-        mesh_path = self.soil_type_mesh_path[random_soil_type]
-        initial = random.choice(self.params_range[f"initial_{random_soil_type}"])
+        initial = random.choice(self.params_random[f"initial_{random_soil_type}"])
+
+        meshGen = MeshGenerator(
+            "../../data_assets/meshes/",
+            mesh_size=0.005,
+            depth=random.uniform(
+                self.params_random["depth_range"][0],
+                self.params_random["depth_range"][1],
+            ),
+            radius=random.uniform(
+                self.params_random["radius"][0], self.params_random["radius"][1]
+            ),
+        )
+
+        mesh_path = meshGen.create_mesh()
 
         config = {
             "root_model_name": random_root_model_name,
@@ -174,8 +225,8 @@ class DataGenerator:
             "mesh_path": mesh_path,
             "initial": initial,
             "seed_pos": random.uniform(
-                self.params_range["min_xy_seed_pos"],
-                self.params_range["max_xy_seed_pos"],
+                self.params_random["min_xy_seed_pos"],
+                self.params_random["max_xy_seed_pos"],
             ),
         }
 
@@ -231,16 +282,10 @@ class DataGenerator:
         my_config = config if config else self.get_random_config()
 
         # For debugging purposes, a specific configuration can be used
-        # my_config = {
-        #     "root_model_name": "my_Bench_lupin",
-        #     "soil_type": "sand",
-        #     "root_growth_days": 5,
-        #     "sim_time": 0.01,
-        #     "seed_pos": (0.09571840067568729, 0.07387917086355958),
-        #     "mesh_path": f"{self.data_assets_path}/meshes/cylinder_r_0.032_d_-0.22_res_0.005.msh",
-        #     "initial": -5,
-        #     "seed_pos": (0, 0),
-        # }
+        # my_config["root_growth_days"] = 3
+        # my_config["sim_time"] = 0.01
+        # my_config["soil_type"] = "sand"
+        # my_config["root_model_name"] = "my_Crypsis_aculeata_Clausnitzer_1994"
 
         pprint.pprint(my_config, width=40, indent=4)
 
@@ -270,13 +315,11 @@ class DataGenerator:
             json.dump(my_config, json_file, indent=4)
 
         # Generate a root system
-        width = 3
-        depth = 20
         root_sim = RootSystemSimulation(
-            my_config["root_model_name"],
-            data_path,
-            width,
-            depth,
+            model_name=my_config["root_model_name"],
+            root_save_dir=data_path,
+            soil_radius=my_config["radius"] - 0.1,
+            soil_depth=my_config["depth"] - 0.1,
             seed_pos=(my_config["seed_pos"][0], my_config["seed_pos"][1], 0),
             model_path=f"{DUMUX_path}/CPlantBox/modelparameter/structural/rootsystem",
         )
@@ -312,8 +355,8 @@ class DataGenerator:
             vtu_path=vtu_path,
             seganalyzer=seganalyzer,
             res_mri=[0.027, 0.027, 0.1],
-            depth=depth + 0.2,
-            width=width + 0.1,
+            depth=my_config["depth"] + 0.2,
+            radius=my_config["radius"] + 0.2,
         )
         _, _ = my_vi.create_virtual_root_mri(
             data_path,
@@ -321,12 +364,10 @@ class DataGenerator:
         )
         my_vi.__init__(
             rsml_path,
-            vtu_path=vtu_path,
-            soil_type=my_config["soil_type"],
             seganalyzer=seganalyzer,
             res_mri=[0.027, 0.027, 0.1],
-            depth=depth + 0.2,
-            width=width + 0.1,
+            depth=my_config["depth"] + 0.1,
+            radius=my_config["radius"] + 0.2,
             scale_factor=2,
         )
 

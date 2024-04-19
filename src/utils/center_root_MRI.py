@@ -109,7 +109,7 @@ class CombinedMRI:
                 self.affine_matrix[1, 1],
                 self.affine_matrix[0, 0],
             ),
-            width=width,
+            radius=width,
             depth=depth,
             offset=translation,
             scale_factor=2,

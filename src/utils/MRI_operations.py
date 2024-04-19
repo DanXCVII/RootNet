@@ -11,15 +11,8 @@ class MRIoperations:
         if mri_path.endswith(".nii.gz") or mri_path.endswith(".nii"):
             img = nib.load(mri_path)
             image_data = img.get_fdata()
+            affine_matrix = img.affine
 
-            affine_matrix = np.array(
-                [
-                    [0.1, 0.0, 0.0, 0.0],
-                    [0.0, 0.027, 0.0, 0.0],
-                    [0.0, 0.0, 0.027, 0.0],
-                    [0.0, 0.0, 0.0, 1.0],
-                ]
-            )
         elif mri_path.endswith(".raw"):
             image_data = np.fromfile(mri_path, dtype="int16")
 
@@ -32,7 +25,16 @@ class MRIoperations:
                 resolution = (int(depth), int(height), int(width))
 
             image_data = image_data.reshape(resolution)
-            affine_matrix = None
+            # affine_matrix = None
+
+            affine_matrix = np.array(
+                [
+                    [0.027, 0.0, 0.0, 0.0],
+                    [0.0, 0.027, 0.0, 0.0],
+                    [0.0, 0.0, 0.1, 0.0],
+                    [0.0, 0.0, 0.0, 1.0],
+                ]
+            )
         else:
             raise ValueError("MRI file must be .nii.gz, .nii, or .raw")
 
@@ -42,9 +44,9 @@ class MRIoperations:
         if mri_path.endswith(".nii.gz") or mri_path.endswith(".nii"):
             affine_transformation = np.array(
                 [
-                    [1, 0.0, 0.0, 0.0],
-                    [0.0, 0.27, 0.0, 0.0],
-                    [0.0, 0.0, 0.27, 0.0],
+                    [0.027, 0.0, 0.0, 0.0],
+                    [0.0, 0.027, 0.0, 0.0],
+                    [0.0, 0.0, 0.1, 0.0],
                     [0.0, 0.0, 0.0, 1.0],
                 ]
             )
@@ -52,6 +54,7 @@ class MRIoperations:
             print(f"Saving MRI to {mri_path}")
             nib.save(img, mri_path)
         elif mri_path.endswith(".raw"):
+
             mri_data.astype("int16").tofile(mri_path)
 
     def load_section_mri(self, mri_path, point_one, point_two):

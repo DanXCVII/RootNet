@@ -1,6 +1,6 @@
 import sys
 
-with open("../DUMUX_path.txt", "r") as file:
+with open("../../DUMUX_path.txt", "r") as file:
     DUMUX_path = file.read()
 
 sys.path.append(f"{DUMUX_path}/CPlantBox")
@@ -85,6 +85,8 @@ class CombinedMRI:
         return translation
 
     def combine_label_mri(self):
+        print(self.affine_matrix[1, 1])
+        print(self.affine_matrix[0, 0])
         width = (self.affine_matrix[1, 1] * self.image_data.shape[1]) / 2
         depth = self.affine_matrix[0, 0] * self.image_data.shape[0]
 
@@ -109,7 +111,7 @@ class CombinedMRI:
                 self.affine_matrix[1, 1],
                 self.affine_matrix[0, 0],
             ),
-            width=width,
+            radius=width,
             depth=depth,
             offset=translation,
         )
