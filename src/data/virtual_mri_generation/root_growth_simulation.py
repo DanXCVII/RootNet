@@ -80,18 +80,19 @@ class RootSystemSimulation:
         self.rs.readParameters(self.model_path + "/" + self.model_name + ".xml")
         print(self.model_path + "/" + self.model_name + ".xml")
 
-        if not seed is None:
-            self.rs.setSeed(seed)
-        else:
-            self.rs.setSeed(random.randint(0, 100000))
+        if self.seed_pos[0] != 0 or self.seed_pos[1] != 0:
+            if not seed is None:
+                self.rs.setSeed(seed)
+            else:
+                self.rs.setSeed(random.randint(0, 100000))
 
-        srp = pb.SeedRandomParameter(self.rs)
-        srp.seedPos = pb.Vector3d(
-            self.seed_pos[0],
-            self.seed_pos[1],
-            self.seed_pos[2],
-        )
-        self.rs.setRootSystemParameter(srp)
+            srp = pb.SeedRandomParameter(self.rs)
+            srp.seedPos = pb.Vector3d(
+                self.seed_pos[0],
+                self.seed_pos[1],
+                self.seed_pos[2],
+            )
+            self.rs.setRootSystemParameter(srp)
 
         self.rs.initialize()
 

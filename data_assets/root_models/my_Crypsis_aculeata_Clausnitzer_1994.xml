@@ -2,11 +2,11 @@
     <seed name="Crypsis_aculeata_Clausnitzer_1994" subType="0">
         <parameter name="maxTi" value="0" />
         
-        <parameter name="delayB" value="0" />
+        <parameter name="delayB" value="0.15" />
         
-        <parameter name="delayRC" value="0" />
+        <parameter name="delayRC" value="1000" />
         
-        <parameter name="delaySB" value="0" />
+        <parameter name="delaySB" value="1000" />
         
         <parameter name="firstB" value="0" />
         
@@ -27,6 +27,7 @@
         <parameter name="simulationTime" value="30" />
         
     </seed>
+
     <root name="Type0" subType="1">
         <parameter name="gf" value="1" />
         
@@ -68,7 +69,7 @@
         
         <parameter name="tropismT" value="1" />
         
-        <parameter name="a" value="0.050000001" dev="0.005"/>
+        <parameter name="a" value="0.06" dev="0.007" />
         
         <parameter name="colorB" value="0" />
         
@@ -138,7 +139,7 @@
         
         <parameter name="tropismT" value="1" />
         
-        <parameter name="a" value="0.15000001" />
+        <parameter name="a" value="0.06000001" dev="0.007"/>
         
         <parameter name="colorB" value="1" />
         

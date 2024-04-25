@@ -29,12 +29,12 @@
         <parameter name="simulationTime" value="26" />
         
     </seed>
-    <root name="Taproot" subType="1">
+    <root name="taproot" subType="1">
         <parameter name="gf" value="1" dev="1000000" />
         
         <parameter name="tropismT" value="1" />
         
-        <parameter name="a" value="0.2" />
+        <parameter name="a" value="0.18" dev="0.02" />
         
         <parameter name="colorB" value="0" />
         
@@ -65,12 +65,12 @@
         <parameter name="successor" type="2" percentage="1" />
         
     </root>
-    <root name="1storderlateral" subType="2">
+    <root name="lateral1" subType="2">
         <parameter name="gf" value="1" dev="1000000" />
         
         <parameter name="tropismT" value="1" />
         
-        <parameter name="a" value="0.045" dev="0.005" />
+        <parameter name="a" value="0.06" dev="0.007" />
         
         <parameter name="colorB" value="0" />
         
@@ -101,7 +101,7 @@
         <parameter name="successor" type="3" percentage="1" />
         
     </root>
-    <root name="2ndorderlateral" subType="3">
+    <root name="lateral2" subType="3">
         <parameter name="gf" value="1" />
         
         <parameter name="tropismT" value="1" />

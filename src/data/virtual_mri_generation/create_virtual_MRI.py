@@ -490,12 +490,23 @@ class Virtual_MRI:
             * root_water_scale
         )
 
+        # For SNR ratio: Calculating the variance of the root signal and outputting it
+        # positive_values = noisy_root[noisy_root > 0]
+        # mean = np.mean(positive_values)
+        # print("noisy root variance", np.var(positive_values - mean))
+
+        # Calculating the variance of the soil signal and outputting it
+        # soil_values = water_scaled_fourier_noise[water_scaled_fourier_noise > 0]
+        # mean = np.mean(soil_values)
+        # print("soil variance", np.var(soil_values - mean))
+
         # mask the background noise, such that it only applies outside of the root-soil cylinder
         fourier_noise_background[water_content_grid != 0] = 0
 
         # set the values for the root which are lower than the surrounding soil to a fraction of the surrounding
         # soil and the root signal intensity
         root_background_fraction = 0.9
+        # create a mask for the water content grid, such that only the part remains, which is part of the root
         water_root_filtered = np.where(noisy_root > 0, water_scaled_fourier_noise, 0)
         noisy_root[water_root_filtered > noisy_root] = water_root_filtered[
             water_root_filtered > noisy_root
@@ -831,8 +842,9 @@ class Virtual_MRI:
             # calculate the water content of the grid
             # for debugging something not related to the water content uncomment the following line and comment the next one
             # for faster execution
-            water_grid = self.generate_random_array(mri_grid.shape, (0.39, 0.42))
-            # water_grid = self._get_grid_water_content(X, Y, Z)  # TODO: readd
+            # water_grid = self._create_3d_array(mri_grid.shape[0], mri_grid.shape[1], mri_grid.shape[2])
+            # water_grid = self.generate_random_array(mri_grid.shape, (0.39, 0.42))
+            water_grid = self._get_grid_water_content(X, Y, Z)
             print("water_grid", water_grid.shape)
             # add noise to the MRI scaled by the water content
             mri_grid = self._add_noise_to_grid(mri_grid, water_grid)

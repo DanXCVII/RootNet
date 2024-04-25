@@ -36,12 +36,10 @@ class DataGenerator:
         self.data_assets_path = data_assets_path
         self.param_grid = {
             "root_model_name": [
-                "my_Bench_lupin",
+                # "my_Glycine_max",
+                # "my_Bench_lupin",
                 "my_Crypsis_aculeata_Clausnitzer_1994",
-                "my_Glycine_max_Moraes2020_opt2",
-                "my_Glycine_max",
-                "my_Moraesetal_2020",
-                "wheat_synMRI",
+                # "my_Moraesetal_2020",
             ],
             "soil_type": ["sand", "loam"],
         }
@@ -56,7 +54,9 @@ class DataGenerator:
             "no_noise_probability": 0,
             "min_xy_seed_pos": -0.1,
             "max_xy_seed_pos": 0.1,
-            "depth_range": [15, 20],  # min depth, max depth in cm
+            "depth_range": list(
+                range(15, 21, 1)
+            ),  # min depth, max depth + 1 (because exclusive) in cm
             "radius": [3, 3],  # min radius, max radius in cm
         }
         self.root_model_path = (
@@ -126,12 +126,7 @@ class DataGenerator:
                         )
                     )
 
-                    depth = np.round(
-                        random.uniform(
-                            self.params_random["depth_range"][0],
-                            self.params_random["depth_range"][1],
-                        )
-                    )
+                    depth = random.choice(self.params_random["depth_range"])
 
                     meshGen = MeshGenerator(
                         "../../data_assets/meshes/",
@@ -206,10 +201,7 @@ class DataGenerator:
         meshGen = MeshGenerator(
             "../../data_assets/meshes/",
             mesh_size=0.005,
-            depth=random.uniform(
-                self.params_random["depth_range"][0],
-                self.params_random["depth_range"][1],
-            ),
+            depth=random.choice(self.params_random["depth_range"]),
             radius=random.uniform(
                 self.params_random["radius"][0], self.params_random["radius"][1]
             ),
@@ -313,6 +305,10 @@ class DataGenerator:
         # add the config for the simulated plant to the data folder
         with open(f"{data_path}/config.json", "w") as json_file:
             json.dump(my_config, json_file, indent=4)
+
+        # For this root model, the
+        if my_config["root_model_name"] == "my_Crypsis_aculeata_Clausnitzer_1994":
+            my_config["seed_pos"] = (0, 0)
 
         # Generate a root system
         root_sim = RootSystemSimulation(

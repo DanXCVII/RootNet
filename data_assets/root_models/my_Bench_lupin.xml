@@ -48,7 +48,7 @@
 <root name="lateral1" subType="2">
     <parameter name="gf" value="1" />
     
-    <parameter name="a" value="0.045" dev="0.005"/>
+    <parameter name="a" value="0.06" dev="0.007" />
     
     <parameter name="dx" value="0.2" />
     
@@ -60,7 +60,7 @@
     
     <parameter name="ln" value="1" />
     
-    <parameter name="r" value="2" dev="0.5" />
+    <parameter name="r" value="0.5" dev="0.2" />
     
     <parameter name="rlt" value="1e+09" />
     
