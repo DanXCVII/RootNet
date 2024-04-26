@@ -274,8 +274,9 @@ class DataGenerator:
         my_config = config if config else self.get_random_config()
 
         # For debugging purposes, a specific configuration can be used
-        # my_config["root_growth_days"] = 3
+        # my_config["root_growth_days"] = 1
         # my_config["sim_time"] = 0.01
+        # my_config["depth"] = 20
         # my_config["soil_type"] = "sand"
         # my_config["root_model_name"] = "my_Crypsis_aculeata_Clausnitzer_1994"
 
@@ -345,14 +346,16 @@ class DataGenerator:
         rsml_path = data_path + "/{}".format(filenames[0])
         vtu_path = data_path + "/" + water_sim_file
 
+        depth_overflow = 0.2
+        width_overflow = 0.2
         my_vi = Virtual_MRI(
             rsml_path,
             soil_type=my_config["soil_type"],
             vtu_path=vtu_path,
             seganalyzer=seganalyzer,
             res_mri=[0.027, 0.027, 0.1],
-            depth=my_config["depth"] + 0.2,
-            radius=my_config["radius"] + 0.2,
+            depth=my_config["depth"] + depth_overflow,
+            radius=my_config["radius"] + width_overflow,
         )
         _, _ = my_vi.create_virtual_root_mri(
             data_path,
@@ -362,8 +365,8 @@ class DataGenerator:
             rsml_path,
             seganalyzer=seganalyzer,
             res_mri=[0.027, 0.027, 0.1],
-            depth=my_config["depth"] + 0.1,
-            radius=my_config["radius"] + 0.2,
+            depth=my_config["depth"] + depth_overflow,
+            radius=my_config["radius"] + width_overflow,
             scale_factor=2,
         )
 
