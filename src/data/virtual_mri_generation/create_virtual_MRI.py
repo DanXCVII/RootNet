@@ -205,7 +205,6 @@ class Virtual_MRI:
         x_int,
         y_int,
         z_int,
-        res,
     ) -> np.array:
         """
         calculates the indexes in the mri grid, where the root segment is located
@@ -215,24 +214,37 @@ class Virtual_MRI:
         - nodes: nodes of the root system
         - x_int, y_int, z_int: coordinates of the mri grid
         """
+        orig_resx = self.resx * self.scale_factor
+        orig_resy = self.resy * self.scale_factor
+        orig_resz = self.resz * self.scale_factor
+
         n1, n2 = nodes[segment.x], nodes[segment.y]
 
-        voxel_offset_x = np.around(self.offset[0] / res["x"])
-        voxel_offset_y = np.around(self.offset[1] / res["y"])
-        voxel_offset_z = np.around(self.offset[2] / res["z"])
+        voxel_offset_x = np.around(self.offset[0] / orig_resx)
+        voxel_offset_y = np.around(self.offset[1] / orig_resy)
+        voxel_offset_z = np.around(self.offset[2] / orig_resz)
 
         (x1, y1, z1) = [
-            np.around(n1.x / res["x"]) - voxel_offset_x,
-            np.around(n1.y / res["y"]) - voxel_offset_y,
-            np.around(n1.z / res["z"]) - voxel_offset_z,
+            np.around(n1.x / orig_resx) - voxel_offset_x,
+            np.around(n1.y / orig_resy) - voxel_offset_y,
+            np.around(n1.z / orig_resz) - voxel_offset_z,
         ]
         (x2, y2, z2) = [
-            np.around(n2.x / res["x"]) - voxel_offset_x,
-            np.around(n2.y / res["y"]) - voxel_offset_y,
-            np.around(n2.z / res["z"]) - voxel_offset_z,
+            np.around(n2.x / orig_resx) - voxel_offset_x,
+            np.around(n2.y / orig_resy) - voxel_offset_y,
+            np.around(n2.z / orig_resz) - voxel_offset_z,
         ]
         # contains all points on the segment
-        ListOfPoints = np.array(bres3D.Bresenham3D(x1, y1, z1, x2, y2, z2))
+        ListOfPoints = np.array(
+            bres3D.Bresenham3D(
+                x1 * self.scale_factor,
+                y1 * self.scale_factor,
+                z1 * self.scale_factor,
+                x2 * self.scale_factor,
+                y2 * self.scale_factor,
+                z2 * self.scale_factor,
+            )
+        )
 
         allidx_ = []
         # searches the points in the 3d structure, which correspond to root segments
@@ -243,7 +255,11 @@ class Virtual_MRI:
             zidx = np.where(z_int == ListOfPoints[j, 2])
             # if the point of the segment is in the 3d structure
             if xidx[0].size > 0 and yidx[0].size > 0 and zidx[0].size > 0:
-                a = [int(xidx[0][0]), int(yidx[0][0]), int(zidx[0][0])]
+                a = [
+                    int(xidx[0][0]),
+                    int(yidx[0][0]),
+                    int(zidx[0][0]),
+                ]
                 allidx_.append(a)
 
         if len(allidx_) < 1:
@@ -309,7 +325,6 @@ class Virtual_MRI:
         self,
         grid,
         radius,
-        res,
         binary,
     ) -> np.array:
         """
@@ -325,8 +340,12 @@ class Virtual_MRI:
         """
         # if radius < 0.1: # TODO: Check if required
         #     radius = 0.1
-        radius_x = int(np.around(radius / res["x"]))
-        radius_z = int(np.around(radius / res["z"]))
+        radius_x = int(
+            int(np.around(radius / (self.resx * self.scale_factor))) * self.scale_factor
+        )
+        radius_z = int(
+            int(np.around(radius / (self.resz * self.scale_factor))) * self.scale_factor
+        )
         radius_z = radius_z if radius_z > 0 else 1
 
         if binary:
@@ -579,7 +598,7 @@ class Virtual_MRI:
         sys.stdout.write(f"\rProgress: [{arrow + spaces}] {int(progress*100)}% {info}")
         sys.stdout.flush()  # This is important to ensure the progress is updated
 
-    def _add_root_to_v_mri(self, mri_grid, xx, yy, zz, res, binary):
+    def _add_root_to_v_mri(self, mri_grid, xx, yy, zz, binary):
         """
         adds the root to the MRI grid by adding a white color, where the root is located and a light
         grey depending on how much of a root segment is present in a cell.
@@ -592,7 +611,7 @@ class Virtual_MRI:
 
         idxrad = np.argsort(self.seg_radii)
 
-        cellvol = res["x"] * res["y"] * res["z"]
+        cellvol = self.resx * self.resy * self.resz
 
         iteration = 1
         total_segs = len(self.segs)
@@ -603,7 +622,7 @@ class Virtual_MRI:
             root_signal_intensity = 1 if binary else random.uniform(0.9, 1)
 
             allidx = self._get_root_segment_idx(
-                self.segs[idxrad[k]], self.nodes, xx, yy, zz, res
+                self.segs[idxrad[k]], self.nodes, xx, yy, zz
             )
 
             if len(allidx) < 1:
@@ -617,7 +636,11 @@ class Virtual_MRI:
 
             mri_grid_zero = np.zeros(mri_grid.shape)
             # checks if the diameter is greater than the resolution
-            if np.round(self.seg_radii[idxrad[k]] * 2 / res["x"]) > 1:
+            orig_resx = self.resx * self.scale_factor
+            if (
+                np.round(self.seg_radii[idxrad[k]] * 2 / orig_resx) * self.scale_factor
+                > 1
+            ):
                 if len(allidx) > 0:
                     # set the element of the root to 1, indicating that it is present
                     mri_grid_zero[allidx[:, 0], allidx[:, 1], allidx[:, 2]] = 1
@@ -629,7 +652,10 @@ class Virtual_MRI:
                     max_x, max_y, max_z = np.max(allidx, axis=0)
 
                     # Define the extension of the sub-volume which is by the radius lager
-                    n = int(self.seg_radii[idxrad[k]] / res["x"] + 1)
+                    n = (
+                        int(self.seg_radii[idxrad[k]] / orig_resx + 1)
+                        * self.scale_factor
+                    )
 
                     # Adjusting the min and max values, while ensuring they remain within the valid range of the array
                     min_x = max(0, min_x - n)
@@ -650,7 +676,6 @@ class Virtual_MRI:
                     indices, values = self._get_binary_dilation_root_segment_idx(
                         expanded_sub_volume,
                         self.seg_radii[idxrad[k]],
-                        res,
                         binary,
                     )
                     for idx, value in zip(zip(*indices), values):
@@ -674,10 +699,13 @@ class Virtual_MRI:
                         )
 
             else:
-                estlen = res[
-                    "x"
-                ]  # estimated segment length within voxel: very rough estimation
-                rootvol = self.seg_radii[idxrad[k]] ** 2 * math.pi * estlen
+                estlen = orig_resx  # estimated segment length within voxel: very rough estimation
+                rootvol = (
+                    self.seg_radii[idxrad[k]] ** 2
+                    * math.pi
+                    * estlen
+                    * self.scale_factor
+                )
 
                 # set how the intensity of the root signal should be
                 frac = rootvol / cellvol
@@ -803,15 +831,11 @@ class Virtual_MRI:
         # create a 3d array with the dimensions of the MRI
         mri_grid = np.zeros((self.nx, self.ny, self.nz))
 
-        # set dictionaries with the resolution and pass them to the function, which adds the root to the MRI
-        dict_res = {"x": self.resx, "y": self.resy, "z": self.resz}
-
         mri_grid = self._add_root_to_v_mri(
             mri_grid,
             xx,
             yy,
             zz,
-            dict_res,
             binary=label,
         )
 
@@ -843,8 +867,8 @@ class Virtual_MRI:
             # for debugging something not related to the water content uncomment the following line and comment the next one
             # for faster execution
             # water_grid = self._create_3d_array(mri_grid.shape[0], mri_grid.shape[1], mri_grid.shape[2])
-            # water_grid = self.generate_random_array(mri_grid.shape, (0.39, 0.42))
-            water_grid = self._get_grid_water_content(X, Y, Z)
+            water_grid = self.generate_random_array(mri_grid.shape, (0.39, 0.42))
+            # water_grid = self._get_grid_water_content(X, Y, Z)
             print("water_grid", water_grid.shape)
             # add noise to the MRI scaled by the water content
             mri_grid = self._add_noise_to_grid(mri_grid, water_grid)

@@ -36,10 +36,10 @@ class DataGenerator:
         self.data_assets_path = data_assets_path
         self.param_grid = {
             "root_model_name": [
-                # "my_Glycine_max",
-                # "my_Bench_lupin",
+                "my_Glycine_max",
+                "my_Bench_lupin",
                 "my_Crypsis_aculeata_Clausnitzer_1994",
-                # "my_Moraesetal_2020",
+                "my_Moraesetal_2020",
             ],
             "soil_type": ["sand", "loam"],
         }
@@ -274,8 +274,8 @@ class DataGenerator:
         my_config = config if config else self.get_random_config()
 
         # For debugging purposes, a specific configuration can be used
-        # my_config["root_growth_days"] = 1
-        # my_config["sim_time"] = 0.01
+        my_config["root_growth_days"] = 1
+        my_config["sim_time"] = 0.01
         # my_config["depth"] = 20
         # my_config["soil_type"] = "sand"
         # my_config["root_model_name"] = "my_Crypsis_aculeata_Clausnitzer_1994"
