@@ -243,7 +243,7 @@ class VTUInterpolatedGrid:
         start_time = time.time()
         interpolator = LinearNDInterpolator(grid_coords, grid_data)
 
-        self.visualize_3d_coords(grid_coords, grid_data, "./vis/original_grid.png")
+        # self.visualize_3d_coords(grid_coords, grid_data, "./vis/original_grid.png")
 
         print("Start interpolation")
 

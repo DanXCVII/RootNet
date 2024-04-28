@@ -16,10 +16,12 @@ import matplotlib.pyplot as plt
 import rsml_reader as rsml
 from scipy import ndimage
 from .interpolate_water_sim import VTUInterpolatedGrid
+from sklearn.mixture import GaussianMixture
 from noise import pnoise3
 from skimage import exposure
 from scipy.ndimage import gaussian_filter
 import re
+from enum import Enum
 
 # import pygorpho as pg
 from skimage.morphology import ball
@@ -34,19 +36,9 @@ from utils import expand_volume_with_blending
 from utils import MRIoperations
 
 
-def get_min_max_numpy(array):
-    """
-    returns the min and max value of a numpy array
-    """
-    non_nan_indices = np.argwhere(~np.isnan(array.flat))
-    first_non_nan_value = array.flat[non_nan_indices[0][0]]
-
-    new = np.nan_to_num(array, nan=first_non_nan_value)
-
-    min = new.min()
-    max = new.max()
-
-    return min, max
+class NoiseType(Enum):
+    GMM = 1
+    FOURIER = 2
 
 
 class Virtual_MRI:
@@ -60,6 +52,8 @@ class Virtual_MRI:
         depth=20,
         res_mri=[0.027, 0.027, 0.1],
         scale_factor=1,
+        noise_type="FOURIER",
+        SNR=0,  # 15
         offset=(0, 0, 0),
     ):
         """
@@ -83,6 +77,9 @@ class Virtual_MRI:
         self.rsml_path = rsml_path
         self.soil_type = soil_type
         self.vtu_path = vtu_path
+        self.noise_type = noise_type
+        self.snr = SNR
+
         if seganalyzer is None:
             self.nodes, self.segs, self.seg_radii = self._get_root_data_from_rsml(
                 rsml_path
@@ -92,7 +89,7 @@ class Virtual_MRI:
             self.nodes = self.segana.nodes
             self.segs = self.segana.segments
             self.seg_radii = self.segana.getParameter("radius")
-        self.water_intensity_grid = None
+
         self.offset = offset
 
         self.nx = int(self.width * 2 / res_mri[0]) * self.scale_factor
@@ -207,13 +204,16 @@ class Virtual_MRI:
         z_int,
     ) -> np.array:
         """
-        calculates the indexes in the mri grid, where the root segment is located
+        calculates the indexes in the mri grid, where the root segment is located. If a different scale
+        factor is used, it calculates the rounded coordinates for the original grid and then uses the
+        scale factor to adjust it to the upscaled grid.
 
         Args:
         - segment: root segment
         - nodes: nodes of the root system
         - x_int, y_int, z_int: coordinates of the mri grid
         """
+        # Calculate the orginal resolution without the scaling factor
         orig_resx = self.resx * self.scale_factor
         orig_resy = self.resy * self.scale_factor
         orig_resz = self.resz * self.scale_factor
@@ -270,7 +270,7 @@ class Virtual_MRI:
 
         return np.array(allidx_)
 
-    def ellipsoid(self, radius_x, radius_y, radius_z, dtype=np.int16) -> np.array:
+    def _ellipsoid(self, radius_x, radius_y, radius_z, dtype=np.int16) -> np.array:
         """
         Create a 3D ellipsoidal structuring element.
 
@@ -291,6 +291,49 @@ class Virtual_MRI:
         ellipsoid = (x / radius_x) ** 2 + (y / radius_y) ** 2 + (z / radius_z) ** 2 <= 1
 
         return ellipsoid.astype(dtype)
+
+    def _generate_gmm_noise(self, target_shape, noise_dir):
+        """
+        Generates a noise volume based on the reference noise volumes with a GMM. It uses a random
+        slice as reference.
+
+        Parameters:
+        - target_shape: the shape of the output generated noise
+        - noise_dir: directory of the reference noise scans
+
+        Returns:
+        - A 3D numpy array with a GMM sample and the target_shape
+        """
+        shape_flat = target_shape[0] * target_shape[1] * target_shape[2]
+
+        water_content, noise_volume = self._get_noise_volume(noise_dir)
+
+        random_index = np.random.randint(noise_volume.shape[2])
+        print("noise_vol shape", noise_volume.shape)
+        noise_slice = noise_volume[:, :, random_index]
+
+        gen_num = int(shape_flat / (noise_slice.shape[0] * noise_slice.shape[1])) + 1
+
+        # Instantiate and fit a Gaussian Mixture Model
+        gmm = GaussianMixture(n_components=3)
+        gmm.fit(noise_slice)
+
+        # Generate a unique 2D array for each slice along the z-dimension
+        gmm.random_state = np.random.randint(0, 1000)
+        my_noise, _ = gmm.sample(
+            noise_slice.shape[0] * gen_num
+        )  # Generate as many new samples as in the original data
+
+        my_noise[my_noise < 0] = 0
+
+        my_noise = my_noise.flatten()
+        my_noise = my_noise[0:shape_flat]
+
+        np.random.shuffle(my_noise)
+
+        my_noise = my_noise.reshape(target_shape)
+
+        return water_content, my_noise
 
     def ellipsoid_gaussian(self, radius_x, radius_z, sigma) -> np.array:
         """
@@ -349,7 +392,7 @@ class Virtual_MRI:
         radius_z = radius_z if radius_z > 0 else 1
 
         if binary:
-            selem = self.ellipsoid(radius_x, radius_x, radius_z)
+            selem = self._ellipsoid(radius_x, radius_x, radius_z)
 
             grid = ndimage.binary_dilation(grid, structure=selem).astype(grid.dtype)
         else:
@@ -364,7 +407,7 @@ class Virtual_MRI:
 
         return idx, non_zero_values
 
-    def get_noise_volume(self, noise_dir) -> np.array:
+    def _get_noise_volume(self, noise_dir) -> np.array:
         """
         reads a random noise volume based on the soil type from the data assets
 
@@ -421,7 +464,7 @@ class Virtual_MRI:
         - water_content: water content of the noise volume
         - scaled_expanded_noise: 3d (numpy) array of the noise volume
         """
-        water_content, original_noise = self.get_noise_volume(noise_dir)
+        water_content, original_noise = self._get_noise_volume(noise_dir)
         noise_gen = FourierSynthesis(original_noise)
 
         # Calculate how often the noise volume can fit into the larger volume (target shape) with the given overlap
@@ -459,7 +502,8 @@ class Virtual_MRI:
 
     def _add_noise_to_grid(self, root_grid, water_content_grid) -> np.array:
         """
-        Adds gaussian and perlin noise to the MRI and scales it according to the water saturation of the soil
+        Adds fourier noise with histogram matching to the root grid and applies the water content of the soil to the
+        noise volume
 
         Args:
         - grid: 3d (numpy) array of the root container with dimensions (nx, ny, nz)
@@ -468,19 +512,28 @@ class Virtual_MRI:
         Returns:
         - grid_noise: 3d (numpy) array of the root container with added noise
         """
-        # generate the two noise for the soil and the background (background - almost black part of the MRI)
-        water_content_soil, fourier_noise_soil = self._get_fourier_noise(
-            root_grid.shape, "../../data_assets/noise/soil_noise/", 10
-        )
-        _, fourier_noise_background = self._get_fourier_noise(
-            root_grid.shape, "../../data_assets/noise/background_noise/", 10
-        )
+
+        if self.noise_type == NoiseType.FOURIER.name:
+            # generate the two noise for the soil and the background (background - almost black part of the MRI)
+            water_content_soil, soil_noise = self._get_fourier_noise(
+                root_grid.shape, "../../data_assets/noise/soil_noise/", 10
+            )
+            _, background_noise = self._get_fourier_noise(
+                root_grid.shape, "../../data_assets/noise/background_noise/", 10
+            )
+        else:
+            water_content_soil, soil_noise = self._generate_gmm_noise(
+                root_grid.shape, "../../data_assets/noise/soil_noise/"
+            )
+            _, background_noise = self._generate_gmm_noise(
+                root_grid.shape, "../../data_assets/noise/background_noise/"
+            )
 
         # scale the fourier noise to water content of 100% to later adjust it to the water content of the soil
-        fourier_noise_rescaled = fourier_noise_soil / water_content_soil
+        soil_noise_rescaled = soil_noise / water_content_soil
 
         # combine the two noises
-        water_scaled_fourier_noise = water_content_grid * fourier_noise_rescaled
+        water_scaled_soil_noise = water_content_grid * soil_noise_rescaled
 
         # use the fourier noise for the root signal intensity
         # root_noise = self._rescale_image(
@@ -492,15 +545,17 @@ class Virtual_MRI:
         # create the noisy root signal, which only contains the root with some noise
         # root_noise[root_grid == 0] = 0
 
+        #################### Adjust root signal with water content ####################
+
         # scale the water content between min_water_content_scale and 1 where 1 is 100% meaning maximum water content (0.42 because
-        # the maximum water content is 42% for both sand and loam) -- / 0.8 + 0.5 is to scale it between 50 and 100%
+        # the maximum water content is 42% for both sand and loam)
         min_water_content_scale = 0.5
         root_water_scale = (
             water_content_grid / 0.42 * (1 - min_water_content_scale)
             + min_water_content_scale
         )
 
-        # apply the fourier noise on the root signal (seperated from the soil noise just in case
+        # apply the soil noise on the root signal (seperated from the soil noise just in case
         # we want to apply different noise to the root and the soil)
         noisy_root = (
             # root_noise_inv * root_grid
@@ -509,40 +564,58 @@ class Virtual_MRI:
             * root_water_scale
         )
 
-        # For SNR ratio: Calculating the variance of the root signal and outputting it
-        # positive_values = noisy_root[noisy_root > 0]
-        # mean = np.mean(positive_values)
-        # print("noisy root variance", np.var(positive_values - mean))
-
-        # Calculating the variance of the soil signal and outputting it
-        # soil_values = water_scaled_fourier_noise[water_scaled_fourier_noise > 0]
-        # mean = np.mean(soil_values)
-        # print("soil variance", np.var(soil_values - mean))
-
         # mask the background noise, such that it only applies outside of the root-soil cylinder
-        fourier_noise_background[water_content_grid != 0] = 0
+        background_noise[water_content_grid != 0] = 0
 
+        ######################## Adjust root soil transition ########################
         # set the values for the root which are lower than the surrounding soil to a fraction of the surrounding
         # soil and the root signal intensity
         root_background_fraction = 0.9
         # create a mask for the water content grid, such that only the part remains, which is part of the root
-        water_root_filtered = np.where(noisy_root > 0, water_scaled_fourier_noise, 0)
+        water_root_filtered = np.where(noisy_root > 0, water_scaled_soil_noise, 0)
         noisy_root[water_root_filtered > noisy_root] = water_root_filtered[
             water_root_filtered > noisy_root
         ] * root_background_fraction + noisy_root[water_root_filtered > noisy_root] * (
             1 - root_background_fraction
         )
 
-        water_scaled_fourier_noise[root_grid > 0] = 0
-        print("water_scaled_fourier_noise", water_scaled_fourier_noise.shape)
-        print("noisy_root", noisy_root.shape)
-        print("background_noise", fourier_noise_background.shape)
+        ###################### Add noise according to SNR ratio ######################
 
-        fourier_noise_background = fourier_noise_background * water_content_grid.mean()
+        # For SNR ratio: Calculating the variance of the root signal and outputting it
+        positive_values = noisy_root[noisy_root > 0]
+        mean = np.mean(positive_values)
+        var_s = np.var(positive_values - mean)
 
-        water_scaled_fourier_noise[water_scaled_fourier_noise < 0] = 0
+        # Calculating the variance of the soil signal and outputting it
+        soil_values = water_scaled_soil_noise[water_scaled_soil_noise > 0]
+        mean = np.mean(soil_values)
+        var_n = np.var(soil_values - mean)
 
-        final_mri = water_scaled_fourier_noise + noisy_root + fourier_noise_background
+        print("SNR:", 10 * np.log10((0.7**2 * var_s) / (0.3**2 * var_n)))
+
+        if self.snr != 0:
+            # solving the equation to x for:
+            # SNR = 10*log_10((1-x)^2 * var_s) / (x^2 * var_n)
+            numerator = (
+                math.sqrt(var_n) * math.sqrt(10 ** (self.snr / 10)) * math.sqrt(var_s)
+                - var_s
+            )
+            denominator = var_n * 10 ** (self.snr / 10) - var_s
+            fraction_noise = numerator / denominator
+            print("fraction_noise", fraction_noise)
+
+            root_noise = np.copy(water_scaled_soil_noise)
+            root_noise[noisy_root == 0] = 0
+            noisy_root = fraction_noise * root_noise + (1 - fraction_noise) * noisy_root
+
+        water_scaled_soil_noise[root_grid > 0] = 0
+
+        # set the background noise to have a lower signal than the cylinder soil noise
+        background_noise = background_noise * water_content_grid.mean()
+
+        water_scaled_soil_noise[water_scaled_soil_noise < 0] = 0
+
+        final_mri = water_scaled_soil_noise + noisy_root + background_noise
 
         final_mri[final_mri < 0] = 0
 
@@ -839,7 +912,6 @@ class Virtual_MRI:
             binary=label,
         )
 
-        # TODO: maybe remove if not good
         if not label:
             mri_grid = gaussian_filter(mri_grid, sigma=(0.6, 0.6, 0.15))
 
@@ -867,8 +939,8 @@ class Virtual_MRI:
             # for debugging something not related to the water content uncomment the following line and comment the next one
             # for faster execution
             # water_grid = self._create_3d_array(mri_grid.shape[0], mri_grid.shape[1], mri_grid.shape[2])
-            water_grid = self.generate_random_array(mri_grid.shape, (0.39, 0.42))
-            # water_grid = self._get_grid_water_content(X, Y, Z)
+            # water_grid = self.generate_random_array(mri_grid.shape, (0.4, 0.42))
+            water_grid = self._get_grid_water_content(X, Y, Z)
             print("water_grid", water_grid.shape)
             # add noise to the MRI scaled by the water content
             mri_grid = self._add_noise_to_grid(mri_grid, water_grid)

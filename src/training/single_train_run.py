@@ -1,7 +1,5 @@
-from enum import Enum
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
-from pl_setup import ModelType
 from pl_setup import MyUNETRWrapper
 from mri_dataloader import MRIDataLoader
 from pytorch_lightning.loggers import TensorBoardLogger

@@ -128,13 +128,22 @@ class DataGenerator:
 
                     depth = random.choice(self.params_random["depth_range"])
 
-                    meshGen = MeshGenerator(
+                    mesh_path = "{}/cylinder_r_{}_d_{}_res_{}.msh".format(
                         "../../data_assets/meshes/",
-                        mesh_size=0.005,
-                        depth=depth / 100,
-                        radius=radius / 100,
+                        radius / 100,
+                        depth / 100,
+                        0.005,
                     )
-                    mesh_path = meshGen.create_mesh()
+
+                    if not os.path.isfile(mesh_path):
+                        meshGen = MeshGenerator(
+                            "../../data_assets/meshes/",
+                            mesh_size=0.005,
+                            depth=depth / 100,
+                            radius=radius / 100,
+                        )
+
+                        mesh_path = meshGen.create_mesh()
 
                     config = {
                         "root_model_name": param_combination["root_model_name"],
@@ -198,16 +207,28 @@ class DataGenerator:
         )
         initial = random.choice(self.params_random[f"initial_{random_soil_type}"])
 
-        meshGen = MeshGenerator(
-            "../../data_assets/meshes/",
-            mesh_size=0.005,
-            depth=random.choice(self.params_random["depth_range"]),
-            radius=random.uniform(
-                self.params_random["radius"][0], self.params_random["radius"][1]
-            ),
+        radius = random.uniform(
+            self.params_random["radius"][0], self.params_random["radius"][1]
         )
 
-        mesh_path = meshGen.create_mesh()
+        depth = random.choice(self.params_random["depth_range"])
+
+        mesh_path = "{}/cylinder_r_{}_d_{}_res_{}.msh".format(
+            "../../data_assets/meshes/",
+            radius / 100,
+            depth / 100,
+            0.005,
+        )
+
+        if not os.path.isfile(mesh_path):
+            meshGen = MeshGenerator(
+                "../../data_assets/meshes/",
+                mesh_size=0.005,
+                depth=depth / 100,
+                radius=radius / 100,
+            )
+
+            mesh_path = meshGen.create_mesh()
 
         config = {
             "root_model_name": random_root_model_name,
@@ -274,9 +295,9 @@ class DataGenerator:
         my_config = config if config else self.get_random_config()
 
         # For debugging purposes, a specific configuration can be used
-        my_config["root_growth_days"] = 1
-        my_config["sim_time"] = 0.01
-        # my_config["depth"] = 20
+        # my_config["root_growth_days"] = 1
+        # my_config["sim_time"] = 0.01
+        # my_config["depth"] = 18
         # my_config["soil_type"] = "sand"
         # my_config["root_model_name"] = "my_Crypsis_aculeata_Clausnitzer_1994"
 
@@ -318,7 +339,7 @@ class DataGenerator:
             soil_radius=my_config["radius"] - 0.1,
             soil_depth=my_config["depth"] - 0.1,
             seed_pos=(my_config["seed_pos"][0], my_config["seed_pos"][1], 0),
-            model_path=f"{DUMUX_path}/CPlantBox/modelparameter/structural/rootsystem",
+            model_path=f"/Users/daniel/Desktop/FZJ/CPlantBox/DUMUX/CPlantBox/tutorial/examples_segmentation/RootNet/data_assets/root_models",
         )
         analist, filenames = root_sim.run_simulation(
             [my_config["root_growth_days"]]
