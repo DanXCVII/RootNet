@@ -270,7 +270,7 @@ prediction_data = [
 ]
 # TODO: remove *2 for the plot input and the Resized
 
-model_name = "SWINUNETR-patch_size_96-feat_24-upscale_True-out_channels_2"
+model_name = "weight_1.0-1.03_DICE_SOFTMAX_UPSCALESWINUNETR-patch_size_96-feat_36-upscale_True-out_channels_2-lr_0.0008-upsample_end_False"
 checkpoint_dir = f"../../runs/{model_name}/"
 # load the model params from the checkpoint dir (../../{model_name}/train_params.json) and store them in a dictionary
 with open(f"{checkpoint_dir}train_params.json") as f:

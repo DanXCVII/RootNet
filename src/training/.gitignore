@@ -1,3 +1,5 @@
 example_predictions
 tb_logs
 data_config.json
+.tb_logs
+test_model_output

@@ -1,11 +1,11 @@
 import sys
 
-with open("../DUMUX_path.txt", "r") as file:
-    DUMUX_path = file.read()
 
-sys.path.append(f"{DUMUX_path}/CPlantBox")
-sys.path.append(f"{DUMUX_path}/CPlantBox/experimental/parametrisation/")
-sys.path.append(f"{DUMUX_path}/CPlantBox/src")
+sys.path.append("/Users/daniel/Desktop/FZJ/CPlantBox/DUMUX/CPlantBox")
+sys.path.append(
+    "/Users/daniel/Desktop/FZJ/CPlantBox/DUMUX/CPlantBox/experimental/parametrisation/"
+)
+sys.path.append("/Users/daniel/Desktop/FZJ/CPlantBox/DUMUX/CPlantBox/src")
 sys.path.append("..")
 
 offset = (4.1599, -8.2821, -0.4581)
@@ -20,8 +20,17 @@ import plantbox as pb
 import rsml.rsml_reader as rsml_reader
 import os
 
+"""
+Description:    Shifts the rsml file towards the same boundary as the MRI file. This is important
+                because the visualize function of the MRI (and label) only visualizes a bounding box
+                centered at 0, 0, 0 which also should be the norm because, the seed should be placed
+                there in global coordinates.
+Usage: Specify a path to the rsml file and corresponding MRI scan.
+Example: python3 center_root_MRI.py -m "mri_file_path" -r "rsml_file_path"
+"""
 
-class CombinedMRI:
+
+class MoveMRI:
     def __init__(self, rsml_path, mri_path) -> None:
         self.rsml_path = rsml_path
         self.mri_path = mri_path
@@ -60,7 +69,19 @@ class CombinedMRI:
             seg_radii,
         )
 
-    def get_translation_border(self, source_array, target, width, depth) -> np.array:
+    def get_translation_border(self, source_array, width, depth) -> np.array:
+        """
+        Calculate and return the translation needed to move the source_array coordinates to the target boundary,
+        which is defined by the width and depth.
+
+        Args:
+        - source_array (np.array): array of points (coordinates)
+        - width (float): width of the MRI (target where the root should be placed)
+        - depth (float): depth of the MRI (target where the root should be placed)
+
+        Returns:
+        - translation (np.array): translation needed to move the source_array to the target boundary
+        """
         z_values = source_array[:, 2]
         y_values = source_array[:, 1]
         x_values = source_array[:, 0]
@@ -84,7 +105,14 @@ class CombinedMRI:
 
         return translation
 
-    def combine_label_mri(self):
+    def center_label_mri(self):
+        """
+        Calclates the translation needed to move the root to the target boundary. Then creates a virtual MRI
+        of the root signal and return it (the label grid)
+
+        Returns:
+        - label_grid (np.array): virtual MRI numpy array of the root signal
+        """
         width = (self.affine_matrix[1, 1] * self.image_data.shape[1]) / 2
         depth = self.affine_matrix[0, 0] * self.image_data.shape[0]
 
@@ -97,7 +125,6 @@ class CombinedMRI:
 
         translation = self.get_translation_border(
             points_array,
-            self.image_data,
             width,
             depth,
         )
@@ -109,7 +136,7 @@ class CombinedMRI:
                 self.affine_matrix[1, 1],
                 self.affine_matrix[0, 0],
             ),
-            radius=width,
+            width=width,
             depth=depth,
             offset=translation,
             scale_factor=2,
@@ -144,8 +171,10 @@ if __name__ == "__main__":
     mri_path = args.mri_path
 
     # Combine the MRI and label
-    combined = CombinedMRI(rsml_path, mri_path)  # args.rsml_path, args.mri_path)
-    combined.combine_label_mri()
+    combined = MoveMRI(rsml_path, mri_path)  # args.rsml_path, args.mri_path)
+    combined.center_label_mri()
+
+
 
 # Example usage:
 # python3 center_root_MRI.py -m /Users/daniel/Desktop/FZJ/CPlantBox/DUMUX/CPlantBox/tutorial/examples_segmentation/RootNet/src/data/virtual_mri_generation/test_data/convert/III_Sand_3D_DAP14_256x256x191.nii.gz -r "/Users/daniel/Desktop/FZJ/Echte Daten/tobias_mri/III_Sand_3D_DAP14_256x256x191/roots_vr_7.rsml"

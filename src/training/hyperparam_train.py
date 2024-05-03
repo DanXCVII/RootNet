@@ -8,32 +8,34 @@ from ray.train.lightning import (
     RayTrainReportCallback,
     prepare_trainer,
 )
-from pl_setup import MyUNETRWrapper, ModelType
+from pl_setup import MyPlSetup
 from mri_dataloader import MRIDataLoader
 import pytorch_lightning as pl
 from ray.tune.schedulers import ASHAScheduler
+import os
 
 
 class MyUNETray:
     def __init__(self):
         self.search_space = {
+            "rel_data_path": "../../data",
             "batch_size": tune.choice([3, 2]),
             "upscale": True,
             "learning_rate": tune.choice([0.0003, 0.0005, 0.0008]),
-            "model": tune.choice([ModelType.SWINUNETR]),
+            "model": tune.choice([ModelType.UPSCALESWINUNETR.name]),
             "model_params": {
                 "in_channels": 1,
                 "out_channels": 2,
-                "feature_size": tune.choice([16]),
+                "feature_size": tune.choice([24]),
             },
             "samples_per_volume": 3,
-            "img_shape": tune.choice([(96, 96, 96)]),
+            "patch_size": tune.choice([(96, 96, 96)]),
         }
 
         scaling_config = ScalingConfig(
-            num_workers=1,
+            num_workers=2,
             use_gpu=True,
-            resources_per_worker={"CPU": 128, "GPU": 4},
+            resources_per_worker={"CPU": 64, "GPU": 4},
         )
 
         run_config = RunConfig(
@@ -52,16 +54,21 @@ class MyUNETray:
         )
 
     def train_func(self, config):
+        print("samples_per_volume actual: ", config["samples_per_volume"])
+
         self.dm = MRIDataLoader(
+            relative_data_path=config["rel_data_path"],
             batch_size=config["batch_size"],
             upscale=config["upscale"],
             samples_per_volume=config["samples_per_volume"],
-            img_shape=config["img_shape"],
+            patch_size=config["patch_size"],
         )
-        self.model = MyUNETRWrapper(
+
+        self.model = MyPlSetup(
             learning_rate=config["learning_rate"],
             model=config["model"],
-            img_shape=config["img_shape"],
+            model_params=config["model_params"],
+            patch_size=config["patch_size"],
         )
 
         trainer = pl.Trainer(
@@ -95,6 +102,7 @@ class MyUNETray:
         return result
 
 
+ray.init(address=os.environ["ip_head"], _node_ip_address=os.environ["head_node_ip"])
+
 myUNETray = MyUNETray()
-ray.init()
 myUNETray.tune_mnist_asha()
