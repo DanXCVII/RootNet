@@ -81,7 +81,7 @@ class Conv3DBlock(nn.Module):
         self.block = nn.Sequential(
             SingleConv3DBlock(in_planes, out_planes, kernel_size),
             nn.BatchNorm3d(out_planes),
-            nn.ReLU(inplace=True), # TODO: True default
+            nn.PReLU() # inplace=True), # TODO: True default
         )
 
     def forward(self, x):
@@ -123,11 +123,11 @@ class MyUpscaleSwinUNETR(nn.Module):
         patch_size: Sequence[int] | int,
         in_channels: int,
         out_channels: int,
-        upsample_end: bool = False,
+        upsample_end: str = "False",
         depths: Sequence[int] = (2, 2, 2, 2),
         num_heads: Sequence[int] = (3, 6, 12, 24),
         feature_size: int = 24,
-        norm_name: tuple | str = "instance",
+        norm_name: tuple | str = "batch",
         drop_rate: float = 0.0,
         attn_drop_rate: float = 0.0,
         dropout_path_rate: float = 0.0,
@@ -180,7 +180,7 @@ class MyUpscaleSwinUNETR(nn.Module):
         patch_sizes = ensure_tuple_rep(self.patch_size, spatial_dims)
         window_size = ensure_tuple_rep(7, spatial_dims)
 
-        self.upsample_end = upsample_end
+        self.upsample_end = upsample_end == "True"
 
         if spatial_dims not in (2, 3):
             raise ValueError("spatial dimension should be 2 or 3.")
@@ -220,7 +220,7 @@ class MyUpscaleSwinUNETR(nn.Module):
             use_v2=use_v2,
         )
 
-        if upsample_end:
+        if self.upsample_end:
             self.upsampler = UpSample(
                 spatial_dims=spatial_dims,
                 in_channels=feature_size,

@@ -1,6 +1,6 @@
 from enum import Enum
 import pytorch_lightning as pl
-from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 from pl_setup import (
     ModelType,
     OutputActivation,
@@ -33,7 +33,7 @@ class MyTrainingSetup:
         checkpoint_path,
         best_model_checkpoint,
         max_epochs=500,
-        check_val=10,
+        check_val=1,
         store_model_epoch=30,
         output_activation=OutputActivation.SIGMOID.name,
     ):
@@ -63,13 +63,21 @@ class MyTrainingSetup:
         # self.setup_profiler()
 
     def _setup_checkpointing(self):
-        self.checkpoint_callback = ModelCheckpoint(
+        self.best_checkpoint_callback = ModelCheckpoint(
             dirpath=self.checkpoint_path,
             filename=self.best_model_checkpoint,
             save_top_k=1,
             monitor="Validation/avg_val_dice",
+            save_last=False,
             mode="max",
             every_n_epochs=1,
+        )
+
+        self.last_checkpoint_callback = ModelCheckpoint(
+            dirpath=self.checkpoint_path,
+            filename="{epoch}",
+            save_top_k=-1,
+            every_n_epochs=2,
         )
 
     def _setup_logger(self):
@@ -77,15 +85,23 @@ class MyTrainingSetup:
             TensorBoardLogger("tb_logs", name=self.model_name),
         )  # name="my_model")
 
-    def _get_trainer(self, max_epochs):
+    def _get_trainer(self, max_epochs=60):
         nnodes = os.getenv("SLURM_NNODES", 1)
+
+        early_stopping = EarlyStopping(
+            monitor="Validation/avg_val_loss",  # Metric to monitor
+            patience=4,          # Number of epochs with no improvement after which training will be stopped
+            verbose=True,        # Enable logging
+            mode='min'           # Mode can be 'min' for loss and 'max' for accuracy
+        )
+
         trainer = pl.Trainer(
             accelerator="gpu",
             strategy=pl.strategies.DDPStrategy(find_unused_parameters=False),
             max_epochs=max_epochs,
             check_val_every_n_epoch=self.check_val,
             logger=self.tb_logger,
-            callbacks=[self.checkpoint_callback],
+            callbacks=[self.best_checkpoint_callback, early_stopping], # self.last_checkpoint_callback],
             gradient_clip_val=5,
             precision=16,
             log_every_n_steps=42,
@@ -149,10 +165,11 @@ class MyTrainingSetup:
                     samples_per_volume=self.train_params["samples_per_volume"],
                     patch_size=self.train_params["patch_size"],
                 )
-                if i <= self.store_model_epoch:
-                    trainer.fit(model, datamodule=dm)
-                else:
+                if continue_training_epoch > self.store_model_epoch or i > self.store_model_epoch:
                     trainer.fit(model, ckpt_path=model_checkpoint, datamodule=dm)
+                else:
+                    trainer.fit(model, datamodule=dm)
+                    
                 trainer.save_checkpoint(model_checkpoint)
 
     def test(self, ckpt_path=None):
@@ -163,16 +180,16 @@ class MyTrainingSetup:
             model_params=self.train_params["model_params"],
         )
         dm = MRIDataLoader(
-            relative_data_path=self.train_params["relative_data_path"],
-            batch_size=self.train_params["batch_size"],
+            relative_data_path=self.train_params["relative_data_path"] + "/test",
+            batch_size=1,
             upscale=self.train_params["upscale"],
-            samples_per_volume=self.train_params["samples_per_volume"],
+            samples_per_volume=1,
             patch_size=self.train_params["patch_size"],
         )
 
-        trainer = self._get_trainer(checkpoint_path=ckpt_path)
+        trainer = self._get_trainer()
 
-        trainer.test(model, ckpt_path=ckpt_path)
+        trainer.test(model=model, dataloaders=dm, ckpt_path=ckpt_path)
 
 
 # Example Usage:
@@ -208,6 +225,7 @@ def main(
         activation = OutputActivation.SOFTMAX.name
     else:
         activation = OutputActivation.SIGMOID.name
+    print(f"activation: {activation}")
 
     train_params = {
         "relative_data_path": relative_data_path,
@@ -222,13 +240,16 @@ def main(
         "output_activation": activation,
     }
 
-    # check if the model_params has a key called "out_channels"
-    if "out_channels" in model_params and model_params["out_channels"] == 2:
-        activation = OutputActivation.SOFTMAX.name
-    else:
-        activation = OutputActivation.SIGMOID.name
+    print(relative_data_path)
+    test = relative_data_path.split("/")[-1]
 
-    model_name = f"weight_{class_weight[0]}-{class_weight[1]}_DICE_{activation}_{model}-patch_size_{patch_size[0]}-feat_{model_params['feature_size']}-upscale_{upscale}-out_channels_{model_params['out_channels']}-lr_{learning_rate}-upsample_end_{model_params['upsample_end']}"
+    model_name = f"{relative_data_path.split('/')[-1]}_weight_" \
+             f"{class_weight[0]}-{class_weight[1]}_DICE_" \
+             f"{activation}_{model}-patch_size_" \
+             f"{patch_size[0]}-feat_{model_params['feature_size']}-upscale_" \
+             f"{upscale}-out_channels_{model_params['out_channels']}-lr_" \
+             f"{learning_rate}-upsample_end_" \
+             f"{model_params['upsample_end'] if 'upsample_end' in model_params else 0}"
     print(model_name)
     checkpoint_path = f"../../runs/{model_name}"
     checkpoint_file = "latest_model"
@@ -239,9 +260,9 @@ def main(
     with open(f"{checkpoint_path}/train_params.json", "w") as f:
         json.dump(train_params, f, indent=4)
 
-    check_val = 10
+    check_val = 1
     store_model_epoch = (
-        60  # 30 seems to work safely with batch size 4 and 3 samples per volume
+        30  # 30 seems to work safely with batch size 4 and 3 samples per volume
     )
 
     training_pipeline = MyTrainingSetup(
@@ -258,6 +279,13 @@ def main(
     training_pipeline.train(
         model_checkpoint=f"{checkpoint_path}/{checkpoint_file}.ckpt",
     )
+
+    # print("Executing test:...")
+
+    # training_pipeline.test(
+    #     ckpt_path=f"{checkpoint_path}/{best_checkpoint_file}.ckpt",
+    
+    # )
 
 
 ############## TEST ##############

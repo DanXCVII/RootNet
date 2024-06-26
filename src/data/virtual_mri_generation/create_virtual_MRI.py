@@ -9,11 +9,10 @@ sys.path.append(f"{DUMUX_path}/CPlantBox/src")
 sys.path.append("..")
 
 import plantbox as pb
-import rsml.rsml_reader as rsml_reader
+from rsml import rsml_reader
 import numpy as np
 import functional.bresenham3D as bres3D
 import matplotlib.pyplot as plt
-import rsml_reader as rsml
 from scipy import ndimage
 from .interpolate_water_sim import VTUInterpolatedGrid
 from sklearn.mixture import GaussianMixture
@@ -22,6 +21,7 @@ from skimage import exposure
 from scipy.ndimage import gaussian_filter
 import re
 from enum import Enum
+import noise
 
 # import pygorpho as pg
 from skimage.morphology import ball
@@ -104,42 +104,47 @@ class Virtual_MRI:
             # case that usually only applies if no noise is added for visualization purposes
             self.max_root_signal_intensity = 5000
 
-    def _generate_perlin_noise_3d(self, shape, scale_x, scale_y, scale_z) -> np.array:
+    def generate_perlin_noise_3d(self, shape, noise_range, res):
         """
-        Generate a 3D numpy array of Perlin noise.
+        Generates a 3D perlin noise volume with the given shape and resolution and scales it to the given range
 
         Args:
-        - shape: The shape of the generated array (tuple of 3 ints).
-        - scale: The scale of noise.
-
-        Returns:
-        - np.array: 3D array of perlin noise values in the range [-1, 1].
+        - shape: shape of the 3d volume
+        - range: range of the noise volume
+        - res: resolution of the noise volume
         """
-        noise = np.zeros(shape)
+        offsets = (
+            random.random() * 10000,
+            random.random() * 10000,
+            random.random() * 10000,
+        )
 
-        base = np.random.randint(0, 2000)
+        def f(x, y, z):
+            return noise.pnoise3(
+                (x + offsets[0]) / res,
+                (y + offsets[1]) / res,
+                (z + offsets[2]) / res,
+                octaves=1,
+            )
 
-        for i in range(shape[0]):
-            for j in range(shape[1]):
-                for k in range(shape[2]):
-                    noise_value = pnoise3(
-                        i / scale_x,
-                        j / scale_y,
-                        k / scale_z,
-                        octaves=4,
-                        persistence=2,
-                        lacunarity=2,
-                        repeatx=256,
-                        repeaty=256,
-                        repeatz=200,
-                        base=base,
-                    )
-                    # Normalize to [0, 1]
-                    # noise_value = (noise_value + 1) / 2
+        size_x, size_y, size_z = shape
+        noise_grid = np.zeros(shape)
 
-                    noise[i][j][k] = noise_value
+        random.seed = (
+            random.random()
+        )  # Seed the random number generator for reproducibility
 
-        return noise
+        for x in range(size_x):
+            for y in range(size_y):
+                for z in range(size_z):
+                    noise_grid[x, y, z] = f(x, y, z)
+
+        noise_grid = noise_grid + 1
+        noise_grid = (noise_grid - np.min(noise_grid)) / (np.max(noise_grid) - np.min(noise_grid))
+
+        noise_grid_scaled = noise_grid * (noise_range[1] - noise_range[0]) + noise_range[0]
+
+        return noise_grid_scaled
 
     def _get_root_data_from_rsml(self, rsml_path) -> pb.SegmentAnalyser:
         """
@@ -500,7 +505,7 @@ class Virtual_MRI:
 
         return water_content, expanded_noise
 
-    def _add_noise_to_grid(self, root_grid, water_content_grid) -> np.array:
+    def _add_noise_to_grid(self, root_grid, water_content_grid, perlin_soil=False, perlin_root=False) -> np.array:
         """
         Adds fourier noise with histogram matching to the root grid and applies the water content of the soil to the
         noise volume
@@ -529,6 +534,14 @@ class Virtual_MRI:
                 root_grid.shape, "../../data_assets/noise/background_noise/"
             )
 
+        if perlin_soil:
+            water_content_grid_filtered = water_content_grid[water_content_grid > 0]
+
+            min_water_content = np.min(water_content_grid_filtered)
+            max_water_content = np.max(water_content_grid_filtered)
+
+            soil_noise = self.generate_perlin_noise_3d(water_content_grid.shape, [min_water_content, max_water_content], 80)
+
         # scale the fourier noise to water content of 100% to later adjust it to the water content of the soil
         soil_noise_rescaled = soil_noise / water_content_soil
 
@@ -549,11 +562,18 @@ class Virtual_MRI:
 
         # scale the water content between min_water_content_scale and 1 where 1 is 100% meaning maximum water content (0.42 because
         # the maximum water content is 42% for both sand and loam)
-        min_water_content_scale = 0.5
-        root_water_scale = (
-            water_content_grid / 0.42 * (1 - min_water_content_scale)
-            + min_water_content_scale
-        )
+        min_root_noise = 0.075 if self.soil_type == "loam" else 0.4
+        if perlin_root:
+            root_noise_grid = self.generate_perlin_noise_3d(root_grid.shape, [min_root_noise, 1], 80)
+        else:
+            water_content_grid_filtered = water_content_grid[water_content_grid > 0]
+            normalized_water_content_grid = (water_content_grid - np.min(water_content_grid_filtered)) / (np.max(water_content_grid_filtered) - np.min(water_content_grid_filtered))
+
+            root_noise_grid = (
+                normalized_water_content_grid * (1 - min_root_noise)
+                + min_root_noise
+            )
+
 
         # apply the soil noise on the root signal (seperated from the soil noise just in case
         # we want to apply different noise to the root and the soil)
@@ -561,7 +581,7 @@ class Virtual_MRI:
             # root_noise_inv * root_grid
             root_grid
             # * root_noise
-            * root_water_scale
+            * root_noise_grid
         )
 
         # mask the background noise, such that it only applies outside of the root-soil cylinder
@@ -688,11 +708,35 @@ class Virtual_MRI:
 
         iteration = 1
         total_segs = len(self.segs)
+        
+
+        if binary:
+            root_signal_intensity = 1
+        else:
+            old_root_signal_intensity = 1
+            new_root_signal_intensity = 1
+            count_intensity = 1
+            max_count = 75
+        root_signal_intensity = 1
         for k, _ in enumerate(self.segs):
             # The list allidx will eventually contain the discretized 3D indices in the grid for all the points
             # along the segment. This part of simulation/visualization is discretizing the root system into a 3D grid,
             # and allidx_ is helping you keep track of which grid cells are occupied by the segment.
-            root_signal_intensity = 1 if binary else random.uniform(0.9, 1)
+            # if not binary:
+            #     if count_intensity >= max_count:
+            #         old_root_signal_intensity = new_root_signal_intensity
+            #         count_intensity = 1
+            #         if self.soil_type == "loam":
+            #             new_root_signal_intensity = 1 # random.uniform(0.1, 1)
+            #             print("new root signal intensity", new_root_signal_intensity)
+            #         else:
+            #             new_root_signal_intensity = 1 # random.uniform(0.5, 1)
+            #         root_signal_intensity = old_root_signal_intensity
+            #     else:
+            #         root_signal_intensity = old_root_signal_intensity + ((new_root_signal_intensity - old_root_signal_intensity) * (count_intensity / max_count))
+            #         count_intensity = count_intensity + 1
+            # else:
+            #     new_root_signal_intensity = 1
 
             allidx = self._get_root_segment_idx(
                 self.segs[idxrad[k]], self.nodes, xx, yy, zz
@@ -939,7 +983,7 @@ class Virtual_MRI:
             # for debugging something not related to the water content uncomment the following line and comment the next one
             # for faster execution
             # water_grid = self._create_3d_array(mri_grid.shape[0], mri_grid.shape[1], mri_grid.shape[2])
-            # water_grid = self.generate_random_array(mri_grid.shape, (0.4, 0.42))
+            # water_grid = self.generate_random_array(mri_grid.shape, (0.4, 0.43))
             water_grid = self._get_grid_water_content(X, Y, Z)
             print("water_grid", water_grid.shape)
             # add noise to the MRI scaled by the water content

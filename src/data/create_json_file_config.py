@@ -11,7 +11,7 @@ class CreateJsonFileConfig:
         self.data_dir = os.path.abspath(os.path.join(file_dir, relative_data_path))
         self.training_dir = os.path.join(self.data_dir, "generated/training")
         self.validation_dir = os.path.join(self.data_dir, "generated/validation")
-        self.test_dir = os.path.join(self.data_dir, "generated/test")
+        self.test_dir = os.path.join(self.data_dir, "test")
         self.real_data = os.path.join(self.data_dir, "real")
         print("initiated CreateJsonFileConfig")
 

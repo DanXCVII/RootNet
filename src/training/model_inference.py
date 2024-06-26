@@ -26,11 +26,11 @@ Example: python unetr_prediction.py
 
 
 class ImagePredictionPipeline:
-    def __init__(self, checkpoint_path, train_params):
+    def __init__(self, checkpoint_path, train_params, patch_size):
         self.train_params = train_params
 
         my_dl = MRIDataLoader(
-            "../../data", 1, True, 1, (96, 96, 96), allow_missing_keys=True
+            "../../data", 1, True, 1, patch_size, allow_missing_keys=True
         )
         self.prediction_transform = my_dl.cache_transforms
 
@@ -172,14 +172,14 @@ class ImagePredictionPipeline:
 
 def main(model_name):
     prediction_data = [
-        # {
-        #     "image": "../../data_new/generated/validation/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_5-initial_-900-noise_0.9/Crypsis_aculeata_Clausnitzer_1994_day_5_SNR_3_res_229x229x201.nii.gz",
-        #     "label": "../../data_new/generated/validation/Crypsis_aculeata_Clausnitzer_1994/clay/sim_days_5-initial_-900-noise_0.9/label_Crypsis_aculeata_Clausnitzer_1994_day_5_SNR_3_res_459x459x403.nii.gz",
-        # },
-        # {
-        #     "image": "../../data_new/generated/validation/Glycine_max/sand/sim_days_5-initial_-25-noise_0.8/Glycine_max_day_5_SNR_3_res_229x229x201.nii.gz",
-        #     "label": "../../data_new/generated/validation/Glycine_max/sand/sim_days_5-initial_-25-noise_0.8/label_Glycine_max_day_5_SNR_3_res_459x459x403.nii.gz",
-        # },
+        { # synthetic data
+            "image": "../../data_final/generated/validation/my_Glycine_max/loam/sim_days_6-initial_-35/my_Glycine_max_day_6_res_237x237x201.nii.gz",
+            "label": "../../data_final/generated/validation/my_Glycine_max/loam/sim_days_6-initial_-35/label_my_Glycine_max_day_6_res_474x474x402.nii.gz",
+        },
+        {
+            "image": "../../data_final/generated/validation/my_Moraesetal_2020/loam/sim_days_9-initial_-415/my_Moraesetal_2020_day_9_res_237x237x151.nii.gz",
+            "label": "../../data_final/generated/validation/my_Moraesetal_2020/loam/sim_days_9-initial_-415/label_my_Moraesetal_2020_day_9_res_474x474x302.nii.gz",
+        },
         {
             "image": "../../data_new/real/III_Sand_1W_DAP14_res_256x256x131.nii.gz",
             "label": "../../data_new/real/label_III_Sand_1W_DAP14_res_512x512x262.nii.gz"
@@ -188,26 +188,26 @@ def main(model_name):
             "image": "../../data_new/real/III_Sand_3D_DAP14_res_256x256x191.nii.gz",
             "label": "../../data_new/real/label_III_Sand_3D_DAP14_res_512x512x382.nii.gz"
         },
-        # {
-        #     "image": "../../data_new/real/III_Soil_3D_DAP15_res_256x256x199.nii.gz",
-        #     "label": "../../data_new/real/label_III_Soil_3D_DAP15_res_512x512x398.nii.gz"
-        # },
-        # {
-        #     "image": "../../data_new/real/IV_Sand_3D_DAP8_res_256x256x192.nii.gz",
-        #     "label": "../../data_new/real/label_IV_Sand_3D_DAP8_res_512x512x384.nii.gz"
-        # },
-        # {
-        #     "image": "../../data_new/real/IV_Soil_1W_DAP9_res_256x256x136.nii.gz",
-        #     "label": "../../data_new/real/label_IV_Soil_1W_DAP9_res_512x512x272.nii.gz"
-        # },
-        # {
-        #     "image": "../../data_new/real/IV_Soil_3D_DAP8_res_256x256x193.nii.gz",
-        #     "label": "../../data_new/real/label_IV_Soil_3D_DAP8_res_512x512x386.nii.gz"
-        # },
-        # {
-        #     "image": "../../data_new/real/III_Soil_1W_DAP14_res_256x256x186.nii.gz",
-        #     "label": "../../data_new/real/label_III_Soil_1W_DAP14_res_512x512x372.nii.gz"
-        # },
+        {
+            "image": "../../data_new/real/III_Soil_3D_DAP15_res_256x256x199.nii.gz",
+            "label": "../../data_new/real/label_III_Soil_3D_DAP15_res_512x512x398.nii.gz"
+        },
+        {
+            "image": "../../data_new/real/IV_Sand_3D_DAP8_res_256x256x192.nii.gz",
+            "label": "../../data_new/real/label_IV_Sand_3D_DAP8_res_512x512x384.nii.gz"
+        },
+        {
+            "image": "../../data_new/real/IV_Soil_1W_DAP9_res_256x256x136.nii.gz",
+            "label": "../../data_new/real/label_IV_Soil_1W_DAP9_res_512x512x272.nii.gz"
+        },
+        {
+            "image": "../../data_new/real/IV_Soil_3D_DAP8_res_256x256x193.nii.gz",
+            "label": "../../data_new/real/label_IV_Soil_3D_DAP8_res_512x512x386.nii.gz"
+        },
+        {
+            "image": "../../data_new/real/III_Soil_1W_DAP14_res_256x256x186.nii.gz",
+            "label": "../../data_new/real/label_III_Soil_1W_DAP14_res_512x512x372.nii.gz"
+        },
     ]
 
     checkpoint_dir = f"../../runs/{model_name}/"
@@ -216,12 +216,14 @@ def main(model_name):
     with open(f"{checkpoint_dir}train_params.json") as f:
         train_params = json.load(f)
 
-    pipeline = ImagePredictionPipeline(
-        f"{checkpoint_dir}best_metric_model.ckpt", train_params
-    )
-
     patch_size = train_params["patch_size"]
     plot_path = f"example_predictions/{model_name}"
+
+    pipeline = ImagePredictionPipeline(
+        f"{checkpoint_dir}best_metric_model.ckpt", 
+        train_params, 
+        patch_size,
+    )
 
     pipeline.predict_and_plot(
         prediction_data,

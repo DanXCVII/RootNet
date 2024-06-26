@@ -280,7 +280,7 @@ class DataGenerator:
                 for item in os.scandir(dir)
                 if item.is_file() and item.name != ".DS_Store"
             )
-            if num_files < 7:
+            if num_files < 5:
                 shutil.rmtree(dir)
 
     def generate_sample(self, data_path, config=None):

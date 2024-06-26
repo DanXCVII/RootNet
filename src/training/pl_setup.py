@@ -16,15 +16,23 @@ import warnings
 from collections.abc import Callable, Sequence
 from typing import Any
 
+
 import numpy as np
 import torch
 from torch.nn.modules.loss import _Loss
+import torch.nn.functional as F
 
 from monai.networks import one_hot
 from monai.utils import (
     LossReduction,
 )
 from monai.metrics import ConfusionMatrixMetric
+from monai.metrics import HausdorffDistanceMetric
+from monai.metrics import SurfaceDistanceMetric
+from monai.metrics import compute_hausdorff_distance
+from monai.metrics import get_confusion_matrix  
+from torchmetrics.classification import PrecisionRecallCurve, BinaryPrecisionRecallCurve
+import time
 
 ###################### Model imports ######################
 
@@ -41,6 +49,7 @@ sys.path.append("..")
 from utils import (
     Visualizations,
     MRIoperations,
+    ChainedScheduler,
 )
 from mri_dataloader import MRIDataLoader
 from models import MyUNETR, MyUpscaleSwinUNETR, UNet, UNETR, SwinUNETR
@@ -63,6 +72,8 @@ import numpy as np
 import random
 
 import pytorch_lightning as pl
+
+import matplotlib.pyplot as plt
 
 
 torch.set_float32_matmul_precision("medium")
@@ -147,6 +158,19 @@ class MyPlSetup(pl.LightningModule):
             to_onehot_y=True,  # set true for softmax loss
             weight=torch.tensor(class_weight).cuda(),
         )
+        
+        self.hausdorff_distance_metric = HausdorffDistanceMetric(
+            include_background=include_background,
+            reduction="mean",
+            get_not_nans=False,
+            percentile=95,
+        )
+        self.surface_distance_metric = SurfaceDistanceMetric(
+            include_background=include_background,
+            reduction="mean",
+            get_not_nans=False,
+            symmetric=True,
+        )
         self.root_confusion_matrix_metrics = ConfusionMatrixMetric(
             include_background=include_background,
             metric_name=("precision", "recall", "f1 score"),
@@ -159,12 +183,26 @@ class MyPlSetup(pl.LightningModule):
             reduction="mean",
             get_not_nans=False,
         )
+        self.root_confusion_matrix_metrics_agg = ConfusionMatrixMetric(
+            include_background=include_background,
+            metric_name=("precision", "recall", "f1 score"),
+            reduction="mean",
+            get_not_nans=False,
+        )
+        self.background_confusion_matrix_metrics_agg = ConfusionMatrixMetric(
+            include_background=include_background,
+            metric_name=("precision", "recall", "f1 score"),
+            reduction="mean",
+            get_not_nans=False,
+        )
         self.dice_metric = DiceMetric(
             include_background=include_background,
             reduction="mean",
             get_not_nans=False,
         )  # TODO: include_background default is False
+        self.precision_recall_curve = PrecisionRecallCurve(num_classes=1)
         self.patch_size = patch_size
+        self.root_f1s_arr = []
 
         # Training parameters
         self.learning_rate = learning_rate
@@ -207,15 +245,25 @@ class MyPlSetup(pl.LightningModule):
         # Exposure Scheduler
         # exponential_scheduler = ExponentialLR(optimizer, gamma=0.95)
 
-        return optimizer
+        warmup_cosine_scheduler = ChainedScheduler(
+            optimizer,
+            T_0 = 6,
+            T_mul = 1,
+            eta_min = 1e-5,
+            gamma = 0.9,
+            max_lr = self.learning_rate,
+            warmup_steps= 5,
+        )
 
-        # return {
-        #     "optimizer": optimizer,
-        #     "lr_scheduler": {
-        #         "scheduler": exponential_scheduler,
-        #         "interval": "epoch"
-        #     }
-        # }
+        # return optimizer
+
+        return {
+            "optimizer": optimizer,
+            "lr_scheduler": {
+                "scheduler": warmup_cosine_scheduler,
+                "interval": "epoch"
+            }
+        }
 
     def training_step(self, batch, batch_idx):
         images, labels = batch["image"], batch["label"]
@@ -249,7 +297,7 @@ class MyPlSetup(pl.LightningModule):
                 )  # , sync_dist=True)
 
                 self.log(
-                    "learning_rate",
+                    "Train/learning_rate",
                     self.trainer.optimizers[0].param_groups[0]["lr"],
                     on_step=False,
                     on_epoch=True,
@@ -388,12 +436,12 @@ class MyPlSetup(pl.LightningModule):
         tensorboard_logs = {
             "Validation/avg_val_dice": mean_val_dice,
             "Validation/avg_val_loss": mean_val_loss,
-            "Validation/root_avg_precision": root_cmm[0],
-            "Validation/root_avg_recall": root_cmm[1],
-            "Validation/root_avg_f1": root_cmm[2],
-            "Validation/background_avg_precision": background_cmm[0],
-            "Validation/background_avg_recall": background_cmm[1],
-            "Validation/background_avg_f1": background_cmm[2],
+            # "Validation/root_avg_precision": root_cmm[0],
+            # "Validation/root_avg_recall": root_cmm[1],
+            # "Validation/root_avg_f1": root_cmm[2],
+            # "Validation/background_avg_precision": background_cmm[0],
+            # "Validation/background_avg_recall": background_cmm[1],
+            # "Validation/background_avg_f1": background_cmm[2],
         }
 
         if self.trainer.is_global_zero:
@@ -424,13 +472,25 @@ class MyPlSetup(pl.LightningModule):
         # Clear validation step outputs and reset metrics for all processes
         self.validation_step_outputs.clear()
         self.dice_metric.reset()
+        self.root_confusion_matrix_metrics.reset()
+        self.background_confusion_matrix_metrics.reset()
 
         # Return the logs only from the main process
         return {"log": tensorboard_logs}
 
+    def _save_mri(self, mri_path, name, mri_data):
+        mri_ops = MRIoperations()
+
+        mri_shape = mri_data.shape
+
+        mri_full_path = f"{mri_path}/{name}_{mri_shape[0]}x{mri_shape[1]}x{mri_shape[2]}.nii.gz"
+
+        mri_ops.save_mri(mri_full_path, mri_data)
+
     def test_step(self, batch, batch_idx):
+        print("test_step")
         images, labels = batch["image"], batch["label"]
-        sw_batch_size = 4
+        sw_batch_size = 2
 
         labels = labels[
             :,
@@ -440,6 +500,9 @@ class MyPlSetup(pl.LightningModule):
             : images.shape[4] * 2,
         ]
 
+        batch_image_np = batch["image"].cpu().numpy()
+        print("starting test")
+        print(self.output_activation)
         logits = sliding_window_inference(
             images,
             self.patch_size,
@@ -447,23 +510,140 @@ class MyPlSetup(pl.LightningModule):
             self.forward,
         )
 
-        loss = self.loss_function(logits, labels)
+        # loss = self.loss_function(logits, labels)
 
         _, binary_output, final_label, background_pred, root_idx = (
             self._get_root_probability_binary(logits, labels)
         )
+        binary_pred = binary_output[:, root_idx, :, :, :].unsqueeze(1)
+        label_filtered = final_label[:, 0, :, :, :].unsqueeze(1)
+
+        # uncomment, if evaluation for thresholding is needed
+        # iterate over values between 0.998 and 0.9995 with step 0.0002
+        thresh = True
+        root_cmms = []
+        best_percentile = 0
+        
+        # start timer
+        time_start = time.time()
+        if thresh:            
+            start = 0.997
+            rg = 28
+            step_size = 0.0001
+
+            binary_pred_arr = []
+            binary_output_arr = []
+
+            for i in range(rg):
+                percentile = torch.quantile(batch["image"], start + i * step_size)
+                mask = (batch["image"] > percentile).float()
+                mask_up = F.interpolate(mask, size=(mask.shape[2]*2, mask.shape[3]*2, mask.shape[4]*2), mode='trilinear', align_corners=False)
+                mask = mask_up
+
+                mask_up = (mask_up > 0).float()
+
+                inverse_mask = 1 - mask
+                mask_2 = torch.cat((inverse_mask, mask), dim=1)
+
+                binary_pred = mask
+                if self.output_activation == OutputActivation.SIGMOID.name:
+                    binary_output = mask
+                else:
+                    binary_output = mask_2
+
+                binary_pred_arr.append(binary_pred.cpu().numpy())
+                binary_output_arr.append(binary_output.cpu().numpy())
+
+                root_cmm = self.root_confusion_matrix_metrics(
+                    y_pred=binary_output[:, root_idx, :, :, :].unsqueeze(1),
+                    y=final_label[:, root_idx, :, :, :].unsqueeze(1),
+                )
+                root_cmms.append(self.root_confusion_matrix_metrics.aggregate())
+                self.root_confusion_matrix_metrics.reset()
+
+            # get the index of the percentile with the highest f1 score+
+            root_f1s = np.array([array[2].cpu().numpy() for array in root_cmms])
+            self.root_f1s_arr.append(root_f1s)
+            best_percentile = np.argmax(root_f1s)
+
+            x_values = [start + i * step_size for i in range(rg)]
+
+            # save the f1 sorces and x_values in a csv file
+            np.savetxt(f'./test_model_output/dice_scores_{batch_idx}.csv', root_f1s, delimiter=',')
+            np.savetxt(f'./test_model_output/x_values_{batch_idx}.csv', x_values, delimiter=',')
+            self.plot_f1_scores(x_values, f'./test_model_output/f1_scores_{batch_idx}.png')
+
+
+            binary_pred = torch.from_numpy(binary_pred_arr[best_percentile]).to('cuda')
+            binary_output = torch.from_numpy(binary_output_arr[best_percentile]).to('cuda')
+
+        # end timer
+        print(f"Time taken: {time.time() - time_start}")
+
+        # hd = self.hausdorff_distance_metric(y_pred=binary_pred, y=label_filtered)
+        sd = self.surface_distance_metric(y_pred=binary_pred, y=label_filtered)
+        
+        # print(f"Hausdorff Distance: {hd}")
+        print(f"Surface Distance: {sd}")
 
         dice = self.dice_metric(y_pred=binary_output, y=final_label)
+        test_dice = self.dice_metric.aggregate().item()
 
+        # setup the root confusion matrix metrics for aggregated data for the epoch and step
         root_cmm = self.root_confusion_matrix_metrics(
             y_pred=binary_output[:, root_idx, :, :, :].unsqueeze(1),
             y=final_label[:, root_idx, :, :, :].unsqueeze(1),
         )
 
-        background_cmm = self.background_confusion_matrix_metrics(
-            y_pred=background_pred,
-            y=final_label[:, 0, :, :, :].unsqueeze(1),
+        root_cmm_agg = self.root_confusion_matrix_metrics_agg(
+            y_pred=binary_output[:, root_idx, :, :, :].unsqueeze(1),
+            y=final_label[:, root_idx, :, :, :].unsqueeze(1),
         )
+
+        confusion_matrix = get_confusion_matrix(
+            y_pred=binary_output[:, root_idx, :, :, :].unsqueeze(1), 
+            y=final_label[:, root_idx, :, :, :].unsqueeze(1)
+        )
+        print("confusion_matrix", confusion_matrix)
+
+        print("logits", logits.shape)
+        # Compute and log the precision recall curve
+        # if logits.shape[1] == 2:
+        #     preds = torch.softmax(logits, dim=1)[:, 1, :, :, :].unsqueeze(1)
+        #     # TODO: add sigmoid case
+        #     preds = preds.view(-1)
+        #     targets = labels.view(-1)
+        #     print("shaaape", preds.shape, targets.shape)
+        #     pres_rec = BinaryPrecisionRecallCurve(thresholds=10).to(preds.device)
+        #     pres_rec(
+        #         preds, 
+        #         targets.long(),
+        #     )
+        #     print("preds after content dtype", preds.dtype)
+        #     print("targets after content dtype", targets.dtype)
+        #     print("computing curve")
+        #     precision, recall, thresholds = pres_rec.compute()
+        #     print("curve computed")
+        #     fig = self.plot_precision_recall_curve(precision, recall)
+        #     self.logger.experiment.add_figure(f'Precision-Recall Curve/Batch {batch_idx}', fig, global_step=batch_idx)
+        #     pres_rec.reset()
+
+        # setup the background confusion matrix metrics for aggregated data for the epoch and step
+        # background_cmm = self.background_confusion_matrix_metrics(
+        #     y_pred=background_pred,
+        #     y=final_label[:, 0, :, :, :].unsqueeze(1),
+        # )
+
+        # background_cmm_agg = self.background_confusion_matrix_metrics_agg(
+        #     y_pred=background_pred,
+        #     y=final_label[:, 0, :, :, :].unsqueeze(1),
+        # )
+
+        dice_metric = self.dice_metric(y_pred=binary_output, y=final_label)
+        print("dice_metric", dice_metric)
+
+        root_cmm_step = self.root_confusion_matrix_metrics.aggregate()
+        # background_cmm_step = self.background_confusion_matrix_metrics.aggregate()
 
         model_dir = os.path.dirname(f"./test_model_output/{batch_idx}/")
         if not os.path.exists(model_dir):
@@ -482,64 +662,123 @@ class MyPlSetup(pl.LightningModule):
 
         # For inspection: save the predictions as nifti files
         # Convert to NumPy array
-        mri_ops = MRIoperations()
 
-        label_path = f"test_model_output/{batch_idx}/label.nii.gz"
-        output_path = f"test_model_output/{batch_idx}/output.nii.gz"
-        binary_output_path = f"test_model_output/{batch_idx}/binary_output.nii.gz"
+        save_dir = f"./test_model_output/{batch_idx}"
 
-        mri_ops.save_mri(label_path, batch["label"][0][0].cpu().numpy())
-        # mri_ops.save_mri(output_path)
-        mri_ops.save_mri(binary_output_path, binary_output[0][root_idx].cpu().numpy())
+        self._save_mri(save_dir, "label", batch["label"][0][0].cpu().numpy())
+        self._save_mri(save_dir, "output", logits[0][root_idx].cpu().numpy())
+        self._save_mri(save_dir, "binary_output", binary_output[0][root_idx].cpu().numpy())
+        self._save_mri(save_dir, "labels", labels[0][0].cpu().numpy())
+        # self._save_mri(save_dir, "mask", mask[0][0].cpu().numpy())
 
         test_output = {
-            "test_loss": loss,
-            "test_number": logits.shape[0],
-            "confusion_matrix_metrics": root_cmm,
-            "background_confusion_matrix_metrics": background_cmm,
+            # "Test/test_loss": loss,
+            "Test/surface_distance": sd,
+            "Test/root_precision": root_cmm_step[0] if not thresh else root_cmms[best_percentile][0],
+            "Test/root_recall": root_cmm_step[1] if not thresh else root_cmms[best_percentile][1],
+            # "Test/root_f1": root_cmm_step[2] if not thresh else root_cmms[best_percentile][2],
+            "Test/dice": test_dice,
+            # "Test/background_precision": background_cmm_step[0],
+            # "Test/background_recall": background_cmm_step[1],
+            # "Test/background_f1": background_cmm_step[2],
         }
+
+        for metric_name, metric_value in test_output.items():
+            print("logging test_step")
+            self.log(
+                metric_name,
+                metric_value,
+                on_step=True,
+                on_epoch=False,
+                prog_bar=True,
+                logger=True,
+                # sync_dist=True  # Uncomment if you are training in a distributed setting and want to synchronize metrics
+            )
 
         self.test_step_outputs.append(test_output)
 
+        self.dice_metric.reset()
+        self.surface_distance_metric.reset()
+        self.root_confusion_matrix_metrics.reset()
+
         return test_output
+
+    def plot_precision_recall_curve(self, precision, recall):
+        import matplotlib.pyplot as plt
+
+        plt.figure()
+        plt.plot(recall.cpu(), precision.cpu(), marker='.')
+        plt.xlabel('Recall')
+        plt.ylabel('Precision')
+        plt.title('Precision-Recall Curve')
+        plt.grid(True)
+
+        fig = plt.gcf()
+        plt.close()
+        return fig
+
+    def plot_f1_scores(self, x_values, path):
+        # Plotting the F1 scores
+        plt.figure(figsize=(15, 6))
+        
+        i = 1
+        for f1s in self.root_f1s_arr:
+            plt.plot(x_values, f1s, marker='o', linestyle='-', label=f"MRI scan {i}")
+            i = i+1
+        plt.title('F1 Scores for Different Runs')
+        plt.xlabel('Run', fontsize=8)
+        plt.ylabel('F1 Score')
+        plt.grid(True)
+        plt.legend()
+        plt.xticks(x_values, rotation=45)
+
+        plt.savefig(path)
 
     def on_test_epoch_end(self):
         # 1. Gather Individual Metrics
-        test_loss, num_items = 0, 0
-        for output in self.test_step_outputs:
-            test_loss += output["test_loss"].sum().item()
-            num_items += output["test_number"]
-
-        mean_test_loss = test_loss / num_items if num_items > 0 else 0.0
+        # mean_test_loss = torch.stack(
+        #     [x["Test/test_loss"] for x in self.test_step_outputs]
+        # )
+        mean_test_loss = mean_test_loss.mean()
         mean_test_dice = self.dice_metric.aggregate().item()
+        mean_test_sd = self.surface_distance_metric.aggregate().item()
 
         self.metric_values.append(mean_test_dice)
 
+        root_cmm = self.root_confusion_matrix_metrics_agg.aggregate()
+
+        print("root_cmm", root_cmm)
+        # background_cmm = self.background_confusion_matrix_metrics_agg.aggregate()
+
         tensorboard_logs = {
-            "avg_val_dice": mean_test_dice,
-            "avg_val_loss": mean_test_loss,
+            "Test/avg_test_dice": mean_test_dice,
+            # "Test/avg_test_loss": mean_test_loss,
+            "Test/avg_surface_distance": mean_test_sd,
+            "Test/avg_root_precision": root_cmm[0],
+            "Test/avg_root_recall": root_cmm[1],
+            "Test/avg_root_f1": root_cmm[2],
+            # "Test/avg_background_precision": background_cmm[0],
+            # "Test/avg_background_recall": background_cmm[1],
+            # "Test/avg_background_f1": background_cmm[2],
         }
 
-        self.log(
-            "Test/avg_epoch_test_dice",
-            mean_test_dice,
-            on_step=False,
-            on_epoch=True,
-            prog_bar=True,
-            logger=True,
-        )
-        self.log(
-            "Test/avg_epoch_test_loss",
-            mean_test_loss,
-            on_step=False,
-            on_epoch=True,
-            prog_bar=True,
-            logger=True,
-        )
+        for metric_name, metric_value in tensorboard_logs.items():
+            print("log", metric_name)
+            self.log(
+                metric_name,
+                metric_value,
+                # on_step=False,
+                # on_epoch=True,
+                # prog_bar=True,
+                # logger=True,
+                # sync_dist=True  # Uncomment if you are training in a distributed setting and want to synchronize metrics
+            )
 
         # Clear validation step outputs and reset metrics for all processes
         self.test_step_outputs.clear()
         self.dice_metric.reset()
+        self.root_confusion_matrix_metrics_agg.reset()
+        # self.background_confusion_matrix_metrics_agg.reset()
 
         # Return the logs only from the main
         return {"log": tensorboard_logs}
@@ -612,7 +851,6 @@ class DiceLoss(_Loss):
             TypeError: When ``other_act`` is not an ``Optional[Callable]``.
             ValueError: When more than 1 of [``sigmoid=True``, ``softmax=True``, ``other_act is not None``].
                 Incompatible values.
-
         """
         super().__init__(reduction=LossReduction(reduction).value)
         if other_act is not None and not callable(other_act):
@@ -720,6 +958,7 @@ class DiceLoss(_Loss):
         if self.weight is not None and target.shape[1] != 1:
             # make sure the lengths of weights are equal to the number of classes
             num_of_classes = target.shape[1]
+            print("num_of_classes", num_of_classes)
             if isinstance(self.weight, (float, int)):
                 self.class_weight = torch.as_tensor([self.weight] * num_of_classes)
             else:
@@ -734,9 +973,8 @@ class DiceLoss(_Loss):
                 raise ValueError(
                     "the value/values of the `weight` should be no less than 0."
                 )
-
+            print("Applying class weight")
             self.class_weight = self.class_weight.to(f)
-
             f = f * self.class_weight
 
         if self.reduction == LossReduction.MEAN.value:

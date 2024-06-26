@@ -30,15 +30,24 @@ from monai.transforms import (
     ScaleIntensityd,
     LoadImaged,
     EnsureChannelFirstd,
+    SpatialPadd,
+    RandBiasFieldd,
+    ThresholdIntensityd,
     Orientationd,
+    RandAffined,
     ScaleIntensityRanged,
     Resized,
+    RandCoarseDropoutd,
     RandFlipd,
+    # RandAdjustContrastd, # not suitable because it shrinks the root diameter (RandCoarseDropout, HistogramNormalize)
+    RandHistogramShiftd,
     RandRotate90d,
     RandShiftIntensityd,
 )
 
 from data import CreateJsonFileConfig
+
+import monai
 
 """
 Description:    This script contains the dataloader for the training of MyUpscaleSwinUNETR etc.
@@ -64,9 +73,31 @@ class MRIDataLoader(pl.LightningDataModule):
         self.config_file = os.path.join(current_directory, "data_config.json")
 
         self.cache_transform_list = [
-            LoadImaged(keys=["image", "label"], allow_missing_keys=True),
-            EnsureChannelFirstd(keys=["image", "label"], allow_missing_keys=True),
-            Orientationd(keys=["image", "label"], axcodes="RAS", allow_missing_keys=True),
+            LoadImaged(
+                keys=["image", "label"], 
+                allow_missing_keys=True
+            ),
+            EnsureChannelFirstd(
+                keys=["image", "label"], 
+                allow_missing_keys=True,
+            ),
+            SpatialPadd(
+                keys=["image"], 
+                spatial_size=[237, 237, 201], 
+                method="symmetric", 
+                mode="constant", 
+                constant_values=0,
+            ),
+            SpatialPadd(keys=["label"], spatial_size=[474, 474, 402], 
+                method="symmetric", 
+                mode="constant", 
+                constant_values=0,
+            ),
+            Orientationd(
+                keys=["image", "label"], 
+                axcodes="RAS", 
+                allow_missing_keys=True,
+            ),
             ScaleIntensityd(
                 keys=["image"],
                 minv=0,
@@ -87,13 +118,35 @@ class MRIDataLoader(pl.LightningDataModule):
     def setup(self, stage=None):
         with open(self.config_file, "r") as file:
             # Load the JSON data into a dictionary
-            data_config = json.load(file)
+            data_config = json.load(file)                
 
             train_transform_list = []
             train_transform_list.extend(self.cache_transform_list)
+            train_transform_list.insert(
+                1,
+                RandAffined(
+                    keys=["image", "label"],
+                    prob=0.1,
+                    rotate_range=((-0.785, 0.785), (-0.785, 0.785), (-0.785, 0.785)),
+                    scale_range=((-0.2, 0.5), (-0.2, 0.5), (-0.2, 0.5)),
+                    mode=("bilinear", "nearest"),
+                ),
+            )
             train_transform_list.extend(
-                    [
-                        RandCropByPosNegLabeldWithResAdjust(
+                [
+                    RandBiasFieldd(
+                        keys=["image"],
+                        coeff_range=(0.0, 0.1),
+                        prob=0.1,
+                    ),
+                    RandCoarseDropoutd(
+                        keys=["image", "label"],
+                        holes=6,
+                        fill_value=0,
+                        spatial_size=(15, 15, 20),
+                        prob=0.1,
+                    ),
+                    RandCropByPosNegLabeldWithResAdjust(
                         image_key="image",
                         label_key="label",
                         spatial_size=self.patch_size
@@ -104,25 +157,35 @@ class MRIDataLoader(pl.LightningDataModule):
                         num_samples=self.samples_per_volume,
                         image_threshold=0,
                     ),
+                    RandHistogramShiftd(
+                        keys=["image"],
+                        num_control_points=10,
+                        prob=0.1,
+                    ),
+                    ScaleIntensityd(
+                        keys=["image"],
+                        minv=0,
+                        maxv=1,
+                    ),
                     # CropForegroundd(keys=["image", "label"], source_key="image"),
                     RandFlipd(
                         keys=["image", "label"],
                         spatial_axis=[0],
-                        prob=0.10,
+                        prob=0.5,
                     ),
                     RandFlipd(
                         keys=["image", "label"],
                         spatial_axis=[1],
-                        prob=0.10,
+                        prob=0.5,
                     ),
                     RandFlipd(
                         keys=["image", "label"],
-                        spatial_axis=[2],
+                        spatial_axis=[2], # z-axis
                         prob=0.10,
                     ),
                     RandRotate90d(
                         keys=["image", "label"],
-                        prob=0.10,
+                        prob=0.50,
                         max_k=3,
                     ),
                     RandShiftIntensityd(
@@ -130,7 +193,8 @@ class MRIDataLoader(pl.LightningDataModule):
                         offsets=0.10,
                         prob=0.50,
                     ),
-                ])
+                ],
+            )
             train_transforms = Compose(train_transform_list)
             self.train_ds = CacheDataset(
                 data=data_config["training"],
