@@ -1,11 +1,11 @@
 import sys
 
+with open("../../DUMUX_path.txt", "r") as file:
+    DUMUX_path = file.read()
 
-sys.path.append("/Users/daniel/Desktop/FZJ/CPlantBox/DUMUX/CPlantBox")
-sys.path.append(
-    "/Users/daniel/Desktop/FZJ/CPlantBox/DUMUX/CPlantBox/experimental/parametrisation/"
-)
-sys.path.append("/Users/daniel/Desktop/FZJ/CPlantBox/DUMUX/CPlantBox/src")
+sys.path.append(f"{DUMUX_path}/CPlantBox")
+sys.path.append(f"{DUMUX_path}/CPlantBox/experimental/parametrisation/")
+sys.path.append(f"{DUMUX_path}/CPlantBox/src")
 sys.path.append("..")
 
 offset = (4.1599, -8.2821, -0.4581)

@@ -51,7 +51,7 @@ class SoilWaterSimulation:
         output_path,
         soil_type,
         initial=-659.8 + 10,
-        trans=10,
+        trans=6.4,
         wilting_point=-15000,
         age_dependent=False,
         sim_time=1,

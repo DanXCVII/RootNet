@@ -295,11 +295,12 @@ class DataGenerator:
         my_config = config if config else self.get_random_config()
 
         # For debugging purposes, a specific configuration can be used
-        # my_config["root_growth_days"] = 1
+        # my_config["root_growth_days"] = 5
+        # my_config["soil_type"] = "loam" # TODO: remove
         # my_config["sim_time"] = 0.01
         # my_config["depth"] = 18
         # my_config["soil_type"] = "sand"
-        # my_config["root_model_name"] = "my_Crypsis_aculeata_Clausnitzer_1994"
+        # my_config["root_model_name"] = "my_Moraesetal_2020"
 
         pprint.pprint(my_config, width=40, indent=4)
 
@@ -339,7 +340,7 @@ class DataGenerator:
             soil_radius=my_config["radius"] - 0.1,
             soil_depth=my_config["depth"] - 0.1,
             seed_pos=(my_config["seed_pos"][0], my_config["seed_pos"][1], 0),
-            model_path=f"/Users/daniel/Desktop/FZJ/CPlantBox/DUMUX/CPlantBox/tutorial/examples_segmentation/RootNet/data_assets/root_models",
+            model_path=f"../../../RootNet/data_assets/root_models",
         )
         analist, filenames = root_sim.run_simulation(
             [my_config["root_growth_days"]]
@@ -403,17 +404,17 @@ generator = DataGenerator("../../data_assets")
 # Generate training data
 generator.generate_samples_grid(
     data_path="../../data/generated/training",
-    num_samples_per_config=11,
+    num_samples_per_config=27,
 )
 # Generate validation data
 generator.generate_samples_grid(
     data_path="../../data/generated/validation",
-    num_samples_per_config=2,
+    num_samples_per_config=3,
 )
 # Generate test data
-generator.generate_samples_grid(
-    data_path="../../data/generated/test",
-    num_samples_per_config=2,
-)
+# generator.generate_samples_grid(
+#     data_path="../../data/generated/test",
+#     num_samples_per_config=2,
+# )
 
 # generator.modify_nifti_values("../../data/generated")

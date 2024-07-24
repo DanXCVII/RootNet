@@ -146,7 +146,11 @@ class MyPlSetup(pl.LightningModule):
             raise ValueError("Model must be of type ModelType.")
 
         # Loss function and metrics
-        include_background = False
+        if class_weight == [0, 1]:
+            include_background = False
+            print("include background:", include_background)
+        else:
+            include_background = True
         self.loss_function = DiceLoss(
             sigmoid=(
                 True if output_activation == OutputActivation.SIGMOID.name else False
@@ -160,43 +164,43 @@ class MyPlSetup(pl.LightningModule):
         )
         
         self.hausdorff_distance_metric = HausdorffDistanceMetric(
-            include_background=include_background,
+            include_background=False,
             reduction="mean",
             get_not_nans=False,
             percentile=95,
         )
         self.surface_distance_metric = SurfaceDistanceMetric(
-            include_background=include_background,
+            include_background=False,
             reduction="mean",
             get_not_nans=False,
             symmetric=True,
         )
         self.root_confusion_matrix_metrics = ConfusionMatrixMetric(
-            include_background=include_background,
+            include_background=False,
             metric_name=("precision", "recall", "f1 score"),
             reduction="mean",
             get_not_nans=False,
         )
         self.background_confusion_matrix_metrics = ConfusionMatrixMetric(
-            include_background=include_background,
+            include_background=False,
             metric_name=("precision", "recall", "f1 score"),
             reduction="mean",
             get_not_nans=False,
         )
         self.root_confusion_matrix_metrics_agg = ConfusionMatrixMetric(
-            include_background=include_background,
+            include_background=False,
             metric_name=("precision", "recall", "f1 score"),
             reduction="mean",
             get_not_nans=False,
         )
         self.background_confusion_matrix_metrics_agg = ConfusionMatrixMetric(
-            include_background=include_background,
+            include_background=False,
             metric_name=("precision", "recall", "f1 score"),
             reduction="mean",
             get_not_nans=False,
         )
         self.dice_metric = DiceMetric(
-            include_background=include_background,
+            include_background=False,
             reduction="mean",
             get_not_nans=False,
         )  # TODO: include_background default is False
@@ -216,6 +220,8 @@ class MyPlSetup(pl.LightningModule):
         self.test_step_outputs = []
         self.best_val_dice = 0
         self.best_val_epoch = 0
+        self.lr_scheduler = None
+        self.my_current_epoch = 0
 
         self.post_pred = AsDiscrete(argmax=True, to_onehot=2)
         self.post_label = AsDiscrete(to_onehot=2)
@@ -245,14 +251,17 @@ class MyPlSetup(pl.LightningModule):
         # Exposure Scheduler
         # exponential_scheduler = ExponentialLR(optimizer, gamma=0.95)
 
-        warmup_cosine_scheduler = ChainedScheduler(
+        print("configure optimizers")
+        print("current epoch optim", self.my_current_epoch)
+        self.lr_scheduler = ChainedScheduler(
             optimizer,
             T_0 = 6,
             T_mul = 1,
             eta_min = 1e-5,
-            gamma = 0.9,
+            gamma = 0.8,
             max_lr = self.learning_rate,
-            warmup_steps= 5,
+            warmup_steps = 5,
+            last_epoch = self.my_current_epoch,
         )
 
         # return optimizer
@@ -260,10 +269,13 @@ class MyPlSetup(pl.LightningModule):
         return {
             "optimizer": optimizer,
             "lr_scheduler": {
-                "scheduler": warmup_cosine_scheduler,
+                "scheduler": self.lr_scheduler,
                 "interval": "epoch"
             }
         }
+    
+    def lr_schedulers(self):
+        return self.lr_scheduler
 
     def training_step(self, batch, batch_idx):
         images, labels = batch["image"], batch["label"]
@@ -283,6 +295,8 @@ class MyPlSetup(pl.LightningModule):
             avg_loss = torch.stack(
                 [x["loss"] for x in self.training_step_outputs]
             ).mean()
+
+            print("learning rate: ", self.trainer.optimizers[0].param_groups[0]["lr"])
 
             # Only perform the following operations on the main process
             if self.trainer.is_global_zero:
@@ -478,6 +492,18 @@ class MyPlSetup(pl.LightningModule):
         # Return the logs only from the main process
         return {"log": tensorboard_logs}
 
+    # def on_save_checkpoint(self, checkpoint):
+    #     checkpoint['custom_epoch'] = self.current_epoch
+    #     checkpoint['lr_scheduler'] = self.lr_scheduler.state_dict()
+
+    # def on_load_checkpoint(self, checkpoint):
+    #     self.my_current_epoch = checkpoint['custom_epoch']
+    #     # print the keys of the checkpoint
+    #     print(checkpoint.keys())
+    #     print("checkpoint keys", checkpoint["lr_scheduler"])
+
+    #     # self.lr_scheduler.load_state_dict(checkpoint['lr_scheduler'])
+
     def _save_mri(self, mri_path, name, mri_data):
         mri_ops = MRIoperations()
 
@@ -488,7 +514,6 @@ class MyPlSetup(pl.LightningModule):
         mri_ops.save_mri(mri_full_path, mri_data)
 
     def test_step(self, batch, batch_idx):
-        print("test_step")
         images, labels = batch["image"], batch["label"]
         sw_batch_size = 2
 
@@ -520,16 +545,16 @@ class MyPlSetup(pl.LightningModule):
 
         # uncomment, if evaluation for thresholding is needed
         # iterate over values between 0.998 and 0.9995 with step 0.0002
-        thresh = True
+        thresh = False
         root_cmms = []
         best_percentile = 0
         
         # start timer
         time_start = time.time()
         if thresh:            
-            start = 0.997
-            rg = 28
-            step_size = 0.0001
+            start = 0.9975
+            rg = 51
+            step_size = 0.00005
 
             binary_pred_arr = []
             binary_output_arr = []
@@ -542,8 +567,8 @@ class MyPlSetup(pl.LightningModule):
 
                 mask_up = (mask_up > 0).float()
 
-                inverse_mask = 1 - mask
-                mask_2 = torch.cat((inverse_mask, mask), dim=1)
+                inverse_mask = 1 - mask_up
+                mask_2 = torch.cat((inverse_mask, mask_up), dim=1)
 
                 binary_pred = mask
                 if self.output_activation == OutputActivation.SIGMOID.name:
@@ -553,6 +578,9 @@ class MyPlSetup(pl.LightningModule):
 
                 binary_pred_arr.append(binary_pred.cpu().numpy())
                 binary_output_arr.append(binary_output.cpu().numpy())
+
+                print("binary_output unique values", torch.unique(binary_output))
+
 
                 root_cmm = self.root_confusion_matrix_metrics(
                     y_pred=binary_output[:, root_idx, :, :, :].unsqueeze(1),
@@ -577,16 +605,28 @@ class MyPlSetup(pl.LightningModule):
             binary_pred = torch.from_numpy(binary_pred_arr[best_percentile]).to('cuda')
             binary_output = torch.from_numpy(binary_output_arr[best_percentile]).to('cuda')
 
+            binary_pred = torch.where(binary_pred > 0, torch.ones_like(binary_pred), binary_pred)
+            binary_output = torch.where(binary_pred > 0, torch.ones_like(binary_output), binary_output)
+
+            binary_pred = binary_pred.to('cuda')
+            binary_output = binary_output.to('cuda')
+
         # end timer
         print(f"Time taken: {time.time() - time_start}")
 
         # hd = self.hausdorff_distance_metric(y_pred=binary_pred, y=label_filtered)
-        sd = self.surface_distance_metric(y_pred=binary_pred, y=label_filtered)
+        sd = self.surface_distance_metric(
+            y_pred=binary_output[:, root_idx, :, :, :].unsqueeze(1), 
+            y=final_label[:, root_idx, :, :, :].unsqueeze(1)
+        )
         
         # print(f"Hausdorff Distance: {hd}")
         print(f"Surface Distance: {sd}")
 
-        dice = self.dice_metric(y_pred=binary_output, y=final_label)
+        dice = self.dice_metric(
+            y_pred=binary_output[:, root_idx, :, :, :].unsqueeze(1), 
+            y=final_label[:, root_idx, :, :, :].unsqueeze(1),
+        )
         test_dice = self.dice_metric.aggregate().item()
 
         # setup the root confusion matrix metrics for aggregated data for the epoch and step
@@ -639,8 +679,6 @@ class MyPlSetup(pl.LightningModule):
         #     y=final_label[:, 0, :, :, :].unsqueeze(1),
         # )
 
-        dice_metric = self.dice_metric(y_pred=binary_output, y=final_label)
-        print("dice_metric", dice_metric)
 
         root_cmm_step = self.root_confusion_matrix_metrics.aggregate()
         # background_cmm_step = self.background_confusion_matrix_metrics.aggregate()
@@ -663,10 +701,14 @@ class MyPlSetup(pl.LightningModule):
         # For inspection: save the predictions as nifti files
         # Convert to NumPy array
 
+        # apply a softmax to the logits
+        post_pred = torch.softmax(logits, dim=1)
+
         save_dir = f"./test_model_output/{batch_idx}"
 
         self._save_mri(save_dir, "label", batch["label"][0][0].cpu().numpy())
         self._save_mri(save_dir, "output", logits[0][root_idx].cpu().numpy())
+        self._save_mri(save_dir, "post_pred", post_pred[0][root_idx].cpu().numpy())
         self._save_mri(save_dir, "binary_output", binary_output[0][root_idx].cpu().numpy())
         self._save_mri(save_dir, "labels", labels[0][0].cpu().numpy())
         # self._save_mri(save_dir, "mask", mask[0][0].cpu().numpy())
@@ -676,12 +718,14 @@ class MyPlSetup(pl.LightningModule):
             "Test/surface_distance": sd,
             "Test/root_precision": root_cmm_step[0] if not thresh else root_cmms[best_percentile][0],
             "Test/root_recall": root_cmm_step[1] if not thresh else root_cmms[best_percentile][1],
-            # "Test/root_f1": root_cmm_step[2] if not thresh else root_cmms[best_percentile][2],
+            "Test/root_f1": root_cmm_step[2] if not thresh else root_cmms[best_percentile][2],
             "Test/dice": test_dice,
             # "Test/background_precision": background_cmm_step[0],
             # "Test/background_recall": background_cmm_step[1],
             # "Test/background_f1": background_cmm_step[2],
         }
+
+        print("test_output", test_output)
 
         for metric_name, metric_value in test_output.items():
             print("logging test_step")
@@ -736,9 +780,9 @@ class MyPlSetup(pl.LightningModule):
 
     def on_test_epoch_end(self):
         # 1. Gather Individual Metrics
-        # mean_test_loss = torch.stack(
-        #     [x["Test/test_loss"] for x in self.test_step_outputs]
-        # )
+        mean_test_loss = torch.stack(
+            [x["Test/test_loss"] for x in self.test_step_outputs]
+        )
         mean_test_loss = mean_test_loss.mean()
         mean_test_dice = self.dice_metric.aggregate().item()
         mean_test_sd = self.surface_distance_metric.aggregate().item()

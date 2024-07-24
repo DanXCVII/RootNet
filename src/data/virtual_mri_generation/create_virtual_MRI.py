@@ -712,31 +712,8 @@ class Virtual_MRI:
 
         if binary:
             root_signal_intensity = 1
-        else:
-            old_root_signal_intensity = 1
-            new_root_signal_intensity = 1
-            count_intensity = 1
-            max_count = 75
         root_signal_intensity = 1
         for k, _ in enumerate(self.segs):
-            # The list allidx will eventually contain the discretized 3D indices in the grid for all the points
-            # along the segment. This part of simulation/visualization is discretizing the root system into a 3D grid,
-            # and allidx_ is helping you keep track of which grid cells are occupied by the segment.
-            # if not binary:
-            #     if count_intensity >= max_count:
-            #         old_root_signal_intensity = new_root_signal_intensity
-            #         count_intensity = 1
-            #         if self.soil_type == "loam":
-            #             new_root_signal_intensity = 1 # random.uniform(0.1, 1)
-            #             print("new root signal intensity", new_root_signal_intensity)
-            #         else:
-            #             new_root_signal_intensity = 1 # random.uniform(0.5, 1)
-            #         root_signal_intensity = old_root_signal_intensity
-            #     else:
-            #         root_signal_intensity = old_root_signal_intensity + ((new_root_signal_intensity - old_root_signal_intensity) * (count_intensity / max_count))
-            #         count_intensity = count_intensity + 1
-            # else:
-            #     new_root_signal_intensity = 1
 
             allidx = self._get_root_segment_idx(
                 self.segs[idxrad[k]], self.nodes, xx, yy, zz

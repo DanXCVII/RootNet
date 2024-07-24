@@ -4,3 +4,5 @@ data_config.json
 .tb_logs
 test_model_output
 *test*
+tb_logs_runs
+final_logs*

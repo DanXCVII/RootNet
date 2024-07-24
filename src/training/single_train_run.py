@@ -90,7 +90,7 @@ class MyTrainingSetup:
 
         early_stopping = EarlyStopping(
             monitor="Validation/avg_val_loss",  # Metric to monitor
-            patience=4,          # Number of epochs with no improvement after which training will be stopped
+            patience=9,          # Number of epochs with no improvement after which training will be stopped
             verbose=True,        # Enable logging
             mode='min'           # Mode can be 'min' for loss and 'max' for accuracy
         )
@@ -243,13 +243,21 @@ def main(
     print(relative_data_path)
     test = relative_data_path.split("/")[-1]
 
+    # model_name = f"{relative_data_path.split('/')[-1]}_weight_" \
+    #          f"{class_weight[0]}-{class_weight[1]}_DICE_" \
+    #          f"{activation}_{model}-patch_size_" \
+    #          f"{patch_size[0]}-feat_{model_params['feature_size']}-upscale_" \
+    #          f"{upscale}-out_channels_{model_params['out_channels']}-lr_" \
+    #          f"{learning_rate}-upsample_end_" \
+    #          f"{model_params['upsample_end'] if 'upsample_end' in model_params else 0}"
     model_name = f"{relative_data_path.split('/')[-1]}_weight_" \
              f"{class_weight[0]}-{class_weight[1]}_DICE_" \
              f"{activation}_{model}-patch_size_" \
              f"{patch_size[0]}-feat_{model_params['feature_size']}-upscale_" \
              f"{upscale}-out_channels_{model_params['out_channels']}-lr_" \
              f"{learning_rate}-upsample_end_" \
-             f"{model_params['upsample_end'] if 'upsample_end' in model_params else 0}"
+             f"{model_params['upsample_end'] if 'upsample_end' in model_params else 0}-batch_" \
+             f"{batch_size}-{samples_per_volume}"
     print(model_name)
     checkpoint_path = f"../../runs/{model_name}"
     checkpoint_file = "latest_model"

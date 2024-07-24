@@ -70,7 +70,7 @@
         
         <parameter name="tropismT" value="1" />
         
-        <parameter name="a" value="0.06" dev="0.007" />
+        <parameter name="a" value="0.06" dev="0.01" />
         
         <parameter name="colorB" value="0" />
         

@@ -33,7 +33,7 @@ class MeshGenerator:
         print("num_layers:", self.num_layers)
 
     def create_mesh(self):
-        full_path = "{}/cylinder_r_{}_d_{}_res_{}".format(
+        full_path = "{}cylinder_r_{}_d_{}_res_{}".format(
             self.path, self.radius, self.translation_axis[2], self.mesh_size
         )
         print("mesh Step 1")
