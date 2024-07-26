@@ -10,6 +10,8 @@ from utils import (
     MyTransformDataset,
     LinearWarmupScheduler,
     CompositeScheduler,
+    RandCoarseDropoutd,
+    RandAffined,
 )
 
 # from crop_transform import RandCropByPosNegLabeldWithResAdjust
@@ -34,10 +36,8 @@ from monai.transforms import (
     RandBiasFieldd,
     ThresholdIntensityd,
     Orientationd,
-    RandAffined,
     ScaleIntensityRanged,
     Resized,
-    RandCoarseDropoutd,
     RandFlipd,
     # RandAdjustContrastd, # not suitable because it shrinks the root diameter (RandCoarseDropout, HistogramNormalize)
     RandHistogramShiftd,

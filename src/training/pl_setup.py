@@ -1,15 +1,3 @@
-# Copyright 2020 - 2021 MONAI Consortium
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#     http://www.apache.org/licenses/LICENSE-2.0
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-###################### Loss imports ######################
 from __future__ import annotations
 
 import warnings
@@ -52,7 +40,7 @@ from utils import (
     ChainedScheduler,
 )
 from mri_dataloader import MRIDataLoader
-from models import MyUNETR, MyUpscaleSwinUNETR, UNet, UNETR, SwinUNETR
+from models import MyUpscaleSwinUNETR, UNet
 
 from monai.losses import DiceCELoss, DiceFocalLoss  # , DiceLoss
 from monai.inferers import sliding_window_inference
@@ -97,11 +85,8 @@ seed_everything(seed)
 
 # create an enum for the different models
 class ModelType(Enum):
-    UNETR = 1
-    UNET = 2
-    UPSCALESWINUNETR = 3
-    MYUNETR = 4
-    SWINUNETR = 5
+    UNET = 1
+    UPSCALESWINUNETR = 2
 
 
 class OutputActivation(Enum):
@@ -132,16 +117,10 @@ class MyPlSetup(pl.LightningModule):
 
         if model is None:
             raise ValueError("model cannot be None")
-        elif model == ModelType.MYUNETR.name:
-            self.model = MyUNETR(**model_params, patch_size=patch_size)
-        elif model == ModelType.UNETR.name:
-            self.model = UNETR(**model_params, patch_size=patch_size)
         elif model == ModelType.UNET.name:
             self.model = UNet(**model_params, patch_size=patch_size)
         elif model == ModelType.UPSCALESWINUNETR.name:
             self.model = MyUpscaleSwinUNETR(**model_params, patch_size=patch_size)
-        elif model == ModelType.SWINUNETR.name:
-            self.model = SwinUNETR(**model_params, patch_size=patch_size)
         else:
             raise ValueError("Model must be of type ModelType.")
 
@@ -238,19 +217,6 @@ class MyPlSetup(pl.LightningModule):
             weight_decay=1e-4,
         )
 
-        # warmup_epochs = 10  # Number of epochs for warmup
-        # total_epochs = 800  # Total training epochs
-        # target_lr = 0.0001    # Target LR after warmup
-
-        # Warmup Scheduler
-        # warmup_scheduler = LinearWarmupScheduler(optimizer, warmup_epochs, target_lr)
-
-        # Cosine Annealing Scheduler
-        # annealing_scheduler = CosineAnnealingLR(optimizer, T_max=total_epochs - warmup_epochs, eta_min=0)
-
-        # Exposure Scheduler
-        # exponential_scheduler = ExponentialLR(optimizer, gamma=0.95)
-
         print("configure optimizers")
         print("current epoch optim", self.my_current_epoch)
         self.lr_scheduler = ChainedScheduler(
@@ -320,20 +286,6 @@ class MyPlSetup(pl.LightningModule):
 
                 # Clear training step outputs
                 self.training_step_outputs.clear()
-
-    # def on_after_backward(self):
-    #     # Log the gradients of each parameter
-    #     if self.trainer.global_step % 3 == 0:
-    #         for name, param in self.named_parameters():
-    #             self.log(
-    #                 f"grad/{name}",
-    #                 param.grad.norm(),
-    #                 on_step=False,
-    #                 on_epoch=True,
-    #                 prog_bar=True,
-    #                 logger=True,
-    #                 sync_dist=True,  # TODO: maybe set to false if it causes an issue
-    #             )
 
     def _get_root_probability_binary(
         self,
@@ -543,9 +495,108 @@ class MyPlSetup(pl.LightningModule):
         binary_pred = binary_output[:, root_idx, :, :, :].unsqueeze(1)
         label_filtered = final_label[:, 0, :, :, :].unsqueeze(1)
 
-        # uncomment, if evaluation for thresholding is needed
-        # iterate over values between 0.998 and 0.9995 with step 0.0002
-        thresh = False
+        self._apply_thresholding(batch["image"], batch_idx)
+
+        # end timer
+        print(f"Time taken: {time.time() - time_start}")
+
+        # hd = self.hausdorff_distance_metric(y_pred=binary_pred, y=label_filtered)
+        sd = self.surface_distance_metric(
+            y_pred=binary_output[:, root_idx, :, :, :].unsqueeze(1), 
+            y=final_label[:, root_idx, :, :, :].unsqueeze(1)
+        )
+        
+        # print(f"Hausdorff Distance: {hd}")
+        print(f"Surface Distance: {sd}")
+
+        dice = self.dice_metric(
+            y_pred=binary_output[:, root_idx, :, :, :].unsqueeze(1), 
+            y=final_label[:, root_idx, :, :, :].unsqueeze(1),
+        )
+        test_dice = self.dice_metric.aggregate().item()
+
+        # setup the root confusion matrix metrics for aggregated data for the epoch and step
+        root_cmm = self.root_confusion_matrix_metrics(
+            y_pred=binary_output[:, root_idx, :, :, :].unsqueeze(1),
+            y=final_label[:, root_idx, :, :, :].unsqueeze(1),
+        )
+
+        root_cmm_agg = self.root_confusion_matrix_metrics_agg(
+            y_pred=binary_output[:, root_idx, :, :, :].unsqueeze(1),
+            y=final_label[:, root_idx, :, :, :].unsqueeze(1),
+        )
+
+        confusion_matrix = get_confusion_matrix(
+            y_pred=binary_output[:, root_idx, :, :, :].unsqueeze(1), 
+            y=final_label[:, root_idx, :, :, :].unsqueeze(1)
+        )
+        print("confusion_matrix", confusion_matrix)
+
+
+        root_cmm_step = self.root_confusion_matrix_metrics.aggregate()
+        # background_cmm_step = self.background_confusion_matrix_metrics.aggregate()
+
+        model_dir = os.path.dirname(f"./threshold_output/{batch_idx}/")
+        if not os.path.exists(model_dir):
+            os.makedirs(model_dir)
+
+        visualizer = Visualizations()
+        for slice in [0.3, 0.5, 0.6, 0.7]:
+            visualizer.plot_row(
+                batch["image"][0, 0, :, :, :].cpu(),
+                logits[0, root_idx, :, :, :].cpu(),
+                binary_output[0, root_idx, :, :, :].cpu(),
+                slice_frac=slice,
+                filename=f"threshold_output/{batch_idx}/prediction_{slice}",
+                label=final_label[0, 1, :, :, :].cpu(),
+            )
+
+        # For inspection: save the predictions as nifti files
+        # Convert to NumPy array
+
+        # apply a softmax to the logits
+        post_pred = torch.softmax(logits, dim=1)
+
+        save_dir = f"./threshold_output/{batch_idx}"
+
+        self._save_mri(save_dir, "label", batch["label"][0][0].cpu().numpy())
+        self._save_mri(save_dir, "root_prob", post_pred[0][root_idx].cpu().numpy())
+        self._save_mri(save_dir, "binary_output", binary_output[0][root_idx].cpu().numpy())
+
+        threshold_output = {
+            "Test/surface_distance": sd,
+            "Test/root_precision": root_cmm_step[0] if not thresh else root_cmms[best_percentile][0],
+            "Test/root_recall": root_cmm_step[1] if not thresh else root_cmms[best_percentile][1],
+            "Test/root_f1": root_cmm_step[2] if not thresh else root_cmms[best_percentile][2],
+            "Test/dice": test_dice,
+            # "Test/background_precision": background_cmm_step[0],
+            # "Test/background_recall": background_cmm_step[1],
+            # "Test/background_f1": background_cmm_step[2],
+        }
+
+        print("threshold_output", threshold_output)
+
+        for metric_name, metric_value in threshold_output.items():
+            print("logging test_step")
+            self.log(
+                metric_name,
+                metric_value,
+                on_step=True,
+                on_epoch=False,
+                prog_bar=True,
+                logger=True,
+                # sync_dist=True  # Uncomment if you are training in a distributed setting and want to synchronize metrics
+            )
+
+        self.test_step_outputs.append(threshold_output)
+
+        self.dice_metric.reset()
+        self.surface_distance_metric.reset()
+        self.root_confusion_matrix_metrics.reset()
+
+        return threshold_output
+
+    def _apply_thresholding(self, image, batch_idx):
         root_cmms = []
         best_percentile = 0
         
@@ -597,9 +648,9 @@ class MyPlSetup(pl.LightningModule):
             x_values = [start + i * step_size for i in range(rg)]
 
             # save the f1 sorces and x_values in a csv file
-            np.savetxt(f'./test_model_output/dice_scores_{batch_idx}.csv', root_f1s, delimiter=',')
-            np.savetxt(f'./test_model_output/x_values_{batch_idx}.csv', x_values, delimiter=',')
-            self.plot_f1_scores(x_values, f'./test_model_output/f1_scores_{batch_idx}.png')
+            np.savetxt(f'./threshold_output/dice_scores_{batch_idx}.csv', root_f1s, delimiter=',')
+            np.savetxt(f'./threshold_output/x_values_{batch_idx}.csv', x_values, delimiter=',')
+            self.plot_f1_scores(x_values, f'./threshold_output/f1_scores_{batch_idx}.png')
 
 
             binary_pred = torch.from_numpy(binary_pred_arr[best_percentile]).to('cuda')
@@ -611,141 +662,6 @@ class MyPlSetup(pl.LightningModule):
             binary_pred = binary_pred.to('cuda')
             binary_output = binary_output.to('cuda')
 
-        # end timer
-        print(f"Time taken: {time.time() - time_start}")
-
-        # hd = self.hausdorff_distance_metric(y_pred=binary_pred, y=label_filtered)
-        sd = self.surface_distance_metric(
-            y_pred=binary_output[:, root_idx, :, :, :].unsqueeze(1), 
-            y=final_label[:, root_idx, :, :, :].unsqueeze(1)
-        )
-        
-        # print(f"Hausdorff Distance: {hd}")
-        print(f"Surface Distance: {sd}")
-
-        dice = self.dice_metric(
-            y_pred=binary_output[:, root_idx, :, :, :].unsqueeze(1), 
-            y=final_label[:, root_idx, :, :, :].unsqueeze(1),
-        )
-        test_dice = self.dice_metric.aggregate().item()
-
-        # setup the root confusion matrix metrics for aggregated data for the epoch and step
-        root_cmm = self.root_confusion_matrix_metrics(
-            y_pred=binary_output[:, root_idx, :, :, :].unsqueeze(1),
-            y=final_label[:, root_idx, :, :, :].unsqueeze(1),
-        )
-
-        root_cmm_agg = self.root_confusion_matrix_metrics_agg(
-            y_pred=binary_output[:, root_idx, :, :, :].unsqueeze(1),
-            y=final_label[:, root_idx, :, :, :].unsqueeze(1),
-        )
-
-        confusion_matrix = get_confusion_matrix(
-            y_pred=binary_output[:, root_idx, :, :, :].unsqueeze(1), 
-            y=final_label[:, root_idx, :, :, :].unsqueeze(1)
-        )
-        print("confusion_matrix", confusion_matrix)
-
-        print("logits", logits.shape)
-        # Compute and log the precision recall curve
-        # if logits.shape[1] == 2:
-        #     preds = torch.softmax(logits, dim=1)[:, 1, :, :, :].unsqueeze(1)
-        #     # TODO: add sigmoid case
-        #     preds = preds.view(-1)
-        #     targets = labels.view(-1)
-        #     print("shaaape", preds.shape, targets.shape)
-        #     pres_rec = BinaryPrecisionRecallCurve(thresholds=10).to(preds.device)
-        #     pres_rec(
-        #         preds, 
-        #         targets.long(),
-        #     )
-        #     print("preds after content dtype", preds.dtype)
-        #     print("targets after content dtype", targets.dtype)
-        #     print("computing curve")
-        #     precision, recall, thresholds = pres_rec.compute()
-        #     print("curve computed")
-        #     fig = self.plot_precision_recall_curve(precision, recall)
-        #     self.logger.experiment.add_figure(f'Precision-Recall Curve/Batch {batch_idx}', fig, global_step=batch_idx)
-        #     pres_rec.reset()
-
-        # setup the background confusion matrix metrics for aggregated data for the epoch and step
-        # background_cmm = self.background_confusion_matrix_metrics(
-        #     y_pred=background_pred,
-        #     y=final_label[:, 0, :, :, :].unsqueeze(1),
-        # )
-
-        # background_cmm_agg = self.background_confusion_matrix_metrics_agg(
-        #     y_pred=background_pred,
-        #     y=final_label[:, 0, :, :, :].unsqueeze(1),
-        # )
-
-
-        root_cmm_step = self.root_confusion_matrix_metrics.aggregate()
-        # background_cmm_step = self.background_confusion_matrix_metrics.aggregate()
-
-        model_dir = os.path.dirname(f"./test_model_output/{batch_idx}/")
-        if not os.path.exists(model_dir):
-            os.makedirs(model_dir)
-
-        visualizer = Visualizations()
-        for slice in [0.3, 0.5, 0.6, 0.7]:
-            visualizer.plot_row(
-                batch["image"][0, 0, :, :, :].cpu(),
-                logits[0, root_idx, :, :, :].cpu(),
-                binary_output[0, root_idx, :, :, :].cpu(),
-                slice_frac=slice,
-                filename=f"test_model_output/{batch_idx}/prediction_{slice}",
-                label=final_label[0, 1, :, :, :].cpu(),
-            )
-
-        # For inspection: save the predictions as nifti files
-        # Convert to NumPy array
-
-        # apply a softmax to the logits
-        post_pred = torch.softmax(logits, dim=1)
-
-        save_dir = f"./test_model_output/{batch_idx}"
-
-        self._save_mri(save_dir, "label", batch["label"][0][0].cpu().numpy())
-        self._save_mri(save_dir, "output", logits[0][root_idx].cpu().numpy())
-        self._save_mri(save_dir, "post_pred", post_pred[0][root_idx].cpu().numpy())
-        self._save_mri(save_dir, "binary_output", binary_output[0][root_idx].cpu().numpy())
-        self._save_mri(save_dir, "labels", labels[0][0].cpu().numpy())
-        # self._save_mri(save_dir, "mask", mask[0][0].cpu().numpy())
-
-        test_output = {
-            # "Test/test_loss": loss,
-            "Test/surface_distance": sd,
-            "Test/root_precision": root_cmm_step[0] if not thresh else root_cmms[best_percentile][0],
-            "Test/root_recall": root_cmm_step[1] if not thresh else root_cmms[best_percentile][1],
-            "Test/root_f1": root_cmm_step[2] if not thresh else root_cmms[best_percentile][2],
-            "Test/dice": test_dice,
-            # "Test/background_precision": background_cmm_step[0],
-            # "Test/background_recall": background_cmm_step[1],
-            # "Test/background_f1": background_cmm_step[2],
-        }
-
-        print("test_output", test_output)
-
-        for metric_name, metric_value in test_output.items():
-            print("logging test_step")
-            self.log(
-                metric_name,
-                metric_value,
-                on_step=True,
-                on_epoch=False,
-                prog_bar=True,
-                logger=True,
-                # sync_dist=True  # Uncomment if you are training in a distributed setting and want to synchronize metrics
-            )
-
-        self.test_step_outputs.append(test_output)
-
-        self.dice_metric.reset()
-        self.surface_distance_metric.reset()
-        self.root_confusion_matrix_metrics.reset()
-
-        return test_output
 
     def plot_precision_recall_curve(self, precision, recall):
         import matplotlib.pyplot as plt
@@ -811,18 +727,12 @@ class MyPlSetup(pl.LightningModule):
             self.log(
                 metric_name,
                 metric_value,
-                # on_step=False,
-                # on_epoch=True,
-                # prog_bar=True,
-                # logger=True,
-                # sync_dist=True  # Uncomment if you are training in a distributed setting and want to synchronize metrics
             )
 
         # Clear validation step outputs and reset metrics for all processes
         self.test_step_outputs.clear()
         self.dice_metric.reset()
         self.root_confusion_matrix_metrics_agg.reset()
-        # self.background_confusion_matrix_metrics_agg.reset()
 
         # Return the logs only from the main
         return {"log": tensorboard_logs}

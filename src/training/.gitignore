@@ -6,3 +6,6 @@ test_model_output
 *test*
 tb_logs_runs
 final_logs*
+fs_model_output
+gmm_model_output
+threshold_output

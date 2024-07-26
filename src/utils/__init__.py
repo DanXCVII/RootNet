@@ -6,4 +6,6 @@ from .blend_volumes import expand_volume_with_blending
 from .visualizations import Visualizations
 from .MRI_operations import MRIoperations
 from .chained_scheduler import ChainedScheduler
+from .monai_custom.rand_affine import RandAffined
+from .monai_custom.rand_coarse_dropout import RandCoarseDropoutd
 # from .mesh_generator import MeshGenerator
