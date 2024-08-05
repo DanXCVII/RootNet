@@ -226,9 +226,6 @@ def main(model_name):
     )
 
 
-# Example usage:
-
-# TODO: remove *2 for the plot input and the Resized
 
 if __name__ == "__main__":
     print("Test")

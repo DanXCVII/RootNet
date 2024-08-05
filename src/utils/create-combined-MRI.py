@@ -23,7 +23,7 @@ import os
 """
 Decription:     Shifts the rsml file towards the same boundary as the MRI file and then visualizes the MRI 
                 with the label on top of it. It then saves the combined image as a .raw file.
-Usage: Specify a path to the rsml file and corresponding MRI scan.
+Usage: Specify a path to the rsml file and corresponding MRI scan. 
 Example: python3 center_root_MRI.py -m "./example_data/III_Sand_1W_DAP14_res_256x256x131.nii.gz" -r "./example_data/III_Sand_1W_DAP14_256x256x131.rsml"
 """
 
