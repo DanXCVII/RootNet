@@ -30,7 +30,12 @@ class ImagePredictionPipeline:
         self.train_params = train_params
 
         my_dl = MRIDataLoader(
-            "../../data", 1, True, 1, patch_size, allow_missing_keys=True
+            "../../data", 
+            1, 
+            True, 
+            1, 
+            patch_size, 
+            allow_missing_keys=True,
         )
         self.prediction_transform = my_dl.cache_transforms
 
@@ -47,7 +52,7 @@ class ImagePredictionPipeline:
         """
         return self.prediction_transform(prediction_data)
 
-    def _get_output(self, img, patch_size):
+    def _predict(self, img, patch_size):
         """
         applies the model to the given image and returns the predictions
 
@@ -56,11 +61,23 @@ class ImagePredictionPipeline:
         - patch_size: patch size for the sliding window inference
         """
         with torch.no_grad():
-            test_input = img.cuda()
+            prediction_img = img.cuda()
             logits = sliding_window_inference(
-                test_input, patch_size, 1, self.net, overlap=0.2
+                prediction_img, patch_size, 1, self.net, overlap=0.2
             )
-            return logits
+
+            # Depending on the activation function (softmax or sigmoid) the probability of the root
+            # being present is either the first or the second channel
+            if logits.shape[1] == 2:
+                post_activation = torch.softmax(logits, dim=1)
+                binary_output = torch.argmax(post_activation.detach().cpu(), dim=1).unsqueeze(1)
+                root_idx = 1
+            else:
+                post_activation = torch.sigmoid(logits)
+                binary_output = (post_activation.detach().cpu() >= 0.5).int()
+                root_idx = 0
+
+            return post_activation, binary_output
 
     def _convert_images_to_nifti(self, prediction_data):
         """
@@ -81,6 +98,7 @@ class ImagePredictionPipeline:
 
         return prediction_data
 
+
     def predict_and_plot(self, prediction_data, slices, plot_path, patch_size):
         """
         for given prediction data, does the necessary transformations, applys the model to do the prediction
@@ -98,74 +116,49 @@ class ImagePredictionPipeline:
 
         iterations = len(transformed_data)
         for i in range(0, iterations):
+            # create the directory for storing the plots
             filename = os.path.basename(prediction_data[i]["image"]).split("_res")[0]
             os.makedirs(f"{plot_path}/{filename}", exist_ok=True)
 
             # add a batch dimension to the image tensor to make it a valid input for the model
-            test_input = transformed_data[i]["image"].unsqueeze(1)
+            prediction_img = transformed_data[i]["image"].unsqueeze(1)
             if "label" in transformed_data[i]:
-                test_labels = transformed_data[i]["label"].unsqueeze(1)
+                prediction_label = transformed_data[i]["label"].unsqueeze(1)
             else:
-                test_labels = None
+                prediction_label = None
 
-            logits = self._get_output(test_input, patch_size)
+            post_activation, binary_output = self._predict(prediction_img, patch_size)
 
-            # apply sigmoid to the output to get the binary prediction
-
-            print("logits min", logits.min())
-            print("logits max", logits.max())
-            print("logits", logits.shape)
-
-            if logits.shape[1] == 2:
-                post_activation = torch.softmax(logits, dim=1)
-                binary_output = torch.argmax(post_activation.detach().cpu(), dim=1).unsqueeze(1)
-                print("binary_output after", binary_output.shape)
-                root_idx = 1
-            else:
-                post_activation = torch.sigmoid(logits)
-                binary_output = (post_activation.detach().cpu() >= 0.5).int()
-                root_idx = 0
-
-
-            # save the images as nifti files (multiplying with 30000 to get integer values which can
-            # be displayed in ImageJ, also roughly the range of an original MRI)
+            # save the images as nifti files
+            # - multiply prediction_img by 30000 because it was normalized to [0, 1] before -> makes the img
+            #   visualizable in imageJ
+            # - multiply post_activation by 30000 because it contains the probability of the root being present
 
             ops = MRIoperations()
-            numpy_input = test_input[0, 0, :, :, :].cpu().numpy() * 30000
-            numpy_outputs = (
-                post_activation[0, root_idx, :, :, :].cpu().numpy() * 30000
-            )
-            numpy_binary_prediction = binary_output[0, 0, :, :, :].cpu().numpy()
-            print("numpy_binary_prediction", numpy_binary_prediction.dtype)
 
-            # Depending on the activation function (softmax or sigmoid) tht probability of the root
-            # being present is either the first or the second channel
+            np_prediction_img = prediction_img[0, 0, :, :, :].cpu().numpy() * 30000
+            np_post_activation = (post_activation[0, root_idx, :, :, :].cpu().numpy() * 30000)
+            np_binary_output = binary_output[0, 0, :, :, :].cpu().numpy()
 
             if "label" in transformed_data[i]:
-                numpy_labels = test_labels[0, 0, :, :, :].cpu().numpy() * 30000
+                numpy_labels = prediction_label[0, 0, :, :, :].cpu().numpy() * 30000
                 ops.save_mri(f"{plot_path}/{filename}/label_{numpy_labels.shape[0]}x{numpy_labels.shape[1]}x{numpy_labels.shape[2]}.nii.gz", numpy_labels)
 
-            numpy_binary_prediction = numpy_binary_prediction.astype("float32")
+            np_binary_output = np_binary_output.astype("float32")
 
-            ops.save_mri(f"{plot_path}/{filename}/input_{numpy_input.shape[0]}x{numpy_input.shape[1]}x{numpy_input.shape[2]}.nii.gz", numpy_input)
-            ops.save_mri(
-                f"{plot_path}/{filename}/prediction_scaled_{numpy_outputs.shape[0]}x{numpy_outputs.shape[1]}x{numpy_outputs.shape[2]}.nii.gz",
-                numpy_outputs,
-            )
-            ops.save_mri(
-                f"{plot_path}/{filename}/binary_prediction_{numpy_binary_prediction.shape[0]}x{numpy_binary_prediction.shape[1]}x{numpy_binary_prediction.shape[2]}.nii.gz",
-                numpy_binary_prediction,
-            )
+            ops.save_mri(f"{plot_path}/{filename}/input_{np_prediction_img.shape[0]}x{np_prediction_img.shape[1]}x{np_prediction_img.shape[2]}.nii.gz", np_prediction_img)
+            ops.save_mri(f"{plot_path}/{filename}/prediction_scaled_{np_post_activation.shape[0]}x{np_post_activation.shape[1]}x{np_post_activation.shape[2]}.nii.gz", np_post_activation)
+            ops.save_mri(f"{plot_path}/{filename}/binary_prediction_{np_binary_output.shape[0]}x{np_binary_output.shape[1]}x{np_binary_output.shape[2]}.nii.gz", np_binary_output)
 
-            # plot different slices of the image
+            # plot different slices of the image with its prediction
             for slice_frac in slices:
                 Visualizations().plot_row(
-                    test_input[0, 0, :, :, :],
+                    prediction_img[0, 0, :, :, :],
                     post_activation[0, root_idx, :, :, :],
                     binary_output=binary_output[0, 0, :, :, :],
                     slice_frac=slice_frac,
                     label=(
-                        test_labels[0, 0, :, :, :] if test_labels is not None else None
+                        prediction_label[0, 0, :, :, :] if prediction_label is not None else None
                     ),
                     filename=f"{plot_path}/{filename}/prediction_{slice_frac}",
                 )

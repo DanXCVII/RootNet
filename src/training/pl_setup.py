@@ -20,6 +20,7 @@ from monai.metrics import SurfaceDistanceMetric
 from monai.metrics import compute_hausdorff_distance
 from monai.metrics import get_confusion_matrix
 from torchmetrics.classification import PrecisionRecallCurve, BinaryPrecisionRecallCurve
+from pytorch_lightning.loggers import TensorBoardLogger
 import time
 
 ###################### Model imports ######################
@@ -104,6 +105,7 @@ class MyPlSetup(pl.LightningModule):
         patch_size: Tuple[int, int, int] = (96, 96, 96),
         class_weight=[1, 1],
         output_activation="SIGMOID",
+        threshold_eval=False,
     ) -> None:
         """
         Pytorch Lightning Module used for training and testing of the provided DNN model
@@ -115,6 +117,7 @@ class MyPlSetup(pl.LightningModule):
         - patch_size: the size of the patches
         - class_weight: the class weights
         - output_activation: the output activation function (SIGMOID or SOFTMAX)
+        - threshold_eval: whether the dice optimized thresholding should be evaluated or the model (for the test data)
         """
 
         super().__init__()
@@ -191,6 +194,7 @@ class MyPlSetup(pl.LightningModule):
         self.precision_recall_curve = PrecisionRecallCurve(num_classes=1)
         self.patch_size = patch_size
         self.root_f1s_arr = []
+        self.threshold_eval = threshold_eval
 
         # Training parameters
         self.learning_rate = learning_rate
@@ -273,14 +277,6 @@ class MyPlSetup(pl.LightningModule):
                 self.log(
                     "Train/avg_epoch_loss",
                     avg_loss,
-                    on_step=False,
-                    on_epoch=True,
-                    prog_bar=False,
-                )
-
-                self.log(
-                    "Train/learning_rate",
-                    self.trainer.optimizers[0].param_groups[0]["lr"],
                     on_step=False,
                     on_epoch=True,
                     prog_bar=False,
@@ -468,9 +464,43 @@ class MyPlSetup(pl.LightningModule):
 
         mri_ops.save_mri(mri_full_path, mri_data)
 
+    def get_logging_info(self):
+        if not self.logger:
+            return None, None, None
+
+        if isinstance(self.logger, TensorBoardLogger):
+            log_dir = self.logger.log_dir
+            model_name = self.logger.name
+            version = self.logger.version
+            
+            # Construct the full path to the events file
+            events_file = None
+            for file in os.listdir(log_dir):
+                if file.startswith("events.out.tfevents"):
+                    events_file = os.path.join(log_dir, file)
+                    break
+
+            model_name, log_dir, events_file = model_name, log_dir, events_file
+        else:
+            # For other logger types, you might need to adjust this
+            model_name, log_dir, events_file = self.logger.name, self.logger.save_dir, None
+
+        if log_dir:
+            print(f"Model Name: {model_name}")
+            print(f"Logging Directory: {log_dir}")
+            if events_file:
+                print(f"TensorBoard Events File: {events_file}")
+        else:
+            print("No logging information found.")
+
+
     def test_step(self, batch, batch_idx):
-        thresh = True
-        visualize = False
+        """
+        Evaluates the model on the test data. Depending on whether the thresholding is enabled, the thresholding will be
+        applied and evaluated or the model. So be cautious with this variable
+        """
+        # !! if thresh is True, not the model will be evaluated but the dice optimized thresholding
+        visualize = True
         save_segmentations = False
 
         images, labels = batch["image"], batch["label"]
@@ -495,8 +525,10 @@ class MyPlSetup(pl.LightningModule):
             logits, labels
         )
 
+        post_pred = torch.softmax(logits, dim=1)
+
         # apply thresholding
-        if thresh:
+        if self.threshold_eval:
             best_root_cmm, binary_output = self._apply_thresholding(
                 batch["image"],
                 final_label,
@@ -506,6 +538,8 @@ class MyPlSetup(pl.LightningModule):
                 max_thresh=0.9999,
                 step_size=0.00005,
             )
+            post_pred = binary_output
+
 
         ###################### Metrics #######################
 
@@ -552,16 +586,13 @@ class MyPlSetup(pl.LightningModule):
             for slice in visualized_slices:
                 visualizer.plot_row(
                     batch["image"][0, 0, :, :, :].cpu(),
-                    logits[0, root_idx, :, :, :].cpu(),
+                    post_pred[0, root_idx, :, :, :].cpu(),
                     binary_output[0, root_idx, :, :, :].cpu(),
                     slice_frac=slice,
                     filename=f"test_output/{batch_idx}/prediction_{slice}",
                     label=final_label[0, 1, :, :, :].cpu(),
                 )
         if save_segmentations:
-            # saves the segmented images for further inspection
-            post_pred = torch.softmax(logits, dim=1)
-
             save_dir = f"./test_output/{batch_idx}"
 
             self._save_mri(save_dir, "label", batch["label"][0][0].cpu().numpy())
@@ -572,11 +603,9 @@ class MyPlSetup(pl.LightningModule):
 
         test_metrics = {
             "Test/surface_distance": sd,
-            "Test/root_precision": (
-                root_cmm_step[0] if not thresh else best_root_cmm[0]
-            ),
-            "Test/root_recall": (root_cmm_step[1] if not thresh else best_root_cmm[1]),
-            "Test/root_f1": (root_cmm_step[2] if not thresh else best_root_cmm[2]),
+            "Test/root_precision": (root_cmm_step[0] if not self.threshold_eval else best_root_cmm[0]),
+            "Test/root_recall": (root_cmm_step[1] if not self.threshold_eval else best_root_cmm[1]),
+            "Test/root_f1": (root_cmm_step[2] if not self.threshold_eval else best_root_cmm[2]),
             "Test/dice": test_dice,
             # "Test/background_precision": background_cmm_step[0],
             # "Test/background_recall": background_cmm_step[1],

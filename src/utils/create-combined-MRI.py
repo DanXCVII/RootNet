@@ -8,13 +8,12 @@ sys.path.append(f"{DUMUX_path}/CPlantBox/experimental/parametrisation/")
 sys.path.append(f"{DUMUX_path}/CPlantBox/src")
 sys.path.append("..")
 
-offset = (4.1599, -8.2821, -0.4581)
-
 import numpy as np
 import argparse
 import matplotlib.pyplot as plt
 import nibabel as nib
 from data.virtual_mri_generation import Virtual_MRI
+from MRI_operations import MRIoperations
 
 import plantbox as pb
 import rsml.rsml_reader as rsml_reader
@@ -23,9 +22,9 @@ import os
 
 """
 Decription:     Shifts the rsml file towards the same boundary as the MRI file and then visualizes the MRI 
-                with the label on top of it.
+                with the label on top of it. It then saves the combined image as a .raw file.
 Usage: Specify a path to the rsml file and corresponding MRI scan.
-Example: python3 center_root_MRI.py -m "mri_file_path" -r "rsml_file_path"
+Example: python3 center_root_MRI.py -m "./example_data/III_Sand_1W_DAP14_res_256x256x131.nii.gz" -r "./example_data/III_Sand_1W_DAP14_256x256x131.rsml"
 """
 
 class CombinedMRI:
@@ -33,11 +32,8 @@ class CombinedMRI:
         self.rsml_path = rsml_path
         self.mri_path = mri_path
 
-        img = nib.load(mri_path)
-        image_data = img.get_fdata()
-
-        self.image_data = image_data.astype("int16")
-        self.affine_matrix = img.affine
+        mri_ops = MRIoperations()
+        self.affine_matrix, self.image_data = mri_ops.load_mri(mri_path)
 
     def _get_root_data_from_rsml(self, rsml_path):
         """
@@ -170,6 +166,3 @@ if __name__ == "__main__":
     # Combine the MRI and label
     combined = CombinedMRI(rsml_path, mri_path)  # args.rsml_path, args.mri_path)
     combined.combine_label_mri()
-
-# Example usage:
-# python3 create-combined-MRI.py -m /Users/daniel/Desktop/FZJ/CPlantBox/DUMUX/CPlantBox/tutorial/examples_segmentation/RootNet/src/data/virtual_mri_generation/test_data/convert/IV_Soil_3D_DAP8_256x256x193.nii.gz -r "/Users/daniel/Desktop/FZJ/Echte Daten/tobias_mri/IV_Soil_3D_DAP8_256x256x193/roots_vr_21.rsml"

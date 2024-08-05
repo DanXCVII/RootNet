@@ -1,0 +1,1 @@
+The files in this directory are used for demonstration purposes of the scripts in the src/utils directory. Keep them if you want to see how the scripts work and what they do. 

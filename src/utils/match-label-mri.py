@@ -13,33 +13,38 @@ import ast
 import re
 import os
 from scipy.ndimage import zoom
+import center_root_MRI
 
 
 from MRI_operations import MRIoperations
 
 """
-Description:    Calculates the transformation needed to match the label MRI with its corresponding real MRI.
-                It does it by first given initial guesses on roughly how the label MRI should be transformed.
-                This is done by centering the label MRI, rotating it for a given different degrees and then 
-                applying ICP for final optimization. This final transformation is then applied to the label MRI.
-Usage:  Execute the script with the given real MRI and label MRI path.
-Example: python3 match-label-mri.py -m "mri_file_path" -l "label_file_path"
+Description:    Uses the rsml file to create a label MRI. The label MRI which is potentially not aligned with the
+                real MRI is then matched with it. This is done by first centering the rsml, of which the label MRI
+                is created. Then a point cload is created of the label MRI and the real MRI (which is filtered to
+                mostly contain the root signal (99.96th percentile)). The label MRI is then transformed to match the 
+                real MRI by first applying different rotations and then ICP for final optimization. The rotations
+                are needed because ICP primarily does the final optimization and not the initial alignment, which 
+                can be off by a lot. The final transformation is then applied to the label MRI, which is then saved.
+Example: python3 match-label-mri.py -m "./example_data/III_Sand_1W_DAP14_256x256x131.rsml" -l "./example_data/label_roots_vr_18_res_512x512x262.raw"
 """
 
 
 class MatchMRI:
-    def __init__(self, mri_path, label_path) -> None:
+    def __init__(self, mri_path, rsml_path) -> None:
         """
         Initializes the params which are the real MRI image, the label MRI image and the upscaled MRI image.
         The upscaled version is needed because the label MRI has twice the resolution of the real MRI.
 
         Args:
         - mri_path: path to the real MRI image
-        - label_path: path to the label MRI image
+        - rsml_path: path to the rsml file
         """
         self.mri_path = mri_path
 
-        _, self.label_img = MRIoperations().load_mri(label_path)
+        _, self.rsml_img = center_root_MRI.MoveMRI(rsml_path, mri_path)
+        self.label_img = mri_mover.center_label_mri()
+
         _, img = MRIoperations().load_mri(mri_path)
 
         zoom_factors = (2, 2, 2)
@@ -399,11 +404,11 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--mri_path", "-m", type=str, help="path to the mri file of type .nii"
+        "--mri_path", "-m", type=str, help="path to the mri file of type .nii.gz or .raw"
     )
 
     parser.add_argument(
-        "--label_path", "-l", type=str, help="path to the corresponding label .raw"
+        "--rsml_path", "-l", type=str, help="path to the corresponding rsml file"
     )
 
     # Parse the arguments
@@ -415,4 +420,3 @@ if __name__ == "__main__":
     match_mri = MatchMRI(mri_path, label_path)  # args.rsml_path, args.mri_path)
     match_mri.match_images()
 
-# python3 match-label-mri.py -m /Users/daniel/Desktop/FZJ/CPlantBox/DUMUX/CPlantBox/tutorial/examples_segmentation/RootNet/src/data/virtual_mri_generation/test_data/convert/III_Sand_1W_DAP14_res_256x256x131.nii.gz -l "/Users/daniel/Desktop/FZJ/CPlantBox/DUMUX/CPlantBox/tutorial/examples_segmentation/RootNet/src/utils/label_roots_vr_18_res_512x512x262.raw"

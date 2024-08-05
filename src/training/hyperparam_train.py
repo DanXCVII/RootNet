@@ -14,6 +14,12 @@ import pytorch_lightning as pl
 from ray.tune.schedulers import ASHAScheduler
 import os
 
+"""
+Description:    WIP: This script contains the class MyUNETray which is used to tune the hyperparameters. There
+                may be modifications necessary to make it work with the current codebase, because modifications 
+                have been made to the codebase since the last time this script was used. It was used for tuning
+                of the hyperparameters because there are module conflicts with the modules installed on JURECA.
+"""
 
 class MyUNETray:
     def __init__(self):

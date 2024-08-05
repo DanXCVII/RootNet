@@ -4,6 +4,12 @@ import meshio
 from pygmsh.common.curve_loop import CurveLoop
 import os
 
+"""
+Description:    Generates a mesh for a cylinder with a specified radius, height and resolution (mesh size).
+Usage: Specify the path to save the mesh, the center of the cylinder, the radius, the mesh size, the depth and the layer height.
+Example: uncomment the last lines of the file, specify the parameters and run the script.
+"""
+
 
 class MeshGenerator:
     def __init__(
@@ -13,6 +19,7 @@ class MeshGenerator:
         radius=0.032,
         mesh_size=0.005,
         depth=0.22,
+        layer_height=0.011,
     ):
         """
         Generates a mesh for a cylinder with a specified radius, height and resolution (mesh size).
@@ -29,7 +36,7 @@ class MeshGenerator:
         self.radius = radius
         self.mesh_size = mesh_size
         self.translation_axis = [0.0, 0.0, -depth]
-        self.num_layers = round(depth / 0.011)
+        self.num_layers = round(depth / layer_height)
         print("num_layers:", self.num_layers)
 
     def create_mesh(self):

@@ -26,7 +26,7 @@ Description:    Shifts the rsml file towards the same boundary as the MRI file. 
                 centered at 0, 0, 0 which also should be the norm because the seed should be placed
                 there in global coordinates.
 Usage: Specify a path to the rsml file and corresponding MRI scan.
-Example: python3 center_root_MRI.py -m "mri_file_path" -r "rsml_file_path"
+Example: python3 center_root_MRI.py -m "./example_data/III_Sand_1W_DAP14_res_256x256x131.nii.gz" -r "./example_data/III_Sand_1W_DAP14_256x256x131.rsml"
 """
 
 
@@ -69,7 +69,7 @@ class MoveMRI:
             seg_radii,
         )
 
-    def get_translation_border(self, source_array, width, depth) -> np.array:
+    def _get_translation_border(self, source_array, width, depth) -> np.array:
         """
         Calculate and return the translation needed to move the source_array coordinates to the target boundary,
         which is defined by the width and depth.
@@ -123,7 +123,7 @@ class MoveMRI:
         nodes, _, _ = self._get_root_data_from_rsml(self.rsml_path)
         points_array = np.array(nodes)
 
-        translation = self.get_translation_border(
+        translation = self._get_translation_border(
             points_array,
             width,
             depth,
@@ -177,5 +177,4 @@ if __name__ == "__main__":
     combined.center_label_mri()
 
 
-# Example usage:
-# python3 center_root_MRI.py -m "/Users/daniel/Downloads/tmp_autodelete/III_Soil_1W_DAP14_res_256x256x186.nii.gz" -r "/Users/daniel/Downloads/tmp_autodelete/III_Soil_1W_DAP14_256x256x186.rsml"
+# python3 center_root_MRI.py -m "./example_data/III_Sand_1W_DAP14_res_256x256x131.nii.gz" -r "./example_data/III_Sand_1W_DAP14_256x256x131.rsml"

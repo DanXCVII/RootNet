@@ -2,7 +2,7 @@ import os
 import shutil
 
 """
-Description:    This script was created to delete all checkpoints, for which no tensorboard exists. 
+Description:    Deletes all checkpoints, for which no tensorboard log exists. 
                 So when tiding up the logs, it simply deletes all corresponding checkpoints.
 Usage: Adjust the paths to the checkpoints and tensorboards and run the script.
 Example: python delete_checkpoints.py

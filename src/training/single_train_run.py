@@ -60,7 +60,6 @@ class MyTrainingSetup:
         self.model_name = model_name
         self._setup_checkpointing()
         self._setup_logger()
-        # self.setup_profiler()
 
     def _setup_checkpointing(self):
         self.best_checkpoint_callback = ModelCheckpoint(
@@ -83,7 +82,7 @@ class MyTrainingSetup:
     def _setup_logger(self):
         self.tb_logger = (
             TensorBoardLogger("tb_logs", name=self.model_name),
-        )  # name="my_model")
+        )
 
     def _get_trainer(self, max_epochs=60):
         nnodes = os.getenv("SLURM_NNODES", 1)
@@ -110,19 +109,10 @@ class MyTrainingSetup:
             # num_nodes=int(nnodes),
             # sync_batchnorm=True,
             # resume_from_checkpoint=checkpoint_path,
-            # profiler=self.profiler,
         )
         print(f"trainer.max_epochs: {trainer.max_epochs}")
 
         return trainer
-
-    # def _setup_profiler(self):
-    #     self.profiler = PyTorchProfiler(
-    #         profiled_functions=["forward", "training_step"],
-    #         record_shapes=True,
-    #         profile_memory=True,
-    #         use_cuda=True,
-    #     )
 
     def _get_continue_train_epoch(self, checkpoint_path):
         continue_training_epoch = 0
@@ -178,6 +168,7 @@ class MyTrainingSetup:
             model=self.train_params["model"],
             patch_size=self.train_params["patch_size"],
             model_params=self.train_params["model_params"],
+            class_weight=self.train_params["class_weight"],
         )
         dm = MRIDataLoader(
             relative_data_path=self.train_params["relative_data_path"] + "/test",
@@ -190,22 +181,6 @@ class MyTrainingSetup:
         trainer = self._get_trainer()
 
         trainer.test(model=model, dataloaders=dm, ckpt_path=ckpt_path)
-
-
-# Example Usage:
-
-# model = UNet()
-
-# model = MyUpscaleSwinUNETR(patch_size=patch_size, in_channels=1, out_channels=2)
-
-# model = MyUNETR(
-#     in_channels=1,
-#     out_channels=2,
-#     feature_size=16,
-#     patch_size=(96, 96, 96),
-# )
-
-# model = UNETR()
 
 
 def main(
@@ -243,13 +218,6 @@ def main(
     print(relative_data_path)
     test = relative_data_path.split("/")[-1]
 
-    # model_name = f"{relative_data_path.split('/')[-1]}_weight_" \
-    #          f"{class_weight[0]}-{class_weight[1]}_DICE_" \
-    #          f"{activation}_{model}-patch_size_" \
-    #          f"{patch_size[0]}-feat_{model_params['feature_size']}-upscale_" \
-    #          f"{upscale}-out_channels_{model_params['out_channels']}-lr_" \
-    #          f"{learning_rate}-upsample_end_" \
-    #          f"{model_params['upsample_end'] if 'upsample_end' in model_params else 0}"
     model_name = f"{relative_data_path.split('/')[-1]}_weight_" \
              f"{class_weight[0]}-{class_weight[1]}_DICE_" \
              f"{activation}_{model}-patch_size_" \
@@ -258,7 +226,7 @@ def main(
              f"{learning_rate}-upsample_end_" \
              f"{model_params['upsample_end'] if 'upsample_end' in model_params else 0}-batch_" \
              f"{batch_size}-{samples_per_volume}"
-    print(model_name)
+
     checkpoint_path = f"../../runs/{model_name}"
     checkpoint_file = "latest_model"
     best_checkpoint_file = "best_metric_model"
@@ -288,18 +256,6 @@ def main(
         model_checkpoint=f"{checkpoint_path}/{checkpoint_file}.ckpt",
     )
 
-    # print("Executing test:...")
-
-    # training_pipeline.test(
-    #     ckpt_path=f"{checkpoint_path}/{best_checkpoint_file}.ckpt",
-    
-    # )
-
-
-############## TEST ##############
-
-# training_pipeline.test("../../runs/best_metric_model-v2.ckpt")
-# training_pipeline.print_model_stats()
 
 if __name__ == "__main__":
     # Create the parser

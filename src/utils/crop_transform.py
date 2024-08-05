@@ -2,6 +2,12 @@ from monai.transforms import Randomizable
 import numpy as np
 import torch
 
+"""
+Description:    This script is a modification of the MONAI RandCropByPosNegLabeld transform. It is adjusted to
+                work with the RootNet dataset where the label is twice the size of the image. The full documentation
+                of the original transform can be found here: https://docs.monai.io/en/latest/transforms.html#randcropbyposneglabeld
+Usage:  Can be integrated into the MONAI pipeline for data augmentation.
+"""
 
 class RandCropByPosNegLabeldWithResAdjust(Randomizable):
     def __init__(
