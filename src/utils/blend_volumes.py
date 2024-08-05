@@ -3,7 +3,18 @@ import math
 
 
 def linear_blend(volume1, volume2, overlap, axis) -> np.ndarray:
-    """Linearly blend two volumes along a specified axis."""
+    """
+    Linearly blend two volumes along a specified axis.
+    
+    Args:
+    - volume1: First volume to blend.
+    - volume2: Second volume to blend.
+    - overlap: Amount of overlap between the volumes.
+    - axis: Axis along which to blend the volumes.
+
+    Returns:
+    - np.ndarray: blended volume
+    """
     alpha = np.linspace(0, 1, overlap)
 
     # Select slices depending on the axis

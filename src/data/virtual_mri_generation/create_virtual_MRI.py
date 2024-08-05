@@ -57,7 +57,8 @@ class Virtual_MRI:
         offset=(0, 0, 0),
     ):
         """
-        creates a virtual MRI for the given root system with simulating noise based on the water content of the soil.
+        Creates a virtual MRI for the given root system with simulating noise based on the water content of the soil.
+
         - rootsystem: root system object (pb.RootSystem)
         - rsml_path: path to the rsml file of the root system # currently not used but if it is possible to read the
                      rsml file and get the seganalyser from it, it would be better

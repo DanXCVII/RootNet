@@ -16,8 +16,8 @@ import argparse
 """
 Description:    This script avoids the problem for the training of UNETR etc.
                 where the training crashes after a few epochs due to a memory error.
-                It does it by training the model for several epochs, storing the model
-                and restarting the training from the stored model.
+                It does this by training the model for several epochs, storing the model
+                and restarting the training from the checkpoint model.
 Usage:  Adjust the train params (train_params) to your needs and set the model with the model variable.
         The max_epochs are set to 150 and store_model_epoch to 30 which should work for most cases. If
         the training crashes with a memory error, try to set store_model_epoch to a lower value.

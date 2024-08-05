@@ -4,6 +4,9 @@ import re
 
 
 class MRIoperations:
+    """
+    Class for loading and saving MRI files in the .nii.gz, .nii, and .raw formats.
+    """
     def __init__(self):
         pass
 

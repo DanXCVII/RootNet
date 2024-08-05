@@ -21,6 +21,13 @@ import rsml.rsml_reader as rsml_reader
 import os
 
 
+"""
+Decription:     Shifts the rsml file towards the same boundary as the MRI file and then visualizes the MRI 
+                with the label on top of it.
+Usage: Specify a path to the rsml file and corresponding MRI scan.
+Example: python3 center_root_MRI.py -m "mri_file_path" -r "rsml_file_path"
+"""
+
 class CombinedMRI:
     def __init__(self, rsml_path, mri_path) -> None:
         self.rsml_path = rsml_path

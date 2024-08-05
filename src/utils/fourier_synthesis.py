@@ -4,6 +4,12 @@ from .MRI_operations import MRIoperations
 
 
 class FourierSynthesis:
+    """
+    Class for applying the "Fourier synthesis" technique to generate new samples from a given volume. This
+    is done by first performing a Fourier analysis on the original volume, and then manipulating the Fourier
+    transform by randomizing the phase of the components. The inverse Fourier transform is then applied to
+    obtain the new volume.
+    """
     def __init__(self, volume):
         """
         Initialize the Fourier synthesis.

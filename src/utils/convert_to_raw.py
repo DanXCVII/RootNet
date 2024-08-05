@@ -4,11 +4,18 @@ from MRI_operations import MRIoperations
 import os
 import numpy as np
 
+"""
+Description:    This script contains a function to convert a given file to .raw or .nii.gz format 
+                depending on the input file extension. It uses a GUI where the user can select a file.
+Usage:  Run the script and select a file to convert.
+"""
 
 def process_file_path(file_path):
     """
-    Function to process the file path.
-    Replace the content of this function with your desired file processing logic.
+    function to convert the given file to .raw or .nii.gz format depending on the input file extension
+
+    Args:
+    - file_path: path to the file to be converted
     """
     mri_ops = MRIoperations()
 

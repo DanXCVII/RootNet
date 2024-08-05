@@ -7,7 +7,6 @@ sys.path.append(os.path.abspath(utils_dir))
 
 from utils import (
     RandCropByPosNegLabeldWithResAdjust,
-    MyTransformDataset,
     LinearWarmupScheduler,
     CompositeScheduler,
     RandCoarseDropoutd,

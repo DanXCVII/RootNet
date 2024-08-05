@@ -10,7 +10,8 @@ Example: python delete_checkpoints.py
 
 def delete_unmatched_directories(dir1, dir2):
     """
-    Delete directories in dir2 that are not present in dir1.
+    Delete directories in dir2 that are not present in dir1. Useful, if tensorboard logs are 
+    deleted and the corresponding checkpoints should be deleted as well.
 
     Args:
     - dir1: Path to the first directory.

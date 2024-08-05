@@ -23,7 +23,7 @@ import os
 """
 Description:    Shifts the rsml file towards the same boundary as the MRI file. This is important
                 because the visualize function of the MRI (and label) only visualizes a bounding box
-                centered at 0, 0, 0 which also should be the norm because, the seed should be placed
+                centered at 0, 0, 0 which also should be the norm because the seed should be placed
                 there in global coordinates.
 Usage: Specify a path to the rsml file and corresponding MRI scan.
 Example: python3 center_root_MRI.py -m "mri_file_path" -r "rsml_file_path"
@@ -136,13 +136,15 @@ class MoveMRI:
                 self.affine_matrix[1, 1],
                 self.affine_matrix[0, 0],
             ),
-            width=width,
+            radius=width,
             depth=depth,
             offset=translation,
             scale_factor=2,
         )
 
-        label_grid, _ = my_root.create_virtual_root_mri(".", label=True)
+        label_grid, _ = my_root.create_virtual_root_mri(
+            ".", label=True, add_noise=False
+        )
 
         return label_grid
 
@@ -175,6 +177,5 @@ if __name__ == "__main__":
     combined.center_label_mri()
 
 
-
 # Example usage:
-# python3 center_root_MRI.py -m /Users/daniel/Desktop/FZJ/CPlantBox/DUMUX/CPlantBox/tutorial/examples_segmentation/RootNet/src/data/virtual_mri_generation/test_data/convert/III_Sand_3D_DAP14_256x256x191.nii.gz -r "/Users/daniel/Desktop/FZJ/Echte Daten/tobias_mri/III_Sand_3D_DAP14_256x256x191/roots_vr_7.rsml"
+# python3 center_root_MRI.py -m "/Users/daniel/Downloads/tmp_autodelete/III_Soil_1W_DAP14_res_256x256x186.nii.gz" -r "/Users/daniel/Downloads/tmp_autodelete/III_Soil_1W_DAP14_256x256x186.rsml"
