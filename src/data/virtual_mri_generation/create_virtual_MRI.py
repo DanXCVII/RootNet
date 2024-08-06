@@ -141,9 +141,13 @@ class Virtual_MRI:
                     noise_grid[x, y, z] = f(x, y, z)
 
         noise_grid = noise_grid + 1
-        noise_grid = (noise_grid - np.min(noise_grid)) / (np.max(noise_grid) - np.min(noise_grid))
+        noise_grid = (noise_grid - np.min(noise_grid)) / (
+            np.max(noise_grid) - np.min(noise_grid)
+        )
 
-        noise_grid_scaled = noise_grid * (noise_range[1] - noise_range[0]) + noise_range[0]
+        noise_grid_scaled = (
+            noise_grid * (noise_range[1] - noise_range[0]) + noise_range[0]
+        )
 
         return noise_grid_scaled
 
@@ -341,7 +345,7 @@ class Virtual_MRI:
 
         return water_content, my_noise
 
-    def ellipsoid_gaussian(self, radius_x, radius_z, sigma) -> np.array:
+    def _ellipsoid_gaussian(self, radius_x, radius_z, sigma) -> np.array:
         """
         Create a 3D ellipsoidal Gaussian structuring element.
 
@@ -402,7 +406,7 @@ class Virtual_MRI:
 
             grid = ndimage.binary_dilation(grid, structure=selem).astype(grid.dtype)
         else:
-            selem = self.ellipsoid_gaussian(radius_x, radius_z, radius_x)
+            selem = self._ellipsoid_gaussian(radius_x, radius_z, radius_x)
 
             grid = ndimage.grey_dilation(grid, structure=selem)
 
@@ -506,7 +510,9 @@ class Virtual_MRI:
 
         return water_content, expanded_noise
 
-    def _add_noise_to_grid(self, root_grid, water_content_grid, perlin_soil=False, perlin_root=False) -> np.array:
+    def _add_noise_to_grid(
+        self, root_grid, water_content_grid, perlin_soil=False, perlin_root=False
+    ) -> np.array:
         """
         Adds fourier noise with histogram matching to the root grid and applies the water content of the soil to the
         noise volume
@@ -541,7 +547,9 @@ class Virtual_MRI:
             min_water_content = np.min(water_content_grid_filtered)
             max_water_content = np.max(water_content_grid_filtered)
 
-            soil_noise = self.generate_perlin_noise_3d(water_content_grid.shape, [min_water_content, max_water_content], 80)
+            soil_noise = self.generate_perlin_noise_3d(
+                water_content_grid.shape, [min_water_content, max_water_content], 80
+            )
 
         # scale the fourier noise to water content of 100% to later adjust it to the water content of the soil
         soil_noise_rescaled = soil_noise / water_content_soil
@@ -565,16 +573,21 @@ class Virtual_MRI:
         # the maximum water content is 42% for both sand and loam)
         min_root_noise = 0.075 if self.soil_type == "loam" else 0.4
         if perlin_root:
-            root_noise_grid = self.generate_perlin_noise_3d(root_grid.shape, [min_root_noise, 1], 80)
+            root_noise_grid = self.generate_perlin_noise_3d(
+                root_grid.shape, [min_root_noise, 1], 80
+            )
         else:
             water_content_grid_filtered = water_content_grid[water_content_grid > 0]
-            normalized_water_content_grid = (water_content_grid - np.min(water_content_grid_filtered)) / (np.max(water_content_grid_filtered) - np.min(water_content_grid_filtered))
-
-            root_noise_grid = (
-                normalized_water_content_grid * (1 - min_root_noise)
-                + min_root_noise
+            normalized_water_content_grid = (
+                water_content_grid - np.min(water_content_grid_filtered)
+            ) / (
+                np.max(water_content_grid_filtered)
+                - np.min(water_content_grid_filtered)
             )
 
+            root_noise_grid = (
+                normalized_water_content_grid * (1 - min_root_noise) + min_root_noise
+            )
 
         # apply the soil noise on the root signal (seperated from the soil noise just in case
         # we want to apply different noise to the root and the soil)
@@ -709,7 +722,6 @@ class Virtual_MRI:
 
         iteration = 1
         total_segs = len(self.segs)
-        
 
         if binary:
             root_signal_intensity = 1

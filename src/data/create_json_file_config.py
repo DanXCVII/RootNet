@@ -7,6 +7,12 @@ from datetime import datetime
 
 class CreateJsonFileConfig:
     def __init__(self, relative_data_path):
+        """
+        Searches for all files used for the training and testing of the DNN in the data directory and creates a config file.
+
+        Args:
+        - relative_data_path (str): Relative path to the data directory.
+        """
         file_dir = os.path.dirname(__file__)  # Get the directory of the current script
         self.data_dir = os.path.abspath(os.path.join(file_dir, relative_data_path))
         self.training_dir = os.path.join(self.data_dir, "generated/training")
@@ -125,7 +131,6 @@ class CreateJsonFileConfig:
         train_config = self._create_input_label_dict(training_files, "training")
         val_config = self._create_input_label_dict(validation_files, "validation")
         test_config = self._create_input_label_dict(test_files, "test")
-        test_real_config = self._create_input_label_dict(test_files_real, "test", input_label_dict=test_config)
 
         config_dict.update(train_config)
         config_dict.update(val_config)
@@ -133,12 +138,13 @@ class CreateJsonFileConfig:
 
         config_dict["numTraining"] = len(config_dict["training"])
         config_dict["numTest"] = len(config_dict["test"])
-        
+
         filename = "data_config.json"
         with open(filename, "w") as json_file:
             json.dump(config_dict, json_file, indent=4)
 
         return config_dict
+
 
 # Example execution
 config = CreateJsonFileConfig("../../data")
