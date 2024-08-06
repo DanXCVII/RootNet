@@ -7,23 +7,26 @@ This repository houses the implementation of a pipeline designed to generate vir
 ### [`src`](src) Directory
 
 The [`src`](src) directory contains all source code of this repo and is divided into several subdirectories, each dedicated to a specific aspect of the project's codebase:
-- **[`data`](data)**: Contains code necessary for synthetic data generation. This subdirectory is used for creating the datasets needed to train the NNs.
-- **[`virtual_mri_generation`](virtual_mri_generation)**: Code related to the generation of a single synthetic MRI, including water and root growth simulation.
-- **[`models`](models)**: Houses the neural network models used for segmentation of the root MRIs.
-- **[`training`](training)**: All code necessary for setting up the training environment, data loading, and the training process itself.
-- **[`utils`](utils)**: Contains a collection of utility functions that help organize files and streamline various tasks.
-- **[`runs`](runs)**: The runs directory contains the checkpoints of the trained DNNs (weights and other parameters)
+- **[`data`](src/data)**: Contains code necessary for synthetic data generation. This subdirectory is used for creating the datasets needed to train the NNs.
+- **[`data/virtual_mri_generation`](src/data/virtual_mri_generation)**: Code related to the generation of a single synthetic MRI, including water and root growth simulation.
+- **[`models`](src/models)**: Houses the neural network models used for segmentation of the root MRIs.
+- **[`training`](src/training)**: All code necessary for setting up the training environment, data loading, and the training process itself.
+- **[`utils`](src/utils)**: Contains a collection of utility functions that help organize files and streamline various tasks.
   
 ### [`data_assets`](data_assets) Directory
 
 The [`data_assets`](data_assets) directory is intended for storing fixed data assets. These assets include in this case the meshes for the simulation of water flow, the used root models for simulation and MRI data, which is used as a ground truth for synthetic MRI generation
+
+### [`runs`](runs) Directory
+
+The runs directory contains the checkpoints of the trained DNNs (weights and other parameters).
 
 
 ### [`data`](data) Directory
 
 The [`data`](data) directory should contain all MRI data, which is used for training and testing of the DNN. This includes the nifti file of the MRIs together with the corresponding label files with twice the resolution. The naming scheme is the following "image_resx_resy_resz.nii.gz" and "label_image_resx\*2_resy\*2_resz\*2.nii.gz" for the MRI image and label image respectively. So the label image has the prefix "label_" and has the adjusted resolution. E.g. "my_Bench_lupin_day_5_res_237x237x151.nii.gz" and "label_my_Bench_lupin_day_5_res_474x474x302.nii.gz". The data used for the corresponding Master thesis can be downloaded [here](https://zenodo.org/records/12806033):
 The structure is the following:
-- **[`data/test`](data/test)**: Contains all test data being used for the evaluation of the DNN
+- **[`data/test`](data/test)**: Should contain all test data being used for the evaluation of the DNN
 - **[`data/generated/training`](data/generated/training)**: Contains all training data for the DNN
 - **[`data/generated/validation`](data/generated/validation)**: Contains all validation data for the DNN
 
