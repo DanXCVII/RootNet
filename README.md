@@ -1,6 +1,6 @@
 # Overview
 
-This repository houses the implementation of a pipeline designed to generate virtual Magnetic Resonance Imaging (MRI) scans of root systems for the Master thesis "3D Segmentation of Plant Roots from MRI Images for Enhanced Automated Root Tracing using Deep Neural Networks". The primary objective of this project is to use these virtual MRIs to train a Neural Network for the task of segmenting real MRI root scans.
+This repository houses the implementation of a pipeline designed to generate virtual Magnetic Resonance Imaging (MRI) scans of root systems for the Master thesis ["3D Segmentation of Plant Roots from MRI Images for Enhanced Automated Root Tracing using Deep Neural Networks"](https://www.researchgate.net/publication/387756222_3D_Segmentation_of_Plant_Roots_from_MRI_Images_for_Enhanced_Automated_Root_Tracing_using_Deep_Neural_Networks?utm_source=twitter&rgutm_meta1=eHNsLXVVRUFocmRITk1BV0h0RytUc0dJNC9xeCtZWlk5R1JRc1pUYVRqUnV4MXpuOS9ZUmZOYVFSZVArOTVIb05YKzNSS3dPN1hWSUNzKytmV1VuQVZNaFBYOD0%3D ). The primary objective of this project is to use these virtual MRIs to train a Neural Network for the task of segmenting real MRI root scans.
 
 ## General Structure
 
